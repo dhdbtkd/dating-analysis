@@ -2,18 +2,6 @@
 
 @font-face {
   font-family: 'Paperozi';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-1Thin.woff2') format('woff2');
-  font-weight: 100;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Paperozi';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-2ExtraLight.woff2') format('woff2');
-  font-weight: 200;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Paperozi';
   src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-3Light.woff2') format('woff2');
   font-weight: 300;
   font-display: swap;
@@ -42,38 +30,48 @@
   font-weight: 700;
   font-display: swap;
 }
-@font-face {
-  font-family: 'Paperozi';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2') format('woff2');
-  font-weight: 800;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Paperozi';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-9Black.woff2') format('woff2');
-  font-weight: 900;
-  font-display: swap;
-}
 
 @theme inline {
-  --color-dark: #0a0a0f;
-  --color-dark-surface: #111118;
-  --color-dark-border: #1e1e2e;
-  --color-gold: #c8a96e;
-  --color-gold-light: #e0c898;
-  --color-gold-dim: #8a7049;
-  --font-paperozi: 'Paperozi', sans-serif;
+  /* Surface hierarchy */
+  --color-surface: #f7f9fb;
+  --color-surface-low: #f2f4f6;
+  --color-surface-mid: #eceef0;
+  --color-surface-high: #e6e8ea;
+  --color-surface-card: #ffffff;
+
+  /* Primary — Deep Navy */
+  --color-primary: #002045;
+  --color-primary-container: #1a365d;
+  --color-primary-dim: #adc7f7;
+
+  /* Secondary — Soft Blue */
+  --color-secondary: #0060ac;
+  --color-secondary-container: #64a8fe;
+
+  /* Tertiary — Warm Coral (emotional moments) */
+  --color-tertiary: #c8724a;
+  --color-tertiary-container: #ffdad5;
+
+  /* Text */
+  --color-on-surface: #191c1e;
+  --color-on-surface-variant: #43474e;
+  --color-outline: #74777f;
+  --color-outline-variant: #c4c6cf;
+
+  /* Fonts */
+  --font-display: 'Paperozi', 'Manrope', sans-serif;
+  --font-body: 'Inter', sans-serif;
 }
 
 :root {
-  --background: #0a0a0f;
-  --foreground: #e8e8f0;
+  --background: #f7f9fb;
+  --foreground: #191c1e;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Paperozi', sans-serif;
+  font-family: 'Inter', sans-serif;
   min-height: 100dvh;
   overflow-x: hidden;
   overflow-y: auto;
@@ -81,29 +79,21 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Grain overlay */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 128px 128px;
+/* Frosted glass utility */
+.glass {
+  background: rgba(247, 249, 251, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
-/* Orb backgrounds */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 600px 600px at 20% 30%, rgba(200, 169, 110, 0.06) 0%, transparent 70%),
-    radial-gradient(ellipse 500px 500px at 80% 70%, rgba(100, 60, 160, 0.06) 0%, transparent 70%);
+/* Premium CTA gradient */
+.cta-gradient {
+  background: linear-gradient(135deg, #002045 0%, #1a365d 100%);
+}
+
+/* Soft lift shadow */
+.soft-lift {
+  box-shadow: 0px 12px 32px rgba(25, 28, 30, 0.06);
 }
 
 * {

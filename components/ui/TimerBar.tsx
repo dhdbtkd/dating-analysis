@@ -15,10 +15,10 @@ function timerColor(timeLeft: number, duration: number): string {
   const ratio = Math.max(0, timeLeft / duration);
   if (ratio > 0.6) {
     const t = 1 - (ratio - 0.6) / 0.4;
-    return lerpColor('#22c55e', '#f97316', t);
+    return lerpColor('#0060ac', '#f97316', t);
   }
   const t = 1 - ratio / 0.6;
-  return lerpColor('#f97316', '#ef4444', t);
+  return lerpColor('#f97316', '#ba1a1a', t);
 }
 
 interface TimerBarProps {
@@ -33,10 +33,7 @@ export function TimerBar({ timeLeft, duration }: TimerBarProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <div
-        className="flex-1 rounded-full overflow-hidden"
-        style={{ height: 4, backgroundColor: '#1e1e2e' }}
-      >
+      <div className="flex-1 rounded-full overflow-hidden" style={{ height: 4, backgroundColor: '#e6e8ea' }}>
         <div
           style={{
             height: '100%',

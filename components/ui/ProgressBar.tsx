@@ -19,8 +19,22 @@ export function ProgressBar({ current, total }: ProgressBarProps) {
   const pct = Math.round((current / total) * 100);
   return (
     <div className="w-full mb-6">
-      <div className="flex justify-between text-xs mb-1" style={{ color: '#8a8a9a' }}>
-        <span>{getPhrase(pct)}</span>
+      <div className="flex justify-between items-end mb-3">
+        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#43474e' }}>
+          {getPhrase(pct)}
+        </span>
+        <span className="text-xs font-semibold" style={{ color: '#43474e' }}>
+          {current} / {total}
+        </span>
+      </div>
+      <div className="w-full rounded-full overflow-hidden" style={{ height: '6px', backgroundColor: '#e6e8ea' }}>
+        <div
+          className="h-full rounded-full transition-all duration-500"
+          style={{
+            width: `${pct}%`,
+            background: 'linear-gradient(90deg, #0060ac 0%, #64a8fe 100%)',
+          }}
+        />
       </div>
     </div>
   );

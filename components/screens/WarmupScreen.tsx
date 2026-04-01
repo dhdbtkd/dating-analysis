@@ -14,13 +14,8 @@ const TIMER_DURATION = 10;
 export function WarmupScreen() {
   const { selectedWarmup, selectedQuestions, addWarmupAnswer, setStep } = useAppStore();
 
-  // 일반 큐: 인덱스 배열 [0, 1, 2]
-  const [normalQueue] = useState<number[]>(() =>
-    selectedWarmup.map((_, i) => i)
-  );
+  const [normalQueue] = useState<number[]>(() => selectedWarmup.map((_, i) => i));
   const [normalPos, setNormalPos] = useState(0);
-
-  // 스킵된 문항 인덱스
   const [retryQueue, setRetryQueue] = useState<number[]>([]);
   const [retryPos, setRetryPos] = useState(0);
   const [isRetry, setIsRetry] = useState(false);
@@ -31,37 +26,26 @@ export function WarmupScreen() {
 
   const questionIndex = isRetry ? retryQueue[retryPos] : normalQueue[normalPos];
   const question = selectedWarmup[questionIndex];
-  const isRetryMode = isRetry;
   const warmupAnsweredCount = isRetry ? normalQueue.length + retryPos : normalPos;
   const globalTotal = selectedWarmup.length + selectedQuestions.length;
-  const globalCurrent = warmupAnsweredCount + 1; // warmup은 앞쪽 구간
-
+  const globalCurrent = warmupAnsweredCount + 1;
 
   const advance = useCallback(() => {
     if (advancingRef.current) return;
     advancingRef.current = true;
-
     setTimeout(() => {
       advancingRef.current = false;
       setSelected(null);
       setTimerKey((k) => k + 1);
-
       if (isRetry) {
         const nextRetryPos = retryPos + 1;
-        if (nextRetryPos >= retryQueue.length) {
-          setStep('quiz');
-        } else {
-          setRetryPos(nextRetryPos);
-        }
+        if (nextRetryPos >= retryQueue.length) setStep('quiz');
+        else setRetryPos(nextRetryPos);
       } else {
         const nextNormalPos = normalPos + 1;
         if (nextNormalPos >= normalQueue.length) {
-          // 일반 큐 완료
-          if (retryQueue.length === 0) {
-            setStep('quiz');
-          } else {
-            setIsRetry(true);
-          }
+          if (retryQueue.length === 0) setStep('quiz');
+          else setIsRetry(true);
         } else {
           setNormalPos(nextNormalPos);
         }
@@ -70,17 +54,11 @@ export function WarmupScreen() {
   }, [isRetry, retryPos, retryQueue, normalPos, normalQueue, setStep]);
 
   const handleExpire = useCallback(() => {
-    // 일반 모드에서만 스킵
     setRetryQueue((prev) => [...prev, questionIndex]);
     advance();
   }, [questionIndex, advance]);
 
-  const timeLeft = useCountdown(
-    TIMER_DURATION,
-    handleExpire,
-    !isRetryMode, // retry 모드에서는 만료 콜백 없음
-    timerKey,
-  );
+  const timeLeft = useCountdown(TIMER_DURATION, handleExpire, !isRetry, timerKey);
 
   function handleSelect(label: string) {
     if (selected) return;
@@ -97,11 +75,8 @@ export function WarmupScreen() {
     advance();
   }
 
-  // retry 진입 시 타이머 리셋
   useEffect(() => {
-    if (isRetry) {
-      setTimerKey((k) => k + 1);
-    }
+    if (isRetry) setTimerKey((k) => k + 1);
   }, [isRetry]);
 
   if (!question) return null;
@@ -113,21 +88,20 @@ export function WarmupScreen() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.35 }}
-      className="flex flex-col items-center justify-center min-h-[100dvh] px-4 py-12 relative z-10"
+      className="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-12"
+      style={{ backgroundColor: '#f7f9fb' }}
     >
       <div className="w-full max-w-lg">
-        {/* 상단 헤더 */}
-        <div className="mb-5">
+        <div className="mb-6">
           <ProgressBar current={globalCurrent} total={globalTotal} />
-          <div className="flex items-center justify-between mb-1">
-            <span />
+          <div className="flex items-center justify-end mb-2">
             <AnimatePresence>
-              {isRetryMode && (
+              {isRetry && (
                 <motion.span
                   initial={{ opacity: 0, x: 8 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="text-xs px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444' }}
+                  className="text-xs px-3 py-1 rounded-full font-semibold"
+                  style={{ backgroundColor: '#ffdad6', color: '#ba1a1a' }}
                 >
                   다시 답해주세요
                 </motion.span>
@@ -137,14 +111,11 @@ export function WarmupScreen() {
           <TimerBar timeLeft={timeLeft} duration={TIMER_DURATION} />
         </div>
 
-        <div
-          className="rounded-2xl p-6 border mb-4"
-          style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
-        >
-          <p className="text-base font-medium mb-6 leading-relaxed" style={{ color: '#e8e8f0' }}>
+        <div className="rounded-3xl p-7 soft-lift mb-5" style={{ backgroundColor: '#ffffff' }}>
+          <p className="text-base font-medium mb-7 leading-relaxed" style={{ color: '#191c1e', fontFamily: 'Inter' }}>
             {question.text}
           </p>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2.5">
             {question.options.map((opt) => (
               <OptionButton
                 key={opt.label}

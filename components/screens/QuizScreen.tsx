@@ -23,17 +23,13 @@ const LIKERT_LABELS = [
 export function QuizScreen() {
   const { selectedQuestions, selectedWarmup, warmupAnswers, addQuizAnswer, setStep, setEcrScores } = useAppStore();
 
-  const [normalQueue] = useState<number[]>(() =>
-    selectedQuestions.map((_, i) => i)
-  );
+  const [normalQueue] = useState<number[]>(() => selectedQuestions.map((_, i) => i));
   const [normalPos, setNormalPos] = useState(0);
   const [retryQueue, setRetryQueue] = useState<number[]>([]);
   const [retryPos, setRetryPos] = useState(0);
   const [isRetry, setIsRetry] = useState(false);
 
-  // 점수 맵: questionIndex → score (역채점 적용 후)
   const scoresMapRef = useRef<Record<number, number>>({});
-
   const [selected, setSelected] = useState<number | null>(null);
   const [timerKey, setTimerKey] = useState(0);
   const advancingRef = useRef(false);
@@ -48,7 +44,7 @@ export function QuizScreen() {
     const scores = scoresMapRef.current;
     let aSum = 0, aCount = 0, vSum = 0, vCount = 0;
     selectedQuestions.forEach((q, i) => {
-      const s = scores[i] ?? 4; // 미답 시 중간값 fallback
+      const s = scores[i] ?? 4;
       if (q.dimension === 'anxiety') { aSum += s; aCount++; }
       else { vSum += s; vCount++; }
     });
@@ -61,27 +57,19 @@ export function QuizScreen() {
   const advance = useCallback(() => {
     if (advancingRef.current) return;
     advancingRef.current = true;
-
     setTimeout(() => {
       advancingRef.current = false;
       setSelected(null);
       setTimerKey((k) => k + 1);
-
       if (isRetry) {
         const next = retryPos + 1;
-        if (next >= retryQueue.length) {
-          finishQuiz();
-        } else {
-          setRetryPos(next);
-        }
+        if (next >= retryQueue.length) finishQuiz();
+        else setRetryPos(next);
       } else {
         const next = normalPos + 1;
         if (next >= normalQueue.length) {
-          if (retryQueue.length === 0) {
-            finishQuiz();
-          } else {
-            setIsRetry(true);
-          }
+          if (retryQueue.length === 0) finishQuiz();
+          else setIsRetry(true);
         } else {
           setNormalPos(next);
         }
@@ -94,12 +82,7 @@ export function QuizScreen() {
     advance();
   }, [questionIndex, advance]);
 
-  const timeLeft = useCountdown(
-    TIMER_DURATION,
-    handleExpire,
-    !isRetry,
-    timerKey,
-  );
+  const timeLeft = useCountdown(TIMER_DURATION, handleExpire, !isRetry, timerKey);
 
   function handleSelect(i: number) {
     if (selected !== null) return;
@@ -124,20 +107,20 @@ export function QuizScreen() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.35 }}
-      className="flex flex-col items-center justify-center min-h-[100dvh] px-4 py-12 relative z-10"
+      className="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-12"
+      style={{ backgroundColor: '#f7f9fb' }}
     >
       <div className="w-full max-w-lg">
-        <div className="mb-5">
+        <div className="mb-6">
           <ProgressBar current={globalCurrent} total={globalTotal} />
-          <div className="flex items-center justify-between mb-1">
-            <span />
+          <div className="flex items-center justify-end mb-2">
             <AnimatePresence>
               {isRetry && (
                 <motion.span
                   initial={{ opacity: 0, x: 8 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="text-xs px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444' }}
+                  className="text-xs px-3 py-1 rounded-full font-semibold"
+                  style={{ backgroundColor: '#ffdad6', color: '#ba1a1a' }}
                 >
                   다시 답해주세요
                 </motion.span>
@@ -147,31 +130,27 @@ export function QuizScreen() {
           <TimerBar timeLeft={timeLeft} duration={TIMER_DURATION} />
         </div>
 
-        <div
-          className="rounded-2xl p-6 border mb-4"
-          style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
-        >
-          <p className="text-base font-medium mb-8 leading-relaxed text-center" style={{ color: '#e8e8f0' }}>
+        <div className="rounded-3xl p-7 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+          <p className="text-base font-medium mb-10 leading-relaxed text-center" style={{ color: '#191c1e' }}>
             {question.text}
           </p>
 
-          <div className="flex flex-col gap-2">
-            <div className="grid grid-cols-7 gap-1">
+          <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-7 gap-1.5">
               {LIKERT_LABELS.map((_label, i) => (
                 <button
                   key={i}
                   onClick={() => handleSelect(i)}
-                  className="flex flex-col items-center gap-2 py-3 rounded-xl border transition-all duration-200 min-h-[52px]"
+                  className="flex flex-col items-center py-3 rounded-2xl transition-all duration-200 active:scale-[0.96]"
                   style={{
-                    backgroundColor: selected === i ? 'rgba(200,169,110,0.12)' : '#0a0a0f',
-                    borderColor: selected === i ? '#c8a96e' : '#1e1e2e',
+                    backgroundColor: selected === i ? '#dbeafe' : '#f2f4f6',
                   }}
                 >
                   <span
                     className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
                     style={{
-                      backgroundColor: selected === i ? '#c8a96e' : '#1e1e2e',
-                      color: selected === i ? '#0a0a0f' : '#8a8a9a',
+                      backgroundColor: selected === i ? '#002045' : '#e6e8ea',
+                      color: selected === i ? '#ffffff' : '#43474e',
                     }}
                   >
                     {i + 1}
@@ -179,12 +158,12 @@ export function QuizScreen() {
                 </button>
               ))}
             </div>
-            <div className="grid grid-cols-7 gap-1 mt-1">
+            <div className="grid grid-cols-7 gap-1.5">
               {LIKERT_LABELS.map((label, i) => (
                 <p
                   key={i}
                   className="text-center leading-tight whitespace-pre-line"
-                  style={{ color: '#8a8a9a', fontSize: '11px' }}
+                  style={{ color: '#74777f', fontSize: '10px' }}
                 >
                   {label}
                 </p>

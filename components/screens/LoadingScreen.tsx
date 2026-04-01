@@ -20,9 +20,7 @@ export function LoadingScreen() {
   const router = useRouter();
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setMsgIndex((i) => (i + 1) % MESSAGES.length);
-    }, 1800);
+    const interval = setInterval(() => setMsgIndex((i) => (i + 1) % MESSAGES.length), 1800);
     return () => clearInterval(interval);
   }, []);
 
@@ -33,7 +31,6 @@ export function LoadingScreen() {
 
   async function analyze() {
     try {
-      // Create or use session
       let sid = sessionId;
       if (!sid) {
         const sessionRes = await fetch('/api/sessions', {
@@ -55,22 +52,12 @@ export function LoadingScreen() {
         setSessionId(sid);
         localStorage.setItem('dating_session_id', sid);
       }
-
-      // Run analysis
       const analyzeRes = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: sid,
-          chatHistory,
-          ecrScores,
-          userInfo,
-          warmupAnswers,
-          quizDetails,
-        }),
+        body: JSON.stringify({ sessionId: sid, chatHistory, ecrScores, userInfo, warmupAnswers, quizDetails }),
       });
       if (!analyzeRes.ok) throw new Error('분석 실패');
-
       setStep('done');
       router.push(`/result/${sid}`);
     } catch (e) {
@@ -84,21 +71,22 @@ export function LoadingScreen() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col items-center justify-center min-h-[100dvh] px-4 relative z-10"
+      className="flex flex-col items-center justify-center min-h-[100dvh] px-6"
+      style={{ backgroundColor: '#f7f9fb' }}
     >
       <div className="text-center">
-        <div className="relative w-24 h-24 mx-auto mb-8">
+        <div className="relative w-20 h-20 mx-auto mb-10">
           <div
             className="absolute inset-0 rounded-full border-2 border-transparent animate-spin"
-            style={{ borderTopColor: '#c8a96e', borderRightColor: 'rgba(200,169,110,0.3)' }}
+            style={{ borderTopColor: '#0060ac', borderRightColor: '#dbeafe' }}
           />
           <div className="absolute inset-3 rounded-full flex items-center justify-center text-2xl">
             🪐
           </div>
         </div>
         <h2
-          className="text-lg font-bold mb-4"
-          style={{ fontFamily: 'Paperozi', color: '#e0c898' }}
+          className="text-xl font-bold mb-4"
+          style={{ fontFamily: 'Paperozi', color: '#002045' }}
         >
           분석 중
         </h2>
@@ -108,18 +96,17 @@ export function LoadingScreen() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
-          className="text-xs"
-          style={{ color: '#8a8a9a' }}
+          className="text-sm"
+          style={{ color: '#43474e' }}
         >
           {MESSAGES[msgIndex]}
         </motion.p>
         {error && (
-          <div className="mt-6">
-            <p className="text-red-400 text-xs mb-3">{error}</p>
+          <div className="mt-8">
+            <p className="text-sm mb-4" style={{ color: '#ba1a1a' }}>{error}</p>
             <button
               onClick={analyze}
-              className="px-6 py-3 rounded-xl text-xs min-h-[44px]"
-              style={{ backgroundColor: '#c8a96e', color: '#0a0a0f' }}
+              className="cta-gradient px-8 py-3 rounded-2xl text-sm text-white font-medium"
             >
               재시도
             </button>

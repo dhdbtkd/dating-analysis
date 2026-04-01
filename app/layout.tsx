@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Inter, Manrope } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope' });
 
 export const metadata: Metadata = {
   title: "당신도 몰랐던 나의 연애 패턴",
@@ -12,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="h-full">
+    <html lang="ko" className={`h-full ${inter.variable} ${manrope.variable}`}>
       <body className="min-h-[100dvh] flex flex-col relative">{children}</body>
     </html>
   );

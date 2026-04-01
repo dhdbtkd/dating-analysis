@@ -19,9 +19,7 @@ export function ChatScreen() {
   const userTurns = chatHistory.filter((m) => m.role === 'user').length;
 
   useEffect(() => {
-    if (chatHistory.length === 0) {
-      startConversation();
-    }
+    if (chatHistory.length === 0) startConversation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -36,9 +34,7 @@ export function ChatScreen() {
   async function streamAssistantReply(history: ChatMessage[]) {
     setLoading(true);
     setError('');
-    // placeholder message to stream into
     setChatHistory([...history, { role: 'assistant', content: '' }]);
-
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -49,21 +45,18 @@ export function ChatScreen() {
         const err = await res.json().catch(() => ({ error: '응답 생성에 실패했습니다.' })) as { error?: string };
         throw new Error(err.error ?? '응답 생성에 실패했습니다.');
       }
-
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
       let text = '';
-
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         text += decoder.decode(value, { stream: true });
-        const snapshot = text;
-        setChatHistory([...history, { role: 'assistant', content: snapshot }]);
+        setChatHistory([...history, { role: 'assistant', content: text }]);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : '오류가 발생했습니다.');
-      setChatHistory(history); // remove empty placeholder
+      setChatHistory(history);
     } finally {
       setLoading(false);
     }
@@ -79,13 +72,11 @@ export function ChatScreen() {
     const updatedHistory = [...chatHistory, userMsg];
     setChatHistory(updatedHistory);
     setInput('');
-
     const newUserTurns = updatedHistory.filter((m) => m.role === 'user').length;
     if (newUserTurns >= MAX_TURNS) {
       setStep('loading');
       return;
     }
-
     await streamAssistantReply(updatedHistory);
   }
 
@@ -102,51 +93,47 @@ export function ChatScreen() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col min-h-[100dvh] relative z-10"
+      className="flex flex-col min-h-[100dvh]"
+      style={{ backgroundColor: '#f7f9fb' }}
     >
       {/* Header */}
-      <div
-        className="px-4 py-4 border-b"
-        style={{ borderColor: '#1e1e2e', backgroundColor: '#0a0a0f' }}
-      >
-        <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs" style={{ color: '#c8a96e' }}>심층 대화</p>
-              <p className="text-xs font-medium" style={{ color: '#e8e8f0' }}>
-                {ecrScores?.typeName && `${ecrScores.typeName} 유형`}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs" style={{ color: '#8a8a9a' }}>
-                {userTurns} / {MAX_TURNS} 턴
-              </p>
-              <div className="flex gap-1 mt-1">
-                {Array.from({ length: MAX_TURNS }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-4 h-1 rounded-full"
-                    style={{ backgroundColor: i < userTurns ? '#c8a96e' : '#1e1e2e' }}
-                  />
-                ))}
-              </div>
+      <div className="glass px-6 py-4 sticky top-0 z-10">
+        <div className="max-w-lg mx-auto flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>심층 대화</p>
+            <p className="text-sm font-medium" style={{ color: '#002045' }}>
+              {ecrScores?.typeName ? `${ecrScores.typeName} 유형` : '연애 패턴 분석'}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs font-semibold" style={{ color: '#43474e' }}>
+              {userTurns} / {MAX_TURNS}
+            </p>
+            <div className="flex gap-1 mt-1">
+              {Array.from({ length: MAX_TURNS }).map((_, i) => (
+                <div
+                  key={i}
+                  className="w-4 h-1 rounded-full transition-all"
+                  style={{ backgroundColor: i < userTurns ? '#0060ac' : '#e6e8ea' }}
+                />
+              ))}
             </div>
           </div>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto px-6 py-8">
         <div className="max-w-lg mx-auto flex flex-col gap-4">
           {chatHistory.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className="max-w-[80%] rounded-2xl px-4 py-3 text-xs leading-relaxed break-words"
-                style={{
-                  backgroundColor: msg.role === 'user' ? 'rgba(200,169,110,0.15)' : '#111118',
-                  border: msg.role === 'user' ? '1px solid rgba(200,169,110,0.3)' : '1px solid #1e1e2e',
-                  color: '#e8e8f0',
-                }}
+                className="max-w-[80%] rounded-3xl px-5 py-3.5 text-sm leading-relaxed break-words"
+                style={
+                  msg.role === 'user'
+                    ? { background: 'linear-gradient(135deg, #002045 0%, #1a365d 100%)', color: '#ffffff', borderBottomRightRadius: '6px' }
+                    : { backgroundColor: '#ffffff', color: '#191c1e', borderBottomLeftRadius: '6px', boxShadow: '0px 4px 12px rgba(25,28,30,0.06)' }
+                }
               >
                 {msg.content}
               </div>
@@ -154,19 +141,13 @@ export function ChatScreen() {
           ))}
           {loading && (
             <div className="flex justify-start">
-              <div
-                className="rounded-2xl px-4 py-3"
-                style={{ backgroundColor: '#111118', border: '1px solid #1e1e2e' }}
-              >
-                <div className="flex gap-1">
+              <div className="rounded-3xl px-5 py-3.5" style={{ backgroundColor: '#ffffff', borderBottomLeftRadius: '6px', boxShadow: '0px 4px 12px rgba(25,28,30,0.06)' }}>
+                <div className="flex gap-1.5">
                   {[0, 1, 2].map((i) => (
                     <div
                       key={i}
                       className="w-2 h-2 rounded-full animate-bounce"
-                      style={{
-                        backgroundColor: '#c8a96e',
-                        animationDelay: `${i * 0.1}s`,
-                      }}
+                      style={{ backgroundColor: '#64a8fe', animationDelay: `${i * 0.12}s` }}
                     />
                   ))}
                 </div>
@@ -178,18 +159,13 @@ export function ChatScreen() {
       </div>
 
       {/* Input */}
-      <div
-        className="px-4 py-4 border-t pb-[env(safe-area-inset-bottom,16px)]"
-        style={{ borderColor: '#1e1e2e', backgroundColor: '#0a0a0f' }}
-      >
+      <div className="glass px-6 py-4 pb-[env(safe-area-inset-bottom,16px)]">
         <div className="max-w-lg mx-auto">
-          {error && <p className="text-red-400 text-xs mb-2">{error}</p>}
+          {error && <p className="text-xs mb-2" style={{ color: '#ba1a1a' }}>{error}</p>}
           {userTurns < MAX_TURNS ? (
             <div
-              className="flex items-end gap-2 rounded-2xl px-3 py-2 transition-colors"
-              style={{ backgroundColor: '#111118', border: '1px solid #1e1e2e' }}
-              onFocusCapture={(e) => ((e.currentTarget as HTMLDivElement).style.borderColor = '#c8a96e')}
-              onBlurCapture={(e) => ((e.currentTarget as HTMLDivElement).style.borderColor = '#1e1e2e')}
+              className="flex items-end gap-2 rounded-3xl px-4 py-3 transition-all soft-lift"
+              style={{ backgroundColor: '#ffffff' }}
             >
               <textarea
                 ref={inputRef}
@@ -203,22 +179,21 @@ export function ChatScreen() {
                 placeholder="솔직하게 답해주세요"
                 rows={1}
                 disabled={loading}
-                className="flex-1 bg-transparent outline-none resize-none leading-relaxed"
+                className="flex-1 bg-transparent outline-none resize-none leading-relaxed text-sm"
                 style={{
-                  color: '#e8e8f0',
-                  fontSize: '13px',
-                  caretColor: '#c8a96e',
-                  paddingTop: '4px',
-                  paddingBottom: '4px',
+                  color: '#191c1e',
+                  caretColor: '#0060ac',
+                  paddingTop: '2px',
+                  paddingBottom: '2px',
                 }}
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || loading}
-                className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+                className="flex-shrink-0 w-9 h-9 rounded-2xl flex items-center justify-center transition-all active:scale-95"
                 style={{
-                  backgroundColor: input.trim() && !loading ? '#c8a96e' : '#1e1e2e',
-                  color: input.trim() && !loading ? '#0a0a0f' : '#8a8a9a',
+                  background: input.trim() && !loading ? 'linear-gradient(135deg, #002045 0%, #1a365d 100%)' : '#f2f4f6',
+                  color: input.trim() && !loading ? '#ffffff' : '#74777f',
                 }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -229,9 +204,7 @@ export function ChatScreen() {
             </div>
           ) : (
             <div className="text-center py-2">
-              <p className="text-xs mb-3" style={{ color: '#8a8a9a' }}>
-                대화가 완료되었습니다. 결과를 분석합니다.
-              </p>
+              <p className="text-sm mb-4" style={{ color: '#43474e' }}>대화가 완료되었습니다. 결과를 분석합니다.</p>
               <GoldButton onClick={() => setStep('loading')}>결과 보기</GoldButton>
             </div>
           )}
