@@ -1,5 +1,6 @@
 import { createServerClient } from '@/lib/supabase/server';
 import type { NextRequest } from 'next/server';
+import type { QuizDetail, WarmupAnswer } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +12,8 @@ export async function POST(request: NextRequest) {
       ecr_avoidance?: number;
       attachment_type?: string;
       chat_history?: unknown[];
+      warmup_answers?: WarmupAnswer[];
+      quiz_details?: QuizDetail[];
     };
 
     if (!body.nickname || typeof body.nickname !== 'string' || body.nickname.length > 50) {
@@ -34,6 +37,8 @@ export async function POST(request: NextRequest) {
         ecr_avoidance: body.ecr_avoidance ?? 0,
         attachment_type: body.attachment_type ?? '',
         chat_history: body.chat_history ?? [],
+        warmup_answers: body.warmup_answers ?? [],
+        quiz_details: body.quiz_details ?? [],
         consent: false,
       })
       .select('id')
@@ -41,7 +46,8 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error;
     return Response.json({ id: data.id });
-  } catch {
+  } catch (error) {
+    console.error('[/api/sessions][POST]', error);
     return Response.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
   }
 }
@@ -61,7 +67,8 @@ export async function GET(request: NextRequest) {
 
     if (error) return Response.json({ error: '세션을 찾을 수 없습니다.' }, { status: 404 });
     return Response.json(data);
-  } catch {
+  } catch (error) {
+    console.error('[/api/sessions][GET]', error);
     return Response.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
   }
 }
@@ -74,7 +81,8 @@ export async function DELETE(request: NextRequest) {
     const supabase = createServerClient();
     await supabase.from('sessions').delete().eq('id', body.sessionId);
     return Response.json({ success: true });
-  } catch {
+  } catch (error) {
+    console.error('[/api/sessions][DELETE]', error);
     return Response.json({ error: '서버 오류가 발생했습니다.' }, { status: 500 });
   }
 }

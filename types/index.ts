@@ -52,6 +52,8 @@ export interface SessionRow {
   ecr_avoidance: number;
   attachment_type: string;
   chat_history: ChatMessage[];
+  warmup_answers: WarmupAnswer[];
+  quiz_details: QuizDetail[];
   result: ResultJson | null;
   consent: boolean;
   created_at: string;

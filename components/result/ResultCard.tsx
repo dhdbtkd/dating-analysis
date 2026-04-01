@@ -5,8 +5,7 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 const ScatterChart = dynamic(() => import('./ScatterChart').then((m) => m.ScatterChart), { ssr: false });
 import { GoldButton } from '@/components/ui/GoldButton';
-import type { ResultJson } from '@/types';
-import { getAttachmentAcademic } from '@/lib/questions';
+import type { ResultJson, SessionRow } from '@/types';
 
 function splitIntoParagraphs(text: string): string[] {
     if (text.length <= 80) return [text];
@@ -85,8 +84,10 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
     const [consentLoading, setConsentLoading] = useState(false);
     const [copied, setCopied] = useState(false);
     const [deleteCompleted, setDeleteCompleted] = useState(false);
-
-    const academic = getAttachmentAcademic(result.anxietyScore, result.avoidanceScore);
+    const [adminUnlocked, setAdminUnlocked] = useState(false);
+    const [clickTimestamps, setClickTimestamps] = useState<number[]>([]);
+    const [regenLoading, setRegenLoading] = useState(false);
+    const [regenMessage, setRegenMessage] = useState<string | null>(null);
 
     async function handleConsent() {
         setConsentLoading(true);
@@ -147,6 +148,65 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
         }
     }
 
+    function handleAdminTriggerClick() {
+        const now = Date.now();
+        const recentClicks = [...clickTimestamps, now].filter((timestamp) => now - timestamp <= 10000);
+        setClickTimestamps(recentClicks);
+        if (recentClicks.length >= 5) {
+            setAdminUnlocked(true);
+            setRegenMessage(null);
+        }
+    }
+
+    async function handleRegenerate() {
+        setRegenLoading(true);
+        setRegenMessage(null);
+        try {
+            const sessionRes = await fetch(`/api/sessions?id=${sessionId}`);
+            const sessionData = (await sessionRes.json()) as SessionRow | { error?: string };
+            if (!sessionRes.ok || !('warmup_answers' in sessionData) || !('quiz_details' in sessionData)) {
+                throw new Error('세션 정보를 불러오지 못했습니다.');
+            }
+
+            if (!sessionData.warmup_answers.length || !sessionData.quiz_details.length) {
+                setRegenMessage('이 세션은 선택지 저장 이전 데이터라 정확 재생성이 불가능합니다.');
+                return;
+            }
+
+            const analyzeRes = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                    sessionId,
+                    chatHistory: sessionData.chat_history,
+                    ecrScores: {
+                        anxiety: sessionData.ecr_anxiety,
+                        avoidance: sessionData.ecr_avoidance,
+                        typeName: sessionData.attachment_type,
+                    },
+                    userInfo: {
+                        nickname: sessionData.nickname,
+                        age: sessionData.age,
+                        gender: sessionData.gender,
+                    },
+                    warmupAnswers: sessionData.warmup_answers,
+                    quizDetails: sessionData.quiz_details,
+                }),
+            });
+
+            if (!analyzeRes.ok) {
+                throw new Error('결과 재생성에 실패했습니다.');
+            }
+
+            setRegenMessage('저장된 선택지와 대화로 결과를 다시 생성했습니다.');
+            router.refresh();
+        } catch (error) {
+            setRegenMessage(error instanceof Error ? error.message : '결과 재생성에 실패했습니다.');
+        } finally {
+            setRegenLoading(false);
+        }
+    }
+
     return (
         <>
             {deleteCompleted && (
@@ -180,9 +240,31 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
             <div className="flex flex-col gap-8 break-words">
                 {/* 1블록: 첫 인상 */}
                 <div className="px-6">
-                    <p className="text-lg text-center font-semibold uppercase tracking-wider mb-6 text-zinc-600">
+                    <button
+                        type="button"
+                        onClick={handleAdminTriggerClick}
+                        className="w-full text-lg text-center font-semibold uppercase tracking-wider mb-6 text-zinc-600"
+                    >
                         {nickname}님의 결과지
-                    </p>
+                    </button>
+                    {adminUnlocked && (
+                        <div className="mb-6 rounded-2xl p-4 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#ba1a1a' }}>
+                                Admin
+                            </p>
+                            <p className="text-xs leading-relaxed mb-3" style={{ color: '#43474e' }}>
+                                저장된 워밍업/퀴즈 선택지와 대화 기록으로 현재 결과를 다시 생성합니다.
+                            </p>
+                            <GoldButton onClick={handleRegenerate} disabled={regenLoading} className="w-full">
+                                {regenLoading ? '재생성 중...' : '결과 다시 생성'}
+                            </GoldButton>
+                            {regenMessage && (
+                                <p className="text-xs leading-relaxed mt-3" style={{ color: regenMessage.includes('실패') || regenMessage.includes('불가능') ? '#ba1a1a' : '#0060ac' }}>
+                                    {regenMessage}
+                                </p>
+                            )}
+                        </div>
+                    )}
                     <p className="text-xs">{nickname}님은</p>
                     <h1
                         className="text-3xl font-bold mb-4 leading-tight"

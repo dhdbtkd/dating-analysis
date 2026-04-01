@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
@@ -24,12 +24,7 @@ export function LoadingScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    analyze();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function analyze() {
+  const analyze = useCallback(async () => {
     try {
       let sid = sessionId;
       if (!sid) {
@@ -44,6 +39,8 @@ export function LoadingScreen() {
             ecr_avoidance: ecrScores?.avoidance ?? 0,
             attachment_type: ecrScores?.typeName ?? '',
             chat_history: chatHistory,
+            warmup_answers: warmupAnswers,
+            quiz_details: quizDetails,
           }),
         });
         if (!sessionRes.ok) throw new Error('세션 생성 실패');
@@ -63,7 +60,11 @@ export function LoadingScreen() {
     } catch (e) {
       setError(e instanceof Error ? e.message : '오류가 발생했습니다. 다시 시도해주세요.');
     }
-  }
+  }, [chatHistory, ecrScores, quizDetails, router, sessionId, setSessionId, setStep, userInfo, warmupAnswers]);
+
+  useEffect(() => {
+    analyze();
+  }, [analyze]);
 
   return (
     <motion.div
@@ -105,6 +106,7 @@ export function LoadingScreen() {
           <div className="mt-8">
             <p className="text-sm mb-4" style={{ color: '#ba1a1a' }}>{error}</p>
             <button
+              type="button"
               onClick={analyze}
               className="cta-gradient px-8 py-3 rounded-2xl text-sm text-white font-medium"
             >
