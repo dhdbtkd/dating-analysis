@@ -81,6 +81,7 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [consentLoading, setConsentLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [deleteCompleted, setDeleteCompleted] = useState(false);
 
   const academic = getAttachmentAcademic(result.anxietyScore, result.avoidanceScore);
 
@@ -113,7 +114,8 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ sessionId }),
       });
-      router.replace('/');
+      setDeleteCompleted(true);
+      window.setTimeout(() => router.replace('/'), 1600);
     } finally {
       setConsentLoading(false);
       setShowConsent(false);
@@ -144,6 +146,19 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
 
   return (
     <>
+      {deleteCompleted && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6" style={{ backgroundColor: 'rgba(247,249,251,0.94)', backdropFilter: 'blur(10px)' }}>
+          <div className="w-full max-w-sm rounded-3xl p-7 text-center soft-lift" style={{ backgroundColor: '#ffffff' }}>
+            <p className="text-4xl mb-4">삭제됨</p>
+            <h2 className="text-xl font-bold mb-3" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
+              결과가 안전하게 삭제됐어요
+            </h2>
+            <p className="text-sm leading-relaxed" style={{ color: '#43474e' }}>
+              저장된 검사 데이터와 초대 흐름을 정리했고, 잠시 후 처음 화면으로 이동합니다.
+            </p>
+          </div>
+        </div>
+      )}
       {showConsent && <ConsentModal onAccept={handleConsent} onClose={() => setShowConsent(false)} onDelete={handleDelete} loading={consentLoading} />}
 
       <div className="flex flex-col gap-8 break-words">
