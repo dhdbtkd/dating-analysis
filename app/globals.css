@@ -31,7 +31,7 @@
   font-display: swap;
 }
 
-@theme inline {
+:root {
   /* Surface hierarchy */
   --color-surface: #f7f9fb;
   --color-surface-low: #f2f4f6;
@@ -61,11 +61,9 @@
   /* Fonts */
   --font-display: 'Paperozi', 'Manrope', sans-serif;
   --font-body: 'Inter', sans-serif;
-}
 
-:root {
-  --background: #f7f9fb;
-  --foreground: #191c1e;
+  --background: var(--color-surface);
+  --foreground: var(--color-on-surface);
 }
 
 body {

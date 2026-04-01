@@ -20,6 +20,8 @@ const LIKERT_LABELS = [
   '매우\n그렇다',
 ];
 
+const LIKERT_SCORES = [1, 2, 3, 4, 5, 6, 7] as const;
+
 export function QuizScreen() {
   const { selectedQuestions, selectedWarmup, warmupAnswers, addQuizAnswer, setStep, setEcrScores } = useAppStore();
 
@@ -51,7 +53,7 @@ export function QuizScreen() {
     const anxiety = aSum / aCount;
     const avoidance = vSum / vCount;
     setEcrScores({ anxiety, avoidance, typeName: getAttachmentType(anxiety, avoidance) });
-    setStep('chat');
+    setStep('chat-intro');
   }, [selectedQuestions, setEcrScores, setStep]);
 
   const advance = useCallback(() => {
@@ -137,35 +139,36 @@ export function QuizScreen() {
 
           <div className="flex flex-col gap-3">
             <div className="grid grid-cols-7 gap-1.5">
-              {LIKERT_LABELS.map((_label, i) => (
+              {LIKERT_SCORES.map((score) => (
                 <button
-                  key={i}
-                  onClick={() => handleSelect(i)}
+                  key={score}
+                  type="button"
+                  onClick={() => handleSelect(score - 1)}
                   className="flex flex-col items-center py-3 rounded-2xl transition-all duration-200 active:scale-[0.96]"
                   style={{
-                    backgroundColor: selected === i ? '#dbeafe' : '#f2f4f6',
+                    backgroundColor: selected === score - 1 ? '#dbeafe' : '#f2f4f6',
                   }}
                 >
                   <span
                     className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
                     style={{
-                      backgroundColor: selected === i ? '#002045' : '#e6e8ea',
-                      color: selected === i ? '#ffffff' : '#43474e',
+                      backgroundColor: selected === score - 1 ? '#002045' : '#e6e8ea',
+                      color: selected === score - 1 ? '#ffffff' : '#43474e',
                     }}
                   >
-                    {i + 1}
+                    {score}
                   </span>
                 </button>
               ))}
             </div>
             <div className="grid grid-cols-7 gap-1.5">
-              {LIKERT_LABELS.map((label, i) => (
+              {LIKERT_SCORES.map((score) => (
                 <p
-                  key={i}
+                  key={score}
                   className="text-center leading-tight whitespace-pre-line"
                   style={{ color: '#74777f', fontSize: '10px' }}
                 >
-                  {label}
+                  {LIKERT_LABELS[score - 1]}
                 </p>
               ))}
             </div>

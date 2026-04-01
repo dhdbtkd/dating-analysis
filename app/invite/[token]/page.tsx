@@ -7,8 +7,10 @@ import { useAppStore } from '@/store/useAppStore';
 import { IntroScreen } from '@/components/screens/IntroScreen';
 import { WarmupScreen } from '@/components/screens/WarmupScreen';
 import { QuizScreen } from '@/components/screens/QuizScreen';
+import { ChatIntroScreen } from '@/components/screens/ChatIntroScreen';
 import { ChatScreen } from '@/components/screens/ChatScreen';
 import { LoadingScreen } from '@/components/screens/LoadingScreen';
+import { ChatGradientBackground } from '@/components/ui/ChatGradientBackground';
 
 interface InviteInfo {
   coupleId: string;
@@ -28,6 +30,7 @@ export default function InvitePage({ params }: InvitePageProps) {
   const [linked, setLinked] = useState(false);
   const router = useRouter();
   const { step, sessionId } = useAppStore();
+  const showChatBackground = step === 'chat-intro' || step === 'chat';
 
   useEffect(() => {
     fetch(`/api/invite/${token}`)
@@ -82,29 +85,33 @@ export default function InvitePage({ params }: InvitePageProps) {
   }
 
   return (
-    <main className="flex-1 relative z-10">
-      {step === 'intro' && (
-        <div>
-          <div className="px-4 pt-10 pb-2 text-center">
-            <div
-              className="inline-block px-4 py-2 rounded-xl border mb-2 text-xs"
-              style={{ borderColor: '#1e1e2e', backgroundColor: '#111118', color: '#c8a96e' }}
-            >
-              💌 {inviteInfo?.senderNickname}님이 당신을 초대했습니다
+    <main className="flex-1 relative overflow-hidden">
+      {showChatBackground && <ChatGradientBackground />}
+      <div className="relative z-10">
+        {step === 'intro' && (
+          <div>
+            <div className="px-4 pt-10 pb-2 text-center">
+              <div
+                className="inline-block px-4 py-2 rounded-xl border mb-2 text-xs"
+                style={{ borderColor: '#1e1e2e', backgroundColor: '#111118', color: '#c8a96e' }}
+              >
+                💌 {inviteInfo?.senderNickname}님이 당신을 초대했습니다
+              </div>
+              <p className="text-xs" style={{ color: '#8a8a9a' }}>
+                동일한 검사를 완료하면 커플 분석 결과를 확인할 수 있어요
+              </p>
             </div>
-            <p className="text-xs" style={{ color: '#8a8a9a' }}>
-              동일한 검사를 완료하면 커플 분석 결과를 확인할 수 있어요
-            </p>
+            <IntroScreen />
           </div>
-          <IntroScreen />
-        </div>
-      )}
-      <AnimatePresence mode="wait">
-        {step === 'warmup' && <WarmupScreen key="warmup" />}
-        {step === 'quiz' && <QuizScreen key="quiz" />}
-        {step === 'chat' && <ChatScreen key="chat" />}
-        {(step === 'loading' || step === 'done') && <LoadingScreen key="loading" />}
-      </AnimatePresence>
+        )}
+        <AnimatePresence mode="wait">
+          {step === 'warmup' && <WarmupScreen key="warmup" />}
+          {step === 'quiz' && <QuizScreen key="quiz" />}
+          {step === 'chat-intro' && <ChatIntroScreen key="chat-intro" />}
+          {step === 'chat' && <ChatScreen key="chat" />}
+          {(step === 'loading' || step === 'done') && <LoadingScreen key="loading" />}
+        </AnimatePresence>
+      </div>
     </main>
   );
 }
