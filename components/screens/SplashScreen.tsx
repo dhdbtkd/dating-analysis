@@ -1,20 +1,29 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
 
-const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
-  id: i,
-  x: Math.random() * 100,
-  y: Math.random() * 100,
-  size: Math.random() * 2 + 1,
-  delay: Math.random() * 2,
-  duration: Math.random() * 4 + 4,
-}));
+// 고정 시드값으로 파티클 생성 — 서버/클라이언트 hydration 불일치 방지
+const PARTICLE_SEEDS = [
+  [79.2, 37.5, 1.45, 0.3, 5.2], [49.5, 19.9, 1.00, 1.1, 7.0],
+  [95.1, 34.4, 2.40, 0.7, 4.5], [11.5, 0.09, 1.10, 1.8, 6.3],
+  [94.3, 92.7, 1.04, 0.1, 5.8], [22.7, 73.7, 2.63, 1.5, 4.8],
+  [81.5, 59.0, 2.86, 0.9, 7.2], [63.6, 90.8, 2.53, 0.4, 5.5],
+  [0.21, 46.9, 2.74, 1.3, 6.7], [66.4, 12.1, 1.04, 0.6, 4.9],
+  [90.5, 30.4, 2.90, 1.9, 5.1], [89.8, 23.0, 1.39, 0.2, 7.5],
+  [43.9, 47.4, 2.53, 1.6, 4.6], [4.24, 86.6, 2.02, 0.8, 6.1],
+  [72.0, 47.0, 1.72, 1.2, 5.9], [43.8, 57.1, 1.42, 0.5, 7.3],
+  [38.6, 83.5, 2.07, 1.7, 4.7], [28.4, 69.9, 2.39, 1.0, 6.5],
+];
 
 export function SplashScreen() {
   const { setStep } = useAppStore();
+
+  const particles = useMemo(() =>
+    PARTICLE_SEEDS.map(([x, y, size, delay, duration], i) => ({
+      id: i, x, y, size, delay, duration,
+    })), []);
 
   useEffect(() => {
     const timer = setTimeout(() => setStep('intro'), 3200);
@@ -61,7 +70,7 @@ export function SplashScreen() {
       />
 
       {/* Floating particles */}
-      {PARTICLES.map((p) => (
+      {particles.map((p) => (
         <motion.div
           key={p.id}
           className="absolute rounded-full pointer-events-none"
