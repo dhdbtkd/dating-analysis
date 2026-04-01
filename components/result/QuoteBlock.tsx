@@ -13,7 +13,7 @@ export function QuoteBlock({ quote }: QuoteBlockProps) {
         borderLeftColor: '#c8a96e',
       }}
     >
-      <p className="text-sm leading-relaxed italic" style={{ color: '#e0c898' }}>
+      <p className="text-xs leading-relaxed italic" style={{ color: '#e0c898' }}>
         &ldquo;{quote}&rdquo;
       </p>
     </div>

@@ -74,7 +74,7 @@ export function QuizScreen() {
           className="rounded-2xl p-6 border mb-6"
           style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
         >
-          <p className="text-lg font-medium mb-8 leading-relaxed text-center" style={{ color: '#e8e8f0' }}>
+          <p className="text-base font-medium mb-8 leading-relaxed text-center" style={{ color: '#e8e8f0' }}>
             {question.text}
           </p>
 
@@ -91,7 +91,7 @@ export function QuizScreen() {
                   }}
                 >
                   <span
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold"
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
                     style={{
                       backgroundColor: selected === i ? '#c8a96e' : '#1e1e2e',
                       color: selected === i ? '#0a0a0f' : '#8a8a9a',

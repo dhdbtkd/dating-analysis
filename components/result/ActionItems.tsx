@@ -15,7 +15,7 @@ export function ActionItems({ items }: ActionItemsProps) {
           >
             {i + 1}
           </span>
-          <p className="text-sm leading-relaxed" style={{ color: '#e8e8f0' }}>{item}</p>
+          <p className="text-xs leading-relaxed" style={{ color: '#e8e8f0' }}>{item}</p>
         </div>
       ))}
     </div>

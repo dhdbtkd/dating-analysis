@@ -19,7 +19,7 @@ export function OptionButton({ label, text, selected, onClick }: OptionButtonPro
       }}
     >
       <span
-        className="font-bold text-sm w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+        className="font-bold text-xs w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
         style={{
           backgroundColor: selected ? '#c8a96e' : '#1e1e2e',
           color: selected ? '#0a0a0f' : '#8a8a9a',
@@ -27,7 +27,7 @@ export function OptionButton({ label, text, selected, onClick }: OptionButtonPro
       >
         {label}
       </span>
-      <span className="text-sm leading-relaxed">{text}</span>
+      <span className="text-xs leading-relaxed">{text}</span>
     </button>
   );
 }

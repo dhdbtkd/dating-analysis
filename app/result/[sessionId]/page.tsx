@@ -20,9 +20,9 @@ export default async function ResultPage({ params }: PageProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[100dvh] px-4 relative z-10">
         <div className="text-center">
-          <p className="text-4xl mb-4">🌑</p>
-          <p className="text-lg" style={{ color: '#e0c898' }}>결과를 찾을 수 없습니다</p>
-          <p className="text-sm mt-2" style={{ color: '#8a8a9a' }}>링크가 만료되었거나 잘못된 주소입니다.</p>
+          <p className="text-3xl mb-4">🌑</p>
+          <p className="text-base" style={{ color: '#e0c898' }}>결과를 찾을 수 없습니다</p>
+          <p className="text-xs mt-2" style={{ color: '#8a8a9a' }}>링크가 만료되었거나 잘못된 주소입니다.</p>
         </div>
       </div>
     );
@@ -34,8 +34,8 @@ export default async function ResultPage({ params }: PageProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[100dvh] px-4 relative z-10">
         <div className="text-center">
-          <p className="text-4xl mb-4">⏳</p>
-          <p className="text-lg" style={{ color: '#e0c898' }}>분석 결과가 아직 준비되지 않았습니다</p>
+          <p className="text-3xl mb-4">⏳</p>
+          <p className="text-base" style={{ color: '#e0c898' }}>분석 결과가 아직 준비되지 않았습니다</p>
         </div>
       </div>
     );

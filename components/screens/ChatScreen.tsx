@@ -113,7 +113,7 @@ export function ChatScreen() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs" style={{ color: '#c8a96e' }}>심층 대화</p>
-              <p className="text-sm font-medium" style={{ color: '#e8e8f0' }}>
+              <p className="text-xs font-medium" style={{ color: '#e8e8f0' }}>
                 {ecrScores?.typeName && `${ecrScores.typeName} 유형`}
               </p>
             </div>
@@ -141,7 +141,7 @@ export function ChatScreen() {
           {chatHistory.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className="max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed break-words"
+                className="max-w-[80%] rounded-2xl px-4 py-3 text-xs leading-relaxed break-words"
                 style={{
                   backgroundColor: msg.role === 'user' ? 'rgba(200,169,110,0.15)' : '#111118',
                   border: msg.role === 'user' ? '1px solid rgba(200,169,110,0.3)' : '1px solid #1e1e2e',
@@ -209,7 +209,7 @@ export function ChatScreen() {
             </div>
           ) : (
             <div className="text-center py-2">
-              <p className="text-sm mb-3" style={{ color: '#8a8a9a' }}>
+              <p className="text-xs mb-3" style={{ color: '#8a8a9a' }}>
                 대화가 완료되었습니다. 결과를 분석합니다.
               </p>
               <GoldButton onClick={() => setStep('loading')}>결과 보기</GoldButton>

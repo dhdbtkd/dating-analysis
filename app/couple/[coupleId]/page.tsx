@@ -20,8 +20,8 @@ export default async function CouplePage({ params }: PageProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[100dvh] px-4 relative z-10">
         <div className="text-center">
-          <p className="text-4xl mb-4">🌑</p>
-          <p className="text-lg" style={{ color: '#e0c898' }}>커플 결과를 찾을 수 없습니다</p>
+          <p className="text-3xl mb-4">🌑</p>
+          <p className="text-base" style={{ color: '#e0c898' }}>커플 결과를 찾을 수 없습니다</p>
         </div>
       </div>
     );
@@ -34,8 +34,8 @@ export default async function CouplePage({ params }: PageProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[100dvh] px-4 relative z-10">
         <div className="text-center">
-          <p className="text-4xl mb-4">⏳</p>
-          <p className="text-lg" style={{ color: '#e0c898' }}>파트너의 검사가 아직 완료되지 않았습니다</p>
+          <p className="text-3xl mb-4">⏳</p>
+          <p className="text-base" style={{ color: '#e0c898' }}>파트너의 검사가 아직 완료되지 않았습니다</p>
         </div>
       </div>
     );

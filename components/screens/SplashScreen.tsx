@@ -109,7 +109,7 @@ export function SplashScreen() {
               boxShadow: '0 0 40px rgba(200,169,110,0.15)',
             }}
           >
-            <span className="text-4xl">🪐</span>
+            <span className="text-3xl">🪐</span>
           </div>
         </motion.div>
 
@@ -118,7 +118,7 @@ export function SplashScreen() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.7, ease: 'easeOut' }}
-          className="text-4xl font-bold leading-snug mb-3"
+          className="text-3xl font-bold leading-snug mb-3"
           style={{ fontFamily: 'Paperozi', color: '#e0c898' }}
         >
           당신도 몰랐던<br />나의 연애 패턴
@@ -129,7 +129,7 @@ export function SplashScreen() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7, duration: 0.6, ease: 'easeOut' }}
-          className="text-sm tracking-widest uppercase mb-10"
+          className="text-xs tracking-widest uppercase mb-10"
           style={{ color: '#c8a96e', letterSpacing: '0.2em' }}
         >
           Love Pattern Analysis

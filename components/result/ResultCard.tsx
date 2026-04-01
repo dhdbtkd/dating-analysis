@@ -29,12 +29,12 @@ function ConsentModal({ onAccept, onReject, loading }: ConsentModalProps) {
         style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
       >
         <h3
-          className="text-lg font-bold mb-3"
+          className="text-base font-bold mb-3"
           style={{ fontFamily: 'Paperozi', color: '#e0c898' }}
         >
           개인정보 저장 동의
         </h3>
-        <p className="text-sm mb-4 leading-relaxed" style={{ color: '#8a8a9a' }}>
+        <p className="text-xs mb-4 leading-relaxed" style={{ color: '#8a8a9a' }}>
           커플 분석을 위해 검사 결과(닉네임, 애착 유형, 대화 내용)가 서버에 저장됩니다.
           초대 링크를 통해 파트너와 함께 분석 결과를 확인하게 됩니다.
           동의하시겠습니까?
@@ -43,7 +43,7 @@ function ConsentModal({ onAccept, onReject, loading }: ConsentModalProps) {
           <button
             onClick={onReject}
             disabled={loading}
-            className="flex-1 py-3 rounded-xl text-sm border transition-all min-h-[44px]"
+            className="flex-1 py-3 rounded-xl text-xs border transition-all min-h-[44px]"
             style={{ borderColor: '#1e1e2e', color: '#8a8a9a' }}
           >
             거절
@@ -140,12 +140,12 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
           <div className="text-5xl mb-3">{emoji}</div>
           <p className="text-xs mb-1" style={{ color: '#8a8a9a' }}>{academic}</p>
           <h1
-            className="text-2xl font-bold mb-2"
+            className="text-xl font-bold mb-2"
             style={{ fontFamily: 'Paperozi', color: '#e0c898' }}
           >
             {result.typeName}
           </h1>
-          <p className="text-sm leading-relaxed" style={{ color: '#c8a96e' }}>
+          <p className="text-xs leading-relaxed" style={{ color: '#c8a96e' }}>
             {result.tagline}
           </p>
           <div className="flex gap-4 justify-center mt-4 text-xs" style={{ color: '#8a8a9a' }}>
@@ -160,7 +160,7 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
           className="rounded-2xl p-5 border"
           style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
         >
-          <h2 className="text-sm font-semibold mb-4" style={{ color: '#e0c898' }}>2축 애착 지도</h2>
+          <h2 className="text-xs font-semibold mb-4" style={{ color: '#e0c898' }}>2축 애착 지도</h2>
           <ScatterChart anxietyScore={result.anxietyScore} avoidanceScore={result.avoidanceScore} />
         </div>
 
@@ -169,8 +169,8 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
           className="rounded-2xl p-5 border"
           style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
         >
-          <h2 className="text-sm font-semibold mb-3" style={{ color: '#e0c898' }}>연애 패턴</h2>
-          <p className="text-sm leading-relaxed" style={{ color: '#e8e8f0' }}>{result.lovePattern}</p>
+          <h2 className="text-xs font-semibold mb-3" style={{ color: '#e0c898' }}>연애 패턴</h2>
+          <p className="text-xs leading-relaxed" style={{ color: '#e8e8f0' }}>{result.lovePattern}</p>
         </div>
 
         {/* Core Wound */}
@@ -178,8 +178,8 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
           className="rounded-2xl p-5 border"
           style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
         >
-          <h2 className="text-sm font-semibold mb-3" style={{ color: '#e0c898' }}>핵심 상처</h2>
-          <p className="text-sm leading-relaxed" style={{ color: '#e8e8f0' }}>{result.coreWound}</p>
+          <h2 className="text-xs font-semibold mb-3" style={{ color: '#e0c898' }}>핵심 상처</h2>
+          <p className="text-xs leading-relaxed" style={{ color: '#e8e8f0' }}>{result.coreWound}</p>
         </div>
 
         {/* Quote */}
@@ -190,7 +190,7 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
           className="rounded-2xl p-5 border"
           style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
         >
-          <h2 className="text-sm font-semibold mb-4" style={{ color: '#e0c898' }}>행동 제안</h2>
+          <h2 className="text-xs font-semibold mb-4" style={{ color: '#e0c898' }}>행동 제안</h2>
           <ActionItems items={result.actionTip} />
         </div>
 
@@ -200,7 +200,7 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
           style={{ backgroundColor: 'rgba(200,169,110,0.06)', borderColor: 'rgba(200,169,110,0.2)' }}
         >
           <p
-            className="text-sm text-center leading-relaxed italic"
+            className="text-xs text-center leading-relaxed italic"
             style={{ fontFamily: 'Paperozi', color: '#e0c898' }}
           >
             {result.mindset}
@@ -212,8 +212,8 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
           className="rounded-2xl p-5 border"
           style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
         >
-          <h2 className="text-sm font-semibold mb-2" style={{ color: '#e0c898' }}>닮은 유명인/캐릭터</h2>
-          <p className="text-sm" style={{ color: '#e8e8f0' }}>{result.famousMatch}</p>
+          <h2 className="text-xs font-semibold mb-2" style={{ color: '#e0c898' }}>닮은 유명인/캐릭터</h2>
+          <p className="text-xs" style={{ color: '#e8e8f0' }}>{result.famousMatch}</p>
         </div>
 
         {/* Actions */}
@@ -236,7 +236,7 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
           )}
           <button
             onClick={handleShare}
-            className="w-full py-3 rounded-xl text-sm border transition-all"
+            className="w-full py-3 rounded-xl text-xs border transition-all"
             style={{ borderColor: '#1e1e2e', color: '#8a8a9a' }}
           >
             결과 공유하기

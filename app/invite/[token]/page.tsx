@@ -74,8 +74,8 @@ export default function InvitePage({ params }: InvitePageProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[100dvh] px-4 relative z-10">
         <div className="text-center">
-          <p className="text-4xl mb-4">🚫</p>
-          <p className="text-lg" style={{ color: '#e0c898' }}>{inviteError}</p>
+          <p className="text-3xl mb-4">🚫</p>
+          <p className="text-base" style={{ color: '#e0c898' }}>{inviteError}</p>
         </div>
       </div>
     );
@@ -87,7 +87,7 @@ export default function InvitePage({ params }: InvitePageProps) {
         <div>
           <div className="px-4 pt-10 pb-2 text-center">
             <div
-              className="inline-block px-4 py-2 rounded-xl border mb-2 text-sm"
+              className="inline-block px-4 py-2 rounded-xl border mb-2 text-xs"
               style={{ borderColor: '#1e1e2e', backgroundColor: '#111118', color: '#c8a96e' }}
             >
               💌 {inviteInfo?.senderNickname}님이 당신을 초대했습니다

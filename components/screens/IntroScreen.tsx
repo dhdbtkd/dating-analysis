@@ -51,12 +51,12 @@ export function IntroScreen() {
         {/* Header */}
         <div className="text-center mb-10">
           <h1
-            className="text-3xl font-bold mb-3 leading-tight"
+            className="text-2xl font-bold mb-3 leading-tight"
             style={{ fontFamily: 'Paperozi', color: '#e0c898' }}
           >
             당신도 몰랐던<br />나의 연애 패턴
           </h1>
-          <p className="text-sm mb-4" style={{ color: '#8a8a9a' }}>
+          <p className="text-xs mb-4" style={{ color: '#8a8a9a' }}>
             ECR 척도 기반 성인 애착 유형 측정 + AI 심층 대화
           </p>
           <p className="text-xs" style={{ color: '#8a8a9a' }}>⏱ 약 5분 소요</p>
@@ -69,7 +69,7 @@ export function IntroScreen() {
         >
           <div className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm mb-1" style={{ color: '#8a8a9a' }}>별명</label>
+              <label className="block text-xs mb-1" style={{ color: '#8a8a9a' }}>별명</label>
               <input
                 type="text"
                 value={nickname}
@@ -88,7 +88,7 @@ export function IntroScreen() {
               />
             </div>
             <div>
-              <label className="block text-sm mb-1" style={{ color: '#8a8a9a' }}>나이</label>
+              <label className="block text-xs mb-1" style={{ color: '#8a8a9a' }}>나이</label>
               <input
                 type="number"
                 value={age}
@@ -108,7 +108,7 @@ export function IntroScreen() {
               />
             </div>
             <div>
-              <label className="block text-sm mb-2" style={{ color: '#8a8a9a' }}>성별</label>
+              <label className="block text-xs mb-2" style={{ color: '#8a8a9a' }}>성별</label>
               <div className="flex gap-2">
                 {[
                   { value: 'male', label: '남성' },
@@ -118,7 +118,7 @@ export function IntroScreen() {
                   <button
                     key={g.value}
                     onClick={() => setGender(g.value)}
-                    className="flex-1 py-3 rounded-xl text-sm border transition-all duration-200 min-h-[44px]"
+                    className="flex-1 py-3 rounded-xl text-xs border transition-all duration-200 min-h-[44px]"
                     style={{
                       backgroundColor: gender === g.value ? 'rgba(200,169,110,0.12)' : '#0a0a0f',
                       borderColor: gender === g.value ? '#c8a96e' : '#1e1e2e',
@@ -130,7 +130,7 @@ export function IntroScreen() {
                 ))}
               </div>
             </div>
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && <p className="text-xs text-red-400">{error}</p>}
             <GoldButton onClick={handleStart} className="w-full mt-2">
               시작하기
             </GoldButton>

@@ -46,7 +46,7 @@ export function WarmupScreen() {
           className="rounded-2xl p-6 border mb-6"
           style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
         >
-          <p className="text-lg font-medium mb-6 leading-relaxed" style={{ color: '#e8e8f0' }}>
+          <p className="text-base font-medium mb-6 leading-relaxed" style={{ color: '#e8e8f0' }}>
             {question.text}
           </p>
           <div className="flex flex-col gap-3">

@@ -89,12 +89,12 @@ export function LoadingScreen() {
             className="absolute inset-0 rounded-full border-2 border-transparent animate-spin"
             style={{ borderTopColor: '#c8a96e', borderRightColor: 'rgba(200,169,110,0.3)' }}
           />
-          <div className="absolute inset-3 rounded-full flex items-center justify-center text-3xl">
+          <div className="absolute inset-3 rounded-full flex items-center justify-center text-2xl">
             🪐
           </div>
         </div>
         <h2
-          className="text-xl font-bold mb-4"
+          className="text-lg font-bold mb-4"
           style={{ fontFamily: 'Paperozi', color: '#e0c898' }}
         >
           분석 중
@@ -105,17 +105,17 @@ export function LoadingScreen() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
-          className="text-sm"
+          className="text-xs"
           style={{ color: '#8a8a9a' }}
         >
           {MESSAGES[msgIndex]}
         </motion.p>
         {error && (
           <div className="mt-6">
-            <p className="text-red-400 text-sm mb-3">{error}</p>
+            <p className="text-red-400 text-xs mb-3">{error}</p>
             <button
               onClick={analyze}
-              className="px-6 py-3 rounded-xl text-sm min-h-[44px]"
+              className="px-6 py-3 rounded-xl text-xs min-h-[44px]"
               style={{ backgroundColor: '#c8a96e', color: '#0a0a0f' }}
             >
               재시도
