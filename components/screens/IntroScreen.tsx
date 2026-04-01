@@ -56,6 +56,12 @@ export function IntroScreen() {
             >
               Bartholomew & Horowitz 1991
             </span>
+            <span
+              className="text-xs px-3 py-1 rounded-full border"
+              style={{ borderColor: '#1e1e2e', color: '#8a8a9a' }}
+            >
+              Wei et al. 2007
+            </span>
           </div>
           <p className="text-xs mt-3" style={{ color: '#8a8a9a' }}>⏱ 약 7~10분 소요</p>
         </div>
