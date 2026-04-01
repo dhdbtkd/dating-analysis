@@ -1,11 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { ScatterChart } from './ScatterChart';
-import { ActionItems } from './ActionItems';
+import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
+const ScatterChart = dynamic(() => import('./ScatterChart').then(m => m.ScatterChart), { ssr: false });
 import { GoldButton } from '@/components/ui/GoldButton';
 import type { ResultJson } from '@/types';
-import { getAttachmentAcademic, getAttachmentEmoji } from '@/lib/questions';
+import { getAttachmentAcademic } from '@/lib/questions';
+
+function splitIntoParagraphs(text: string): string[] {
+  if (text.length <= 80) return [text];
+  const mid = Math.floor(text.length / 2);
+  // mid 기준으로 앞뒤에서 가장 가까운 마침표(。.!) 찾기
+  const before = text.lastIndexOf('.', mid);
+  const after = text.indexOf('.', mid);
+  let cut = -1;
+  if (before === -1 && after === -1) return [text];
+  else if (before === -1) cut = after;
+  else if (after === -1) cut = before;
+  else cut = (mid - before) <= (after - mid) ? before : after;
+  return [text.slice(0, cut + 1).trim(), text.slice(cut + 1).trim()].filter(Boolean);
+}
 
 interface ResultCardProps {
   result: ResultJson;
@@ -15,54 +30,58 @@ interface ResultCardProps {
 
 interface ConsentModalProps {
   onAccept: () => void;
-  onReject: () => void;
+  onClose: () => void;
+  onDelete: () => void;
   loading: boolean;
 }
 
-function ConsentModal({ onAccept, onReject, loading }: ConsentModalProps) {
+function ConsentModal({ onAccept, onClose, onDelete, loading }: ConsentModalProps) {
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 px-4">
-      <div className="absolute inset-0" style={{ backgroundColor: 'rgba(10,10,15,0.8)' }} />
-      <div
-        className="relative rounded-2xl p-6 border max-w-sm w-full"
-        style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
-      >
-        <h3
-          className="text-base font-bold mb-3"
-          style={{ fontFamily: 'Paperozi', color: '#e0c898' }}
-        >
+    <div className="fixed inset-0 flex items-center justify-center z-50 px-6">
+      <div className="absolute inset-0" style={{ backgroundColor: 'rgba(247,249,251,0.9)', backdropFilter: 'blur(8px)' }} />
+      <div className="relative rounded-3xl p-6 max-w-sm w-full soft-lift" style={{ backgroundColor: '#ffffff' }}>
+        <h3 className="text-base font-bold mb-3" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
           개인정보 저장 동의
         </h3>
-        <p className="text-xs mb-4 leading-relaxed" style={{ color: '#8a8a9a' }}>
+        <p className="text-sm mb-5 leading-relaxed" style={{ color: '#43474e' }}>
           커플 분석을 위해 검사 결과(닉네임, 애착 유형, 대화 내용)가 서버에 저장됩니다.
           초대 링크를 통해 파트너와 함께 분석 결과를 확인하게 됩니다.
-          동의하시겠습니까?
         </p>
         <div className="flex gap-3">
           <button
-            onClick={onReject}
+            type="button"
+            onClick={onClose}
             disabled={loading}
-            className="flex-1 py-3 rounded-xl text-xs border transition-all min-h-[44px]"
-            style={{ borderColor: '#1e1e2e', color: '#8a8a9a' }}
+            className="flex-1 py-3 rounded-2xl text-sm transition-all"
+            style={{ backgroundColor: '#f2f4f6', color: '#43474e' }}
           >
-            거절
+            닫기
           </button>
           <GoldButton onClick={onAccept} disabled={loading} className="flex-1">
             {loading ? '처리 중...' : '동의'}
           </GoldButton>
         </div>
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={loading}
+          className="w-full mt-3 py-3 rounded-2xl text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{ backgroundColor: '#ffdad5', color: '#ba1a1a' }}
+        >
+          결과 삭제
+        </button>
       </div>
     </div>
   );
 }
 
-export function ResultCard({ result, sessionId }: ResultCardProps) {
+export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
+  const router = useRouter();
   const [showConsent, setShowConsent] = useState(false);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [consentLoading, setConsentLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const emoji = getAttachmentEmoji(result.anxietyScore, result.avoidanceScore);
   const academic = getAttachmentAcademic(result.anxietyScore, result.avoidanceScore);
 
   async function handleConsent() {
@@ -74,7 +93,7 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
         body: JSON.stringify({ sessionId }),
       });
       if (!res.ok) throw new Error('초대 링크 생성 실패');
-      const data = await res.json() as { inviteUrl: string };
+      const data = (await res.json()) as { inviteUrl: string };
       setInviteUrl(data.inviteUrl);
       setShowConsent(false);
     } catch {
@@ -84,16 +103,19 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
     }
   }
 
-  async function handleReject() {
-    const confirmed = window.confirm('검사 데이터가 삭제됩니다. 계속하시겠습니까?');
+  async function handleDelete() {
+    const confirmed = window.confirm('결과를 삭제하면 복구할 수 없습니다. 정말 삭제하시겠습니까?');
     if (!confirmed) return;
     try {
+      setConsentLoading(true);
       await fetch('/api/sessions', {
         method: 'DELETE',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ sessionId }),
       });
+      router.replace('/');
     } finally {
+      setConsentLoading(false);
       setShowConsent(false);
     }
   }
@@ -122,52 +144,61 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
 
   return (
     <>
-      {showConsent && (
-        <ConsentModal
-          onAccept={handleConsent}
-          onReject={handleReject}
-          loading={consentLoading}
-        />
-      )}
+      {showConsent && <ConsentModal onAccept={handleConsent} onClose={() => setShowConsent(false)} onDelete={handleDelete} loading={consentLoading} />}
 
-      <div className="flex flex-col gap-6 break-words">
-        {/* Header */}
-        <div
-          className="rounded-2xl p-6 border text-center"
-          style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
-        >
-          <div className="text-5xl mb-3">{emoji}</div>
-          <p className="text-xs mb-1" style={{ color: '#8a8a9a' }}>{academic}</p>
+      <div className="flex flex-col gap-8 break-words">
+
+        {/* 1블록: 첫 인상 */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-6" style={{ color: '#74777f' }}>
+            {nickname}님의 결과지
+          </p>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#0060ac' }}>
+            {academic}
+          </p>
           <h1
-            className="text-xl font-bold mb-2"
-            style={{ fontFamily: 'Paperozi', color: '#e0c898' }}
+            className="text-3xl font-bold mb-4 leading-tight"
+            style={{ fontFamily: 'Paperozi', color: '#002045' }}
           >
             {result.typeName}
           </h1>
-          <p className="text-xs leading-relaxed" style={{ color: '#c8a96e' }}>
+          <p className="text-base leading-relaxed mb-6" style={{ color: '#43474e' }}>
             {result.tagline}
           </p>
-          <div className="mt-4 flex flex-col gap-2 w-full max-w-xs mx-auto">
+          <button
+            type="button"
+            onClick={handleShare}
+            className="text-sm px-5 py-2.5 rounded-2xl transition-all active:scale-[0.98]"
+            style={{ backgroundColor: '#f2f4f6', color: '#43474e' }}
+          >
+            결과 공유하기
+          </button>
+        </div>
+
+        {/* 2블록: 좌표 맵 */}
+        <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-5" style={{ color: '#0060ac' }}>
+            2축 애착 지도
+          </p>
+          <ScatterChart anxietyScore={result.anxietyScore} avoidanceScore={result.avoidanceScore} />
+
+          <div className="mt-5 flex flex-col gap-4">
             {(
               [
-                { label: '감정 반응 (불안)', score: result.anxietyScore },
-                { label: '거리 유지 (회피)', score: result.avoidanceScore },
+                { label: '감정 반응 강도', score: result.anxietyScore, intensity: result.emotionalIntensity },
+                { label: '거리 유지 성향', score: result.avoidanceScore, intensity: result.distanceTendency },
               ] as const
-            ).map(({ label, score }) => {
+            ).map(({ label, score, intensity }) => {
               const pct = ((score - 1) / 6) * 100;
-              const intensity = score < 3.5 ? '낮음' : score <= 4.5 ? '중간' : '높음';
-              const color = score < 3.5 ? '#6db88a' : score <= 4.5 ? '#c8a96e' : '#c8696e';
+              const color = intensity === '낮음' ? '#0060ac' : intensity === '중간' ? '#f97316' : '#ba1a1a';
               return (
                 <div key={label}>
-                  <div className="flex justify-between text-xs mb-1" style={{ color: '#8a8a9a' }}>
-                    <span>{label}</span>
+                  <div className="flex justify-between text-xs font-semibold mb-2">
+                    <span style={{ color: '#43474e' }}>{label}</span>
                     <span style={{ color }}>{score.toFixed(1)} · {intensity}</span>
                   </div>
-                  <div className="w-full h-1.5 rounded-full" style={{ backgroundColor: '#1e1e2e' }}>
-                    <div
-                      className="h-1.5 rounded-full transition-all"
-                      style={{ width: `${pct}%`, backgroundColor: color }}
-                    />
+                  <div className="w-full h-1.5 rounded-full" style={{ backgroundColor: '#eceef0' }}>
+                    <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
                   </div>
                 </div>
               );
@@ -175,80 +206,80 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
           </div>
         </div>
 
-        {/* Scatter Chart */}
-        <div
-          className="rounded-2xl p-5 border"
-          style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
-        >
-          <h2 className="text-xs font-semibold mb-4" style={{ color: '#e0c898' }}>2축 애착 지도</h2>
-          <ScatterChart anxietyScore={result.anxietyScore} avoidanceScore={result.avoidanceScore} />
+        {/* 3블록: 연애 패턴 */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#0060ac' }}>
+            연애에서의 당신
+          </p>
+          {splitIntoParagraphs(result.lovePattern).map((para, i) => (
+            <p key={para} className={`text-sm leading-relaxed ${i > 0 ? 'mt-4' : ''}`} style={{ color: '#191c1e' }}>{para}</p>
+          ))}
         </div>
 
-        {/* Love Pattern */}
-        <div
-          className="rounded-2xl p-5 border"
-          style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
-        >
-          <h2 className="text-xs font-semibold mb-3" style={{ color: '#e0c898' }}>연애 패턴</h2>
-          <p className="text-xs leading-relaxed" style={{ color: '#e8e8f0' }}>{result.lovePattern}</p>
+        {/* 4블록: 핵심 상처 */}
+        <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#0060ac' }}>
+            마음이 예민해지는 지점
+          </p>
+          <p className="text-sm leading-relaxed" style={{ color: '#191c1e' }}>{result.coreWound}</p>
         </div>
 
-        {/* Core Wound */}
+        {/* 5블록: 마인드셋 전환 — 감정 강조 카드 */}
         <div
-          className="rounded-2xl p-5 border"
-          style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
+          className="rounded-3xl p-7"
+          style={{ backgroundColor: '#ffdad5' }}
         >
-          <h2 className="text-xs font-semibold mb-3" style={{ color: '#e0c898' }}>핵심 상처</h2>
-          <p className="text-xs leading-relaxed" style={{ color: '#e8e8f0' }}>{result.coreWound}</p>
-        </div>
-
-        {/* Action Tips */}
-        <div
-          className="rounded-2xl p-5 border"
-          style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
-        >
-          <h2 className="text-xs font-semibold mb-4" style={{ color: '#e0c898' }}>행동 제안</h2>
-          <ActionItems items={result.actionTip} />
-        </div>
-
-        {/* Mindset */}
-        <div
-          className="rounded-2xl p-5 border"
-          style={{ backgroundColor: 'rgba(200,169,110,0.06)', borderColor: 'rgba(200,169,110,0.2)' }}
-        >
+          <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: '#c8724a' }}>
+            이 관계를 다르게 보는 연습
+          </p>
           <p
-            className="text-xs text-center leading-relaxed italic"
-            style={{ fontFamily: 'Paperozi', color: '#e0c898' }}
+            className="text-base leading-relaxed font-medium"
+            style={{ fontFamily: 'Paperozi', color: '#002045' }}
           >
             {result.mindset}
           </p>
         </div>
 
-        {/* Actions */}
-        <div className="flex flex-col gap-3 pb-8">
+        {/* 6블록: 행동 팁 */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-5" style={{ color: '#0060ac' }}>
+            지금 바로 해볼 것
+          </p>
+          <div className="flex flex-col gap-4">
+            {result.actionTip.map((tip, i) => (
+              <div key={tip} className="flex gap-4 items-start">
+                <div
+                  className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                  style={{ backgroundColor: '#dbeafe', color: '#002045' }}
+                >
+                  {i + 1}
+                </div>
+                <p className="text-sm leading-relaxed pt-0.5" style={{ color: '#191c1e' }}>{tip}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 커플 분석 CTA */}
+        <div className="flex flex-col gap-3 pb-12">
           {inviteUrl ? (
-            <div
-              className="rounded-xl p-4 border"
-              style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
-            >
-              <p className="text-xs mb-2" style={{ color: '#8a8a9a' }}>초대 링크가 생성되었습니다</p>
-              <p className="text-xs mb-3 break-all" style={{ color: '#c8a96e' }}>{inviteUrl}</p>
+            <div className="rounded-3xl p-5 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+              <p className="text-xs font-semibold mb-2" style={{ color: '#43474e' }}>초대 링크가 생성되었습니다</p>
+              <p className="text-xs mb-4 break-all" style={{ color: '#0060ac' }}>{inviteUrl}</p>
               <GoldButton onClick={handleCopy} className="w-full">
                 {copied ? '복사됨!' : '링크 복사하기'}
               </GoldButton>
             </div>
           ) : (
-            <GoldButton onClick={() => setShowConsent(true)} className="w-full">
-              연인에게 보내기 💑
-            </GoldButton>
+            <>
+              <GoldButton onClick={() => setShowConsent(true)} className="w-full">
+                연인에게 보내기 💑
+              </GoldButton>
+              <p className="text-xs text-center mt-3 leading-relaxed" style={{ color: '#74777f' }}>
+                연인도 검사를 완료하면, 두 사람의 애착 패턴이 어떻게 맞물리는지 함께 더 잘 연애하는 방법을 분석해 드립니다.
+              </p>
+            </>
           )}
-          <button
-            onClick={handleShare}
-            className="w-full py-3 rounded-xl text-xs border transition-all"
-            style={{ borderColor: '#1e1e2e', color: '#8a8a9a' }}
-          >
-            결과 공유하기
-          </button>
         </div>
       </div>
     </>
