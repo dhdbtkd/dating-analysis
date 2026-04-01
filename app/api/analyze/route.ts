@@ -226,7 +226,7 @@ JSON 객체 하나만 반환
 - 1단계 알아차리기, 2단계 표현하기, 3단계 관계 안에서 연습하기 흐름을 기본으로 삼을 것
 
 [analysisSignals]
-- '워밍업에서 반복된 ___', '대화에서 두드러진 ___', '척도 응답에서 높은 ___' 같은 식으로 근거를 드러낼 것`;
+- '대화에서 두드러진 ___' 같은 식으로 근거를 드러낼 것`;
 }
 
 async function buildCoreResult(
@@ -330,7 +330,14 @@ export async function POST(request: NextRequest) {
             return Response.json({ error: '요청이 너무 많습니다.' }, { status: 429 });
         }
 
-        const { chatHistory = [], ecrScores, userInfo, warmupAnswers = [], quizDetails = [], resetDetail = false } = body;
+        const {
+            chatHistory = [],
+            ecrScores,
+            userInfo,
+            warmupAnswers = [],
+            quizDetails = [],
+            resetDetail = false,
+        } = body;
 
         if (!sessionId) {
             return Response.json({ error: '잘못된 요청입니다.' }, { status: 400 });
@@ -436,7 +443,10 @@ export async function POST(request: NextRequest) {
             if (latestSession.result_status === 'completed' && latestSession.result) {
                 return Response.json(latestSession.result);
             }
-            return Response.json({ status: latestSession.result_status, error: latestSession.result_error }, { status: 202 });
+            return Response.json(
+                { status: latestSession.result_status, error: latestSession.result_error },
+                { status: 202 },
+            );
         }
 
         const context = buildAnalysisContext(chatHistory, ecrScores, userInfo, warmupAnswers, quizDetails);
@@ -468,7 +478,10 @@ export async function POST(request: NextRequest) {
         }
         if (mode === 'core' && sessionId) {
             const supabase = createServerClient();
-            await supabase.from('sessions').update({ result_status: 'failed', result_error: message }).eq('id', sessionId);
+            await supabase
+                .from('sessions')
+                .update({ result_status: 'failed', result_error: message })
+                .eq('id', sessionId);
         }
         return Response.json({ error: '분석에 실패했습니다.', detail: message }, { status: 500 });
     }

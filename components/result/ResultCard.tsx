@@ -106,6 +106,8 @@ export function ResultCard({
     sessionId,
     nickname,
 }: ResultCardProps) {
+    type RegenerateMode = 'both' | 'core' | 'detail';
+
     const router = useRouter();
     const [currentResult, setCurrentResult] = useState(result);
     const [currentDetail, setCurrentDetail] = useState<ResultDetailJson | null>(detailResult);
@@ -120,6 +122,7 @@ export function ResultCard({
     const [clickTimestamps, setClickTimestamps] = useState<number[]>([]);
     const [regenLoading, setRegenLoading] = useState(false);
     const [regenMessage, setRegenMessage] = useState<string | null>(null);
+    const [regenerateMode, setRegenerateMode] = useState<RegenerateMode>('both');
 
     useEffect(() => {
         setCurrentResult(result);
@@ -281,6 +284,46 @@ export function ResultCard({
                 return;
             }
 
+            const ecrScores = {
+                anxiety: sessionData.ecr_anxiety,
+                avoidance: sessionData.ecr_avoidance,
+                typeName: sessionData.attachment_type,
+            };
+            const userInfo = {
+                nickname: sessionData.nickname,
+                age: sessionData.age,
+                gender: sessionData.gender,
+            };
+
+            if (regenerateMode === 'detail') {
+                setCurrentDetail(null);
+                setCurrentDetailStatus('pending');
+                setCurrentDetailError(null);
+
+                const detailResponse = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ sessionId, mode: 'detail' }),
+                });
+
+                if (detailResponse.status === 202) {
+                    setRegenMessage('상세 분석만 다시 정리하고 있어요. 하단 섹션이 도착하는 대로 갱신됩니다.');
+                    return;
+                }
+
+                const detailPayload = (await detailResponse.json()) as ResultDetailJson | { error?: string; detail?: string };
+                if (!detailResponse.ok) {
+                    const errorPayload = detailPayload as { error?: string; detail?: string };
+                    throw new Error(errorPayload.detail ?? errorPayload.error ?? '상세 분석 재생성에 실패했습니다.');
+                }
+
+                setCurrentDetail(detailPayload as ResultDetailJson);
+                setCurrentDetailStatus('completed');
+                setCurrentDetailError(null);
+                setRegenMessage('상세 분석만 다시 생성했습니다.');
+                return;
+            }
+
             const coreResponse = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
@@ -288,19 +331,11 @@ export function ResultCard({
                     sessionId,
                     mode: 'core',
                     chatHistory: sessionData.chat_history,
-                    ecrScores: {
-                        anxiety: sessionData.ecr_anxiety,
-                        avoidance: sessionData.ecr_avoidance,
-                        typeName: sessionData.attachment_type,
-                    },
-                    userInfo: {
-                        nickname: sessionData.nickname,
-                        age: sessionData.age,
-                        gender: sessionData.gender,
-                    },
+                    ecrScores,
+                    userInfo,
                     warmupAnswers: sessionData.warmup_answers,
                     quizDetails: sessionData.quiz_details,
-                    resetDetail: true,
+                    resetDetail: regenerateMode === 'both',
                 }),
             });
 
@@ -312,6 +347,12 @@ export function ResultCard({
 
             const nextCoreResult: ResultCoreJson = corePayload as ResultCoreJson;
             setCurrentResult(nextCoreResult);
+
+            if (regenerateMode === 'core') {
+                setRegenMessage('핵심 결과만 다시 생성했습니다.');
+                return;
+            }
+
             setCurrentDetail(null);
             setCurrentDetailStatus('pending');
             setCurrentDetailError(null);
@@ -385,11 +426,40 @@ export function ResultCard({
                                 Admin
                             </p>
                             <p className="mb-3 text-xs leading-relaxed" style={{ color: '#43474e' }}>
-                                저장된 선택지와 대화 기록으로 핵심 결과를 먼저 다시 만들고, 하단의 깊은 분석은 이어서
-                                갱신합니다.
+                                저장된 선택지와 대화 기록 기준으로, 필요한 분석만 다시 생성할 수 있어요. 비용을 아끼려면
+                                아래에서 범위를 골라주세요.
                             </p>
+                            <div className="mb-3 grid grid-cols-3 gap-2">
+                                {[
+                                    { value: 'both', label: '둘 다' },
+                                    { value: 'core', label: '상단만' },
+                                    { value: 'detail', label: '하단만' },
+                                ].map((option) => (
+                                    <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => setRegenerateMode(option.value as RegenerateMode)}
+                                        disabled={regenLoading}
+                                        className="rounded-2xl px-3 py-2 text-xs transition-all disabled:opacity-40"
+                                        style={{
+                                            backgroundColor:
+                                                regenerateMode === option.value ? '#dbeafe' : '#f2f4f6',
+                                            color: regenerateMode === option.value ? '#002045' : '#43474e',
+                                            fontWeight: regenerateMode === option.value ? 600 : 500,
+                                        }}
+                                    >
+                                        {option.label}
+                                    </button>
+                                ))}
+                            </div>
                             <GoldButton onClick={handleRegenerate} disabled={regenLoading} className="w-full">
-                                {regenLoading ? '재생성 중...' : '결과 다시 생성'}
+                                {regenLoading
+                                    ? '재생성 중...'
+                                    : regenerateMode === 'both'
+                                      ? '상단+하단 다시 생성'
+                                      : regenerateMode === 'core'
+                                        ? '상단 결과만 다시 생성'
+                                        : '하단 분석만 다시 생성'}
                             </GoldButton>
                             {regenMessage && (
                                 <p
