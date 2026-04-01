@@ -28,7 +28,9 @@ export async function POST(request: NextRequest) {
         const LIKERT_LEGEND =
             '응답 척도: 1=전혀 그렇지 않다 / 2=그렇지 않다 / 3=약간 그렇지 않다 / 4=보통 / 5=약간 그렇다 / 6=그렇다 / 7=매우 그렇다';
 
-        const warmupSummary = warmupAnswers.map((a) => `[측정: ${a.measures}]\n질문: ${a.questionText}\n답변: ${a.selectedText}`).join('\n\n');
+        const warmupSummary = warmupAnswers
+            .map((a) => `[측정: ${a.measures}]\n질문: ${a.questionText}\n답변: ${a.selectedText}`)
+            .join('\n\n');
 
         const quizSummary = quizDetails
             .map((q, i) => `Q${i + 1}. ${q.questionText}\n선택한 점수: ${q.score}`)
@@ -70,7 +72,7 @@ ${quizSummary || '없음'}
         console.log('===========================================\n');
 
         // TODO: 프롬프트 확인 중 — LLM 호출 중단
-        return new Response('(로그 전용 모드)', { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+        // return new Response('(로그 전용 모드)', { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 
         const stream = await callLLMStream(messages, system);
         return new Response(stream, {

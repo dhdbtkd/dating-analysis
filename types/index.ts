@@ -6,13 +6,21 @@ export interface ChatMessage {
 export interface WarmupQuestion {
   id: string;
   text: string;
+  measures: string; // LLM 프롬프트용 — 사용자에게 비표시
   options: { label: string; text: string }[];
 }
 
 export interface WarmupAnswer {
   questionId: string;
+  questionText: string;
+  measures: string;
   selectedLabel: string;
   selectedText: string;
+}
+
+export interface QuizDetail {
+  questionText: string;
+  score: number;
 }
 
 export interface Question {

@@ -13,7 +13,8 @@ const MESSAGES = [
 ];
 
 export function LoadingScreen() {
-  const { ecrScores, userInfo, chatHistory, sessionId, setSessionId, setStep } = useAppStore();
+  const { ecrScores, userInfo, chatHistory, sessionId, setSessionId, setStep, selectedQuestions, quizAnswers, warmupAnswers } = useAppStore();
+  const quizDetails = selectedQuestions.map((q, i) => ({ questionText: q.text, score: quizAnswers[i] ?? 0 }));
   const [msgIndex, setMsgIndex] = useState(0);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -64,6 +65,8 @@ export function LoadingScreen() {
           chatHistory,
           ecrScores,
           userInfo,
+          warmupAnswers,
+          quizDetails,
         }),
       });
       if (!analyzeRes.ok) throw new Error('분석 실패');

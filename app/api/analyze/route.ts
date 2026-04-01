@@ -2,13 +2,15 @@ import { callLLM } from '@/lib/llm';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 import { createServerClient } from '@/lib/supabase/server';
 import type { NextRequest } from 'next/server';
-import type { ChatMessage, ResultJson } from '@/types';
+import type { ChatMessage, ResultJson, WarmupAnswer, QuizDetail } from '@/types';
 
 interface AnalyzeRequestBody {
   sessionId?: string;
   chatHistory?: ChatMessage[];
   ecrScores?: { anxiety: number; avoidance: number; typeName: string };
   userInfo?: { nickname: string; age: number; gender: string };
+  warmupAnswers?: WarmupAnswer[];
+  quizDetails?: QuizDetail[];
 }
 
 const DEFAULT_RESULT: ResultJson = {
@@ -61,11 +63,21 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json() as AnalyzeRequestBody;
-    const { sessionId, chatHistory = [], ecrScores, userInfo } = body;
+    const { sessionId, chatHistory = [], ecrScores, userInfo, warmupAnswers = [], quizDetails = [] } = body;
 
     if (!sessionId || !ecrScores || !userInfo) {
       return Response.json({ error: '잘못된 요청입니다.' }, { status: 400 });
     }
+
+    const LIKERT_LEGEND = '1=전혀 그렇지 않다 / 2=그렇지 않다 / 3=약간 그렇지 않다 / 4=보통 / 5=약간 그렇다 / 6=그렇다 / 7=매우 그렇다';
+
+    const warmupSummary = warmupAnswers
+      .map((a) => `[측정: ${a.measures}]\n질문: ${a.questionText}\n답변: ${a.selectedText}`)
+      .join('\n\n');
+
+    const quizSummary = quizDetails
+      .map((q, i) => `Q${i + 1}. ${q.questionText}\n선택한 점수: ${q.score}`)
+      .join('\n\n');
 
     const conversationText = chatHistory
       .map((m) => `${m.role === 'user' ? '사용자' : 'AI'}: ${m.content}`)
@@ -78,6 +90,12 @@ export async function POST(request: NextRequest) {
 - ECR 불안 점수: ${ecrScores.anxiety.toFixed(2)} (1~7)
 - ECR 회피 점수: ${ecrScores.avoidance.toFixed(2)} (1~7)
 - 애착 유형: ${ecrScores.typeName}
+
+워밍업 응답:
+${warmupSummary || '없음'}
+
+ECR 척도 응답 (${LIKERT_LEGEND}):
+${quizSummary || '없음'}
 
 심층 대화:
 ${conversationText}
@@ -92,9 +110,19 @@ ${conversationText}
   "mindset": "마인드셋 전환 문장 (100자 이내)",
   "quote": "대화 중 인상적인 사용자 발언 직접 인용 또는 유형 대표 인용구",
   "famousMatch": "유명인/캐릭터 이름 + 한 줄 설명",
-  "anxietyScore": ${ecrScores.anxiety},
-  "avoidanceScore": ${ecrScores.avoidance}
+  "anxietyScore": ${ecrScores!.anxiety},
+  "avoidanceScore": ${ecrScores!.avoidance}
 }`;
+
+    console.log('\n========== [/api/analyze] SYSTEM PROMPT ==========');
+    console.log(system);
+    console.log('\n========== [/api/analyze] USER PROMPT ==========');
+    console.log(prompt);
+    console.log('===================================================\n');
+
+    // TODO: LLM 호출 임시 중단 — 프롬프트 확인 후 아래 두 줄 제거
+    return Response.json({ error: 'LLM 호출 임시 중단 중입니다.' }, { status: 503 });
+    // ↑ 여기까지 제거
 
     const text = await callLLM([{ role: 'user', content: prompt }], system);
     const result = parseResultJson(text, ecrScores.anxiety, ecrScores.avoidance);

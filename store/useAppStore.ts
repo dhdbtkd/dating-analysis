@@ -66,7 +66,7 @@ export const useAppStore = create<AppState>((set) => ({
   setEcrScores: (ecrScores) => set({ ecrScores }),
   initQuestions: () =>
     set({
-      selectedWarmup: sampleQuestions(warmupPool, 3),
+      selectedWarmup: sampleQuestions(warmupPool, 4),
       selectedQuestions: [
         ...sampleQuestions(anxietyPool, 6),
         ...sampleQuestions(avoidancePool, 6),
