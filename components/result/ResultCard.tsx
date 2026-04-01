@@ -596,10 +596,10 @@ export function ResultCard({
                     <>
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                             <p className="mb-5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                연애에서 내 마음이 움직이는 순서
+                                연애할 때 내 마음은 이렇게 흘러가요
                             </p>
                             <div className="flex flex-col gap-3">
-                                {currentDetail.reactionSequence.map((step, index) => (
+                                {currentDetail.patternFlow.map((step, index) => (
                                     <div key={step} className="flex items-start gap-3">
                                         <div
                                             className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
@@ -617,10 +617,10 @@ export function ResultCard({
 
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                             <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                내가 특히 흔들리기 쉬운 순간
+                                나는 이럴 때 특히 흔들려요
                             </p>
                             <div className="flex flex-wrap gap-2">
-                                {currentDetail.dominantTriggers.map((trigger) => (
+                                {currentDetail.shakyMoments.map((trigger) => (
                                     <span
                                         key={trigger}
                                         className="rounded-full px-3 py-2 text-xs"
@@ -635,18 +635,18 @@ export function ResultCard({
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                                 <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                    겉으로 나는 이렇게 보여요
+                                    겉으로는 이렇게 보여요
                                 </p>
                                 <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
-                                    {currentDetail.outerSignal}
+                                    {currentDetail.visibleReaction}
                                 </p>
                             </div>
                             <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                                 <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                    내 속마음은 이쪽에 가까워요
+                                    속으로는 이런 마음이 들어요
                                 </p>
                                 <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
-                                    {currentDetail.innerSignal}
+                                    {currentDetail.realFeeling}
                                 </p>
                             </div>
                         </div>
@@ -656,7 +656,7 @@ export function ResultCard({
                                 상대는 나를 이렇게 느끼기 쉬워요
                             </p>
                             <div className="flex flex-col gap-3">
-                                {currentDetail.partnerImpact.map((item) => (
+                                {currentDetail.partnerFeels.map((item) => (
                                     <p key={item} className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
                                         • {item}
                                     </p>
@@ -667,10 +667,10 @@ export function ResultCard({
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                                 <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                    내가 편안할 때 더 잘 드러나는 모습
+                                    내가 편할 때는 이런 모습이 나와요
                                 </p>
                                 <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
-                                    {currentDetail.protectiveStrength}
+                                    {currentDetail.whenSafe}
                                 </p>
                             </div>
                             <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
@@ -678,17 +678,17 @@ export function ResultCard({
                                     내가 불안해지면 이렇게 반응해요
                                 </p>
                                 <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
-                                    {currentDetail.threatResponse}
+                                    {currentDetail.whenShaken}
                                 </p>
                             </div>
                         </div>
 
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                             <p className="mb-5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                내가 관계를 바꾸는 연습 순서
+                                이제 나는 이렇게 해보면 좋아요
                             </p>
                             <div className="flex flex-col gap-4">
-                                {currentDetail.growthRoadmap.map((item, index) => (
+                                {currentDetail.nextSteps.map((item, index) => (
                                     <div key={item} className="flex items-start gap-4">
                                         <div
                                             className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
@@ -706,10 +706,10 @@ export function ResultCard({
 
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                             <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                이번 결과에 내 입력 중 많이 반영된 단서
+                                이번 결과를 만든 단서예요
                             </p>
                             <div className="flex flex-col gap-3">
-                                {currentDetail.analysisSignals.map((signal) => (
+                                {currentDetail.keyClues.map((signal) => (
                                     <p key={signal} className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
                                         • {signal}
                                     </p>
@@ -733,8 +733,8 @@ export function ResultCard({
                     <DetailLoadingBlock
                         message={
                             currentDetailStatus === 'pending'
-                                ? '상단 결과는 먼저 보여드렸고, 지금 내 마음이 움직이는 흐름과 왜 그런지까지 더 자세히 정리하고 있어요.'
-                                : '상단 결과를 바탕으로 내 관계 패턴을 더 자세히 풀어내고 있어요.'
+                                ? '상단 결과는 먼저 보여드렸고, 지금 내 대답과 대화를 바탕으로 왜 이런 결과가 나왔는지 더 풀어쓰고 있어요.'
+                                : '상단 결과를 바탕으로 내 연애 장면을 더 자세히 풀어내고 있어요.'
                         }
                     />
                 )}

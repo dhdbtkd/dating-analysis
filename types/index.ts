@@ -44,15 +44,15 @@ export interface ResultCoreJson {
 }
 
 export interface ResultDetailJson {
-  reactionSequence: string[];
-  dominantTriggers: string[];
-  outerSignal: string;
-  innerSignal: string;
-  partnerImpact: string[];
-  protectiveStrength: string;
-  threatResponse: string;
-  growthRoadmap: string[];
-  analysisSignals: string[];
+  patternFlow: string[];
+  shakyMoments: string[];
+  visibleReaction: string;
+  realFeeling: string;
+  partnerFeels: string[];
+  whenSafe: string;
+  whenShaken: string;
+  nextSteps: string[];
+  keyClues: string[];
 }
 
 export type ResultJson = ResultCoreJson;

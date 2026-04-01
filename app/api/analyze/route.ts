@@ -55,26 +55,26 @@ const CORE_RESULT_SCHEMA = {
 const DETAIL_RESULT_SCHEMA = {
     type: 'object',
     properties: {
-        reactionSequence: { type: 'array', items: { type: 'string' } },
-        dominantTriggers: { type: 'array', items: { type: 'string' } },
-        outerSignal: { type: 'string' },
-        innerSignal: { type: 'string' },
-        partnerImpact: { type: 'array', items: { type: 'string' } },
-        protectiveStrength: { type: 'string' },
-        threatResponse: { type: 'string' },
-        growthRoadmap: { type: 'array', items: { type: 'string' } },
-        analysisSignals: { type: 'array', items: { type: 'string' } },
+        patternFlow: { type: 'array', items: { type: 'string' } },
+        shakyMoments: { type: 'array', items: { type: 'string' } },
+        visibleReaction: { type: 'string' },
+        realFeeling: { type: 'string' },
+        partnerFeels: { type: 'array', items: { type: 'string' } },
+        whenSafe: { type: 'string' },
+        whenShaken: { type: 'string' },
+        nextSteps: { type: 'array', items: { type: 'string' } },
+        keyClues: { type: 'array', items: { type: 'string' } },
     },
     required: [
-        'reactionSequence',
-        'dominantTriggers',
-        'outerSignal',
-        'innerSignal',
-        'partnerImpact',
-        'protectiveStrength',
-        'threatResponse',
-        'growthRoadmap',
-        'analysisSignals',
+        'patternFlow',
+        'shakyMoments',
+        'visibleReaction',
+        'realFeeling',
+        'partnerFeels',
+        'whenSafe',
+        'whenShaken',
+        'nextSteps',
+        'keyClues',
     ],
     additionalProperties: false,
 };
@@ -180,53 +180,93 @@ function buildDetailPrompt(context: string) {
 JSON 객체 하나만 반환
 
 반드시 아래 필드만 채워라:
-- reactionSequence: 관계에서 반복되는 반응 흐름 4단계 배열
-- dominantTriggers: 특히 흔들리는 상황 3개 배열
-- outerSignal: 겉으로 드러나는 반응 1문장
-- innerSignal: 속에서 실제로 일어나는 감정/해석 1문장
-- partnerImpact: 상대가 체감하기 쉬운 반응 3개 배열
-- protectiveStrength: 안정감을 느낄 때 드러나는 강점 1문장
-- threatResponse: 압박이나 불안이 커질 때 무너지는 방식 1문장
-- growthRoadmap: 변화를 위한 3단계 배열
-- analysisSignals: 이번 분석에서 크게 반영된 단서 3개 배열
+- patternFlow: 관계에서 반복되는 흐름 4단계 배열
+- shakyMoments: 특히 흔들리는 상황 3개 배열
+- visibleReaction: 겉으로 보이는 반응 1문장
+- realFeeling: 속에서 실제로 드는 마음 1문장
+- partnerFeels: 상대가 느끼기 쉬운 반응 3개 배열
+- whenSafe: 편안할 때 드러나는 좋은 모습 1문장
+- whenShaken: 불안할 때 무너지는 방식 1문장
+- nextSteps: 바꾸기 위해 해볼 3단계 배열
+- keyClues: 이번 결과에 크게 반영된 단서 3개 배열
 
 작성 원칙:
-1. 모든 항목은 성격 라벨이 아니라 관계 장면과 반응 흐름 중심으로 쓸 것
-2. 같은 내용을 다른 필드에 반복하지 말 것
-3. 추상적인 심리학 설명 대신 사용자의 실제 연애 장면이 떠오르게 쓸 것
-4. 근거 없는 추측 금지. 워밍업 응답, 척도 응답, 대화 내용에서 읽히는 단서만 사용할 것
-5. 각 배열 항목은 짧고 선명하게, 한 줄로 읽히게 쓸 것
+1. 사람을 규정하지 말고, 연애할 때 자주 나오는 모습만 써라
+2. 어려운 말 쓰지 말고, 평소 대화하듯 쉬운 말로 써라
+3. 추상적으로 설명하지 말고, 장면이 떠오르게 써라
+4. 지어내지 말고, 워밍업 응답 / 척도 응답 / 대화 내용에서 보인 것만 써라
+5. 각 항목은 짧고 또렷하게, 한 번에 읽히게 써라
+6. 상담사 말투, 보고서 말투, 심리학 용어 금지
+7. 있어 보이는 말보다 바로 이해되는 말을 우선 써라
+8. 중학생도 바로 이해할 수 있는 단어만 써라
+
+금지 표현:
+- 경향, 성향, 양상, 기제, 신호, 촉발, 반응성, 취약성, 회피적, 방어적, 애착, 정서적, 관계 역동
+- 활성화된다, 표출된다, 드러난다, 관찰된다, 기인한다, 비롯된다
+- 불필요한 한자어와 분석 보고서 말투
+
+권장 표현:
+- 눈치 본다
+- 혼자 정리한다
+- 먼저 거리를 둔다
+- 괜찮은 척한다
+- 말수를 줄인다
+- 속으로 서운해한다
+- 확인하고 싶지만 참는다
+- 다가가고 싶다가도 멈춘다
 
 필드별 규칙:
 
-[reactionSequence]
-- "상황 -> 해석 -> 반응 -> 후폭풍"처럼 순서가 보이게 작성
+[patternFlow]
+- "무슨 일이 생김 -> 속으로 어떻게 받아들임 -> 겉으로 어떻게 행동함 -> 그 뒤 어떻게 꼬임" 순서로 쓸 것
 - 4개 고정
+- 각 항목은 짧고 쉬운 말로 쓸 것
 
-[dominantTriggers]
-- 구체적 상황으로 쓸 것
-- "불안할 때" 같은 추상 표현 금지
+[shakyMoments]
+- 실제 연애 장면처럼 구체적으로 쓸 것
+- "불안할 때" 같은 뭉뚱그린 표현 금지
+- 예: "답장이 평소보다 늦어졌을 때"
 
-[outerSignal]
-- 남이 보기엔 어떻게 행동하는지
+[visibleReaction]
+- 남들이 보기에도 보이는 행동만 쓸 것
+- 어려운 말 금지
 
-[innerSignal]
-- 실제 속마음이나 내적 계산이 무엇인지
+[realFeeling]
+- 속마음을 쉬운 말로 쓸 것
+- 머릿속에서 어떤 생각이 도는지 바로 이해되게 쓸 것
 
-[partnerImpact]
-- 상대 입장에서 체감되는 방식으로 작성
+[partnerFeels]
+- 상대 입장에서 느끼는 반응을 쉬운 말로 쓸 것
+- 예: "갑자기 벽이 생긴 것처럼 느낀다"
 
-[protectiveStrength]
-- 안정감을 느낄 때의 강점을 과장 없이 작성
+[whenSafe]
+- 편하고 안정적일 때 나오는 좋은 모습을 담백하게 쓸 것
+- 과장 금지
 
-[threatResponse]
-- 관계가 흔들릴 때의 방어 반응을 한 문장으로 작성
+[whenShaken]
+- 불안하거나 서운할 때 무너지는 방식을 쉬운 말 한 문장으로 쓸 것
 
-[growthRoadmap]
-- 1단계 알아차리기, 2단계 표현하기, 3단계 관계 안에서 연습하기 흐름을 기본으로 삼을 것
+[nextSteps]
+- 3개 고정
+- 1단계: 먼저 알아차릴 것
+- 2단계: 짧게라도 말로 꺼낼 것
+- 3단계: 관계 안에서 실제로 해볼 것
+- 오늘 바로 할 수 있는 수준으로 쓸 것
 
-[analysisSignals]
-- '대화에서 두드러진 ___' 같은 식으로 근거를 드러낼 것`;
+[keyClues]
+- 이번 결과를 만들 때 중요했던 단서를 쉬운 말로 쓸 것
+- "대화에서 계속 보인 ___", "답변에서 자주 나온 ___" 같은 식으로 쓸 것
+
+좋은 표현 예시:
+- 답이 늦으면 괜히 마음이 식은 건가부터 생각한다
+- 서운해도 바로 말하지 않고 혼자 정리하려 한다
+- 가까워지면 좋은데, 너무 빨라지면 한발 물러난다
+
+피해야 할 표현 예시:
+- 정서적 불안이 증폭된다
+- 방어적 기제가 활성화된다
+- 친밀감에 대한 양가적 반응이 나타난다
+- 관계 내 취약성이 드러난다`;
 }
 
 async function buildCoreResult(
