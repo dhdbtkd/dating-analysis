@@ -106,7 +106,9 @@ ${conversationText}
       .eq('id', sessionId);
 
     return Response.json(result);
-  } catch {
-    return Response.json({ error: '분석에 실패했습니다.' }, { status: 500 });
+  } catch (err) {
+    console.error('[/api/analyze]', err);
+    const message = err instanceof Error ? err.message : String(err);
+    return Response.json({ error: '분석에 실패했습니다.', detail: message }, { status: 500 });
   }
 }

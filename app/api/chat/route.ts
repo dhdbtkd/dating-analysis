@@ -53,7 +53,9 @@ ${warmupSummary || '없음'}
 
     const message = await callLLM(messages, system);
     return Response.json({ message });
-  } catch {
-    return Response.json({ error: '응답 생성에 실패했습니다.' }, { status: 500 });
+  } catch (err) {
+    console.error('[/api/chat]', err);
+    const message = err instanceof Error ? err.message : String(err);
+    return Response.json({ error: '응답 생성에 실패했습니다.', detail: message }, { status: 500 });
   }
 }

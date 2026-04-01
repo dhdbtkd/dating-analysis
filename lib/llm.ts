@@ -32,8 +32,9 @@ async function callAnthropic(messages: ChatMessage[], system: string | undefined
   });
 
   if (!res.ok) {
-    await res.text().catch(() => '');
-    throw new Error(`LLM request failed: ${res.status}`);
+    const errBody = await res.text().catch(() => '');
+    console.error('[Anthropic] error', res.status, errBody);
+    throw new Error(`Anthropic API ${res.status}: ${errBody}`);
   }
 
   const data = await res.json() as { content: { text: string }[] };
@@ -54,11 +55,13 @@ async function callOpenAI(messages: ChatMessage[], system: string | undefined, m
       'Authorization': `Bearer ${apiKey}`,
       'content-type': 'application/json',
     },
-    body: JSON.stringify({ model, max_tokens: 1024, messages: openaiMessages }),
+    body: JSON.stringify({ model, max_completion_tokens: 1024, messages: openaiMessages }),
   });
 
   if (!res.ok) {
-    throw new Error(`LLM request failed: ${res.status}`);
+    const errBody = await res.text().catch(() => '');
+    console.error('[OpenAI] error', res.status, errBody);
+    throw new Error(`OpenAI API ${res.status}: ${errBody}`);
   }
 
   const data = await res.json() as { choices: { message: { content: string } }[] };
