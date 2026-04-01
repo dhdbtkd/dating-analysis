@@ -21,7 +21,7 @@ const LIKERT_LABELS = [
 ];
 
 export function QuizScreen() {
-  const { selectedQuestions, addQuizAnswer, setStep, setEcrScores } = useAppStore();
+  const { selectedQuestions, selectedWarmup, warmupAnswers, addQuizAnswer, setStep, setEcrScores } = useAppStore();
 
   const [normalQueue] = useState<number[]>(() =>
     selectedQuestions.map((_, i) => i)
@@ -40,8 +40,9 @@ export function QuizScreen() {
 
   const questionIndex = isRetry ? retryQueue[retryPos] : normalQueue[normalPos];
   const question = selectedQuestions[questionIndex];
-
-  const totalAnswered = isRetry ? normalQueue.length + retryPos : normalPos;
+  const quizAnsweredCount = isRetry ? normalQueue.length + retryPos : normalPos;
+  const globalTotal = selectedWarmup.length + selectedQuestions.length;
+  const globalCurrent = warmupAnswers.length + quizAnsweredCount + 1;
 
   const finishQuiz = useCallback(() => {
     const scores = scoresMapRef.current;
@@ -127,10 +128,9 @@ export function QuizScreen() {
     >
       <div className="w-full max-w-lg">
         <div className="mb-5">
+          <ProgressBar current={globalCurrent} total={globalTotal} />
           <div className="flex items-center justify-between mb-1">
-            <p className="text-xs" style={{ color: '#c8a96e' }}>
-              {question.dimension === 'anxiety' ? '불안 문항' : '회피 문항'}
-            </p>
+            <span />
             <AnimatePresence>
               {isRetry && (
                 <motion.span
@@ -144,13 +144,7 @@ export function QuizScreen() {
               )}
             </AnimatePresence>
           </div>
-          <ProgressBar
-            current={totalAnswered + 1}
-            total={normalQueue.length + retryQueue.length}
-          />
-          <div className="mt-2">
-            <TimerBar timeLeft={timeLeft} duration={TIMER_DURATION} />
-          </div>
+          <TimerBar timeLeft={timeLeft} duration={TIMER_DURATION} />
         </div>
 
         <div

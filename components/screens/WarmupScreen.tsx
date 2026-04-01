@@ -12,7 +12,7 @@ import type { WarmupAnswer } from '@/types';
 const TIMER_DURATION = 10;
 
 export function WarmupScreen() {
-  const { selectedWarmup, addWarmupAnswer, setStep } = useAppStore();
+  const { selectedWarmup, selectedQuestions, addWarmupAnswer, setStep } = useAppStore();
 
   // 일반 큐: 인덱스 배열 [0, 1, 2]
   const [normalQueue] = useState<number[]>(() =>
@@ -32,8 +32,10 @@ export function WarmupScreen() {
   const questionIndex = isRetry ? retryQueue[retryPos] : normalQueue[normalPos];
   const question = selectedWarmup[questionIndex];
   const isRetryMode = isRetry;
+  const warmupAnsweredCount = isRetry ? normalQueue.length + retryPos : normalPos;
+  const globalTotal = selectedWarmup.length + selectedQuestions.length;
+  const globalCurrent = warmupAnsweredCount + 1; // warmup은 앞쪽 구간
 
-  const totalAnswered = isRetry ? normalQueue.length + retryPos : normalPos;
 
   const advance = useCallback(() => {
     if (advancingRef.current) return;
@@ -86,6 +88,8 @@ export function WarmupScreen() {
     const opt = question.options.find((o) => o.label === label)!;
     const answer: WarmupAnswer = {
       questionId: question.id,
+      questionText: question.text,
+      measures: question.measures,
       selectedLabel: label,
       selectedText: opt.text,
     };
@@ -114,8 +118,9 @@ export function WarmupScreen() {
       <div className="w-full max-w-lg">
         {/* 상단 헤더 */}
         <div className="mb-5">
+          <ProgressBar current={globalCurrent} total={globalTotal} />
           <div className="flex items-center justify-between mb-1">
-            <p className="text-xs" style={{ color: '#c8a96e' }}>워밍업 문항</p>
+            <span />
             <AnimatePresence>
               {isRetryMode && (
                 <motion.span
@@ -129,10 +134,7 @@ export function WarmupScreen() {
               )}
             </AnimatePresence>
           </div>
-          <ProgressBar current={totalAnswered + 1} total={normalQueue.length + retryQueue.length} />
-          <div className="mt-2">
-            <TimerBar timeLeft={timeLeft} duration={TIMER_DURATION} />
-          </div>
+          <TimerBar timeLeft={timeLeft} duration={TIMER_DURATION} />
         </div>
 
         <div
