@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>당신도 몰랐던 나의 연애 패턴</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #18181f;
+    --gold: #c8a96e;
+    --gold-dim: #8a6e3e;
+    --text: #e8e8f0;
+    --text-sub: #8a8a9a;
+    --border: rgba(200,169,110,0.18);
+    --danger: #c8696e;
+  }
+
+  html { font-size: 16px; scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  /* Orb backgrounds */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb-1 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(200,169,110,0.12) 0%, transparent 70%);
+    top: -200px; left: -200px;
+    animation: orbFloat1 20s ease-in-out infinite;
+  }
+  .orb-2 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(160,100,80,0.10) 0%, transparent 70%);
+    bottom: -150px; right: -150px;
+    animation: orbFloat2 25s ease-in-out infinite;
+  }
+  .orb-3 {
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, rgba(200,169,110,0.07) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    animation: orbFloat3 30s ease-in-out infinite;
+  }
+
+  @keyframes orbFloat1 {
+    0%,100% { transform: translate(0,0); }
+    50% { transform: translate(60px,40px); }
+  }
+  @keyframes orbFloat2 {
+    0%,100% { transform: translate(0,0); }
+    50% { transform: translate(-40px,-60px); }
+  }
+  @keyframes orbFloat3 {
+    0%,100% { transform: translate(-50%,-50%) scale(1); }
+    50% { transform: translate(-50%,-50%) scale(1.2); }
+  }
+
+  /* Screens */
+  .screen {
+    display: none;
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    padding: 0 16px;
+  }
+  .screen.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeUp 0.5s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .container {
+    width: 100%;
+    max-width: 620px;
+    padding: 40px 0 80px;
+  }
+
+  /* Typography */
+  h1 {
+    font-family: 'Gowun Batang', serif;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    line-height: 1.3;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  h2 {
+    font-family: 'Gowun Batang', serif;
+    font-size: clamp(1.2rem, 4vw, 1.7rem);
+    line-height: 1.4;
+    color: var(--text);
+  }
+  h3 {
+    font-family: 'Gowun Batang', serif;
+    font-size: 1.1rem;
+    color: var(--gold);
+  }
+
+  .gold-text { color: var(--gold); }
+  .sub-text { color: var(--text-sub); font-size: 0.9rem; line-height: 1.6; }
+
+  /* Divider */
+  .divider {
+    width: 60px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 20px auto;
+  }
+
+  /* Badges */
+  .badge-row {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin: 12px 0;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(200,169,110,0.08);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    color: var(--gold);
+    letter-spacing: 0.03em;
+  }
+
+  /* CTA Button */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #c8a96e 0%, #a07840 100%);
+    color: #0a0a0f;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 14px 36px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    letter-spacing: 0.04em;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(200,169,110,0.3);
+  }
+  .btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--gold);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 10px 24px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .btn-secondary:hover {
+    background: rgba(200,169,110,0.08);
+    border-color: var(--gold);
+  }
+
+  /* Intro screen */
+  .intro-hero {
+    text-align: center;
+    padding: 60px 0 32px;
+  }
+  .intro-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  .intro-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+    color: var(--text-sub);
+    font-size: 0.82rem;
+  }
+  .meta-sep { color: var(--gold-dim); }
+
+  /* Provider toggle */
+  .provider-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 24px 0;
+  }
+  .provider-label {
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-sub);
+    margin-bottom: 12px;
+  }
+  .toggle-row {
+    display: flex;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+  .toggle-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-sub);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .toggle-btn.active {
+    background: var(--surface2);
+    color: var(--gold);
+    border: 1px solid var(--border);
+  }
+
+  .api-input-wrap { position: relative; }
+  .api-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 48px 12px 14px;
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .api-input:focus { border-color: var(--gold); }
+  .api-input::placeholder { color: var(--text-sub); }
+  .api-toggle-vis {
+    position: absolute;
+    right: 12px; top: 50%;
+    transform: translateY(-50%);
+    background: none; border: none;
+    cursor: pointer; color: var(--text-sub);
+    font-size: 0.8rem;
+    padding: 4px;
+  }
+  .api-hint {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    margin-top: 8px;
+  }
+
+  /* Progress */
+  .progress-bar-wrap {
+    width: 100%;
+    background: var(--surface);
+    border-radius: 2px;
+    height: 2px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+  .progress-label {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    text-align: right;
+    margin-bottom: 28px;
+  }
+
+  /* Question card */
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 24px;
+    margin-bottom: 20px;
+  }
+  .q-eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .q-text {
+    font-family: 'Gowun Batang', serif;
+    font-size: clamp(1rem, 3.5vw, 1.25rem);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  /* Option buttons */
+  .options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .option-btn {
+    width: 100%;
+    text-align: left;
+    background: var(--bg);
+    border: 1px solid rgba(200,169,110,0.15);
+    border-radius: 6px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .option-btn::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--gold);
+    transform: scaleY(0);
+    transition: transform 0.2s ease;
+  }
+  .option-btn:hover {
+    border-color: var(--gold);
+    background: rgba(200,169,110,0.05);
+  }
+  .option-btn:hover::before { transform: scaleY(1); }
+  .option-btn.selected {
+    border-color: var(--gold);
+    background: rgba(200,169,110,0.1);
+    color: var(--gold);
+  }
+  .option-btn.selected::before { transform: scaleY(1); }
+
+  /* Likert scale */
+  .likert-wrap {
+    margin-top: 8px;
+  }
+  .likert-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--text-sub);
+    margin-bottom: 10px;
+  }
+  .likert-scale {
+    display: flex;
+    gap: 6px;
+    justify-content: space-between;
+  }
+  .likert-btn {
+    flex: 1;
+    aspect-ratio: 1;
+    max-width: 52px;
+    border: 1px solid rgba(200,169,110,0.2);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--text-sub);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .likert-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .likert-btn.selected {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #0a0a0f;
+    font-weight: 700;
+  }
+
+  /* Chat screen */
+  .chat-header {
+    padding: 24px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+  .chat-turn-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(200,169,110,0.08);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    color: var(--gold);
+  }
+  .chat-window {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 300px;
+    max-height: 420px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .chat-bubble {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    animation: fadeUp 0.3s ease;
+  }
+  .chat-bubble.ai {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 2px;
+    align-self: flex-start;
+  }
+  .chat-bubble.user {
+    background: rgba(200,169,110,0.12);
+    border: 1px solid rgba(200,169,110,0.2);
+    border-bottom-right-radius: 2px;
+    align-self: flex-end;
+    color: var(--text);
+  }
+  .chat-bubble.typing {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: 16px;
+  }
+  .typing-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: typingDot 1.2s ease infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingDot {
+    0%,60%,100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  .chat-input-area {
+    border-top: 1px solid var(--border);
+    padding: 16px 0 8px;
+  }
+  .chat-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  .chat-textarea {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    resize: none;
+    min-height: 52px;
+    max-height: 140px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .chat-textarea:focus { border-color: var(--gold); }
+  .chat-textarea::placeholder { color: var(--text-sub); }
+  .chat-send-btn {
+    width: 52px; height: 52px;
+    background: var(--gold);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .chat-send-btn:hover { background: #dab97e; transform: scale(1.05); }
+  .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* Loading */
+  .loading-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    gap: 24px;
+    text-align: center;
+  }
+  .loading-ring {
+    width: 64px; height: 64px;
+    border: 2px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    font-family: 'Gowun Batang', serif;
+    font-size: 1.1rem;
+    color: var(--text-sub);
+    min-height: 2em;
+  }
+
+  /* Result */
+  .result-hero {
+    text-align: center;
+    padding: 48px 0 32px;
+  }
+  .type-emoji { font-size: 3.5rem; margin-bottom: 12px; display: block; }
+  .type-name {
+    font-family: 'Gowun Batang', serif;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .type-academic {
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    letter-spacing: 0.06em;
+    margin-bottom: 16px;
+  }
+  .type-tagline {
+    font-family: 'Gowun Batang', serif;
+    font-size: 1.15rem;
+    color: var(--text);
+    line-height: 1.6;
+    border-left: 2px solid var(--gold);
+    padding-left: 16px;
+    text-align: left;
+    margin: 20px 0;
+  }
+
+  .result-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .result-section h3 {
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .result-text {
+    font-size: 0.92rem;
+    line-height: 1.75;
+    color: var(--text);
+  }
+
+  /* Scatter plot */
+  .scatter-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .scatter-wrap h3 {
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  #scatter-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Warnings / Actions grid */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .mini-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+  }
+  .mini-card-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .mini-card-desc {
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    line-height: 1.5;
+  }
+
+  /* Quotes */
+  .quote-box {
+    background: var(--surface2);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 6px 6px 0;
+    padding: 14px 16px;
+    font-family: 'Gowun Batang', serif;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .quote-box::before {
+    content: '"';
+    position: absolute;
+    top: -8px; left: 12px;
+    font-size: 2.5rem;
+    color: var(--gold);
+    opacity: 0.3;
+    font-family: Georgia, serif;
+    line-height: 1;
+  }
+
+  /* Action items */
+  .action-list { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+  .action-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 12px;
+  }
+  .action-num {
+    min-width: 26px; height: 26px;
+    background: rgba(200,169,110,0.15);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+  .action-content {}
+  .action-title { font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .action-desc { font-size: 0.8rem; color: var(--text-sub); line-height: 1.5; }
+
+  /* Mindset */
+  .mindset-block {
+    background: linear-gradient(135deg, rgba(200,169,110,0.06) 0%, rgba(160,100,80,0.04) 100%);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 12px;
+  }
+  .mindset-q {
+    font-family: 'Gowun Batang', serif;
+    font-size: 1rem;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .mindset-desc { font-size: 0.88rem; color: var(--text-sub); line-height: 1.6; }
+
+  /* Famous match */
+  .famous-match-text {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--text);
+    padding: 10px 0;
+  }
+
+  /* Share buttons */
+  .share-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  /* Citation */
+  .citation {
+    font-size: 0.7rem;
+    color: var(--text-sub);
+    line-height: 1.6;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    margin-top: 32px;
+    opacity: 0.7;
+  }
+
+  /* Error */
+  .error-msg {
+    background: rgba(200,105,110,0.08);
+    border: 1px solid rgba(200,105,110,0.3);
+    border-radius: 6px;
+    padding: 12px 16px;
+    color: var(--danger);
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+
+  /* Compatible type */
+  .compat-text {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  /* Score display */
+  .score-chips {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+  .score-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    color: var(--text-sub);
+  }
+  .score-chip span { color: var(--gold); font-weight: 700; }
+
+  /* Restart */
+  .restart-row { text-align: center; margin-top: 12px; }
+  .restart-btn {
+    background: none;
+    border: none;
+    color: var(--text-sub);
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: underline;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: color 0.2s;
+  }
+  .restart-btn:hover { color: var(--text); }
+
+  @media (max-width: 480px) {
+    .two-col { grid-template-columns: 1fr; }
+    .likert-scale { gap: 4px; }
+    .likert-btn { font-size: 0.78rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Orb backgrounds -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- ==================== INTRO ==================== -->
+<div id="screen-intro" class="screen active">
+  <div class="container">
+    <div class="intro-hero">
+      <p class="intro-eyebrow">성인 애착 유형 심층 분석</p>
+      <h1>당신도 몰랐던<br>나의 <span class="gold-text">연애 패턴</span></h1>
+      <div class="divider"></div>
+      <p class="sub-text">ECR-S 척도 기반 측정 + AI 심층 대화로<br>"왜 나는 이런 연애를 하는가"를 깊이 탐색합니다</p>
+      <div class="intro-meta">
+        <span>약 7~10분 소요</span>
+        <span class="meta-sep">·</span>
+        <span>12개 측정 문항</span>
+        <span class="meta-sep">·</span>
+        <span>AI 6턴 대화</span>
+      </div>
+    </div>
+
+    <div class="badge-row">
+      <span class="badge">📄 Brennan et al., 1998 ECR</span>
+      <span class="badge">📄 Bartholomew & Horowitz, 1991</span>
+      <span class="badge">📄 Wei et al., 2007 ECR-S</span>
+    </div>
+
+    <div class="provider-card">
+      <p class="provider-label">AI 제공자 선택</p>
+      <div class="toggle-row">
+        <button class="toggle-btn active" id="btn-claude" onclick="selectProvider('claude')">🔮 Claude</button>
+        <button class="toggle-btn" id="btn-openai" onclick="selectProvider('openai')">✦ OpenAI</button>
+      </div>
+      <div class="api-input-wrap">
+        <input type="password" id="api-key-input" class="api-input" placeholder="sk-ant-api03-..." autocomplete="off">
+        <button class="api-toggle-vis" onclick="toggleApiVis()" title="보기/숨기기">👁</button>
+      </div>
+      <p class="api-hint" id="api-hint">Claude API 키를 입력하세요. 키는 세션 종료 시 자동으로 삭제됩니다.</p>
+    </div>
+
+    <div id="intro-error" class="error-msg">API 키를 입력해주세요.</div>
+
+    <button class="btn-primary" onclick="startApp()">
+      시작하기 ✦
+    </button>
+    <div style="height:24px"></div>
+    <p class="sub-text" style="text-align:center;font-size:0.75rem;">결과는 참고용이며 전문 심리 진단을 대체하지 않습니다.</p>
+  </div>
+</div>
+
+<!-- ==================== WARMUP ==================== -->
+<div id="screen-warmup" class="screen">
+  <div class="container">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="warmup-progress"></div>
+    </div>
+    <p class="progress-label" id="warmup-label">워밍업 1 / 3</p>
+    <div id="warmup-card"></div>
+  </div>
+</div>
+
+<!-- ==================== QUIZ ==================== -->
+<div id="screen-quiz" class="screen">
+  <div class="container">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="quiz-progress"></div>
+    </div>
+    <p class="progress-label" id="quiz-label">측정 1 / 12</p>
+    <div id="quiz-card"></div>
+  </div>
+</div>
+
+<!-- ==================== CHAT ==================== -->
+<div id="screen-chat" class="screen" style="padding:0 16px;">
+  <div class="container" style="display:flex;flex-direction:column;height:100vh;padding-bottom:0;max-width:620px;">
+    <div class="chat-header">
+      <h2 style="font-size:1.1rem;">심층 대화</h2>
+      <p class="sub-text" style="font-size:0.8rem;margin-top:4px;">AI가 당신의 패턴을 깊이 탐색합니다</p>
+      <div style="margin-top:12px;">
+        <span class="chat-turn-badge" id="chat-turn-badge">남은 대화 6턴</span>
+      </div>
+    </div>
+    <div class="chat-window" id="chat-window"></div>
+    <div class="chat-input-area" id="chat-input-area">
+      <div id="chat-error" class="error-msg"></div>
+      <div class="chat-input-row">
+        <textarea class="chat-textarea" id="chat-input" placeholder="솔직하게 이야기해주세요..." rows="2" onkeydown="chatKeydown(event)"></textarea>
+        <button class="chat-send-btn" id="chat-send-btn" onclick="sendChat()">↑</button>
+      </div>
+      <p class="sub-text" style="font-size:0.72rem;margin-top:8px;text-align:center;">Enter로 전송 · Shift+Enter 줄바꿈</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== LOADING ==================== -->
+<div id="screen-loading" class="screen">
+  <div class="loading-center">
+    <div class="loading-ring"></div>
+    <div class="loading-text" id="loading-text">당신의 패턴을 분석하고 있어요...</div>
+    <p class="sub-text" style="font-size:0.8rem;">대화와 측정 결과를 종합하는 중...</p>
+  </div>
+</div>
+
+<!-- ==================== RESULT ==================== -->
+<div id="screen-result" class="screen">
+  <div class="container">
+    <div class="result-hero">
+      <span class="type-emoji" id="res-emoji">✦</span>
+      <div class="type-name" id="res-name">–</div>
+      <div class="type-academic" id="res-academic">–</div>
+      <div class="score-chips">
+        <div class="score-chip">불안 지수 <span id="res-anxiety">–</span></div>
+        <div class="score-chip">회피 지수 <span id="res-avoidance">–</span></div>
+      </div>
+      <div class="type-tagline" id="res-tagline">–</div>
+    </div>
+
+    <!-- Scatter plot -->
+    <div class="scatter-wrap">
+      <h3>✦ 나의 위치 — 애착 유형 지도</h3>
+      <svg id="scatter-svg" viewBox="0 0 420 400" xmlns="http://www.w3.org/2000/svg"></svg>
+      <p class="sub-text" style="font-size:0.73rem;margin-top:8px;text-align:center;">* 유명인/캐릭터 좌표는 문헌·작품 기반 추정치입니다</p>
+    </div>
+
+    <!-- Pattern -->
+    <div class="result-section">
+      <h3>연애 패턴</h3>
+      <p class="result-text" id="res-pattern">–</p>
+    </div>
+
+    <!-- Core wound -->
+    <div class="result-section">
+      <h3>핵심 상처 · 공포</h3>
+      <p class="result-text" id="res-wound">–</p>
+    </div>
+
+    <!-- Warnings -->
+    <div class="result-section">
+      <h3>주의 상황</h3>
+      <div class="two-col" id="res-warnings"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="result-section">
+      <h3>행동 제안</h3>
+      <div class="action-list" id="res-actions"></div>
+    </div>
+
+    <!-- Mindset -->
+    <div class="result-section">
+      <h3>마인드셋</h3>
+      <div class="mindset-block">
+        <div class="mindset-q" id="res-mindset-q">–</div>
+        <div class="mindset-desc" id="res-mindset-desc">–</div>
+      </div>
+    </div>
+
+    <!-- Quotes -->
+    <div class="result-section">
+      <h3>💬 대화에서 발견된 나</h3>
+      <div id="res-quotes"></div>
+    </div>
+
+    <!-- Compatible -->
+    <div class="result-section">
+      <h3>잘 맞는 상대 유형</h3>
+      <p class="compat-text" id="res-match">–</p>
+    </div>
+
+    <!-- Famous match -->
+    <div class="result-section">
+      <h3>닮은 유명인 / 캐릭터</h3>
+      <p class="famous-match-text" id="res-famous">–</p>
+    </div>
+
+    <!-- Share -->
+    <div class="share-row">
+      <button class="btn-primary" onclick="shareResult()">결과 공유하기 ✦</button>
+      <button class="btn-secondary" onclick="copyInvite()">상대방도 해보기 — 링크 복사</button>
+    </div>
+
+    <div class="restart-row">
+      <button class="restart-btn" onclick="restartApp()">처음부터 다시 하기</button>
+    </div>
+
+    <div class="citation">
+      <p><strong>참고 문헌</strong></p>
+      <p>Brennan, K. A., Clark, C. L., & Shaver, P. R. (1998). Self-report measurement of adult attachment: An integrative overview. In J. A. Simpson & W. S. Rholes (Eds.), <em>Attachment theory and close relationships</em> (pp. 46–76). Guilford Press.</p>
+      <p style="margin-top:6px;">Bartholomew, K., & Horowitz, L. M. (1991). Attachment styles among young adults: A test of a four-category model. <em>Journal of Personality and Social Psychology, 61</em>(2), 226–244.</p>
+      <p style="margin-top:6px;">Wei, M., Russell, D. W., Mallinckrodt, B., & Vogel, D. L. (2007). The Experiences in Close Relationship Scale (ECR)–short form. <em>Journal of Personality Assessment, 88</em>(2), 187–204.</p>
+      <p style="margin-top:10px;opacity:0.6;">이 결과는 참고용이며 전문 심리 진단을 대체하지 않습니다.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================================================
+// STATE
+// ===================================================
+const appState = {
+  provider: 'claude',
+  apiKey: '',
+  warmupQuestions: [],
+  warmupAnswers: [],
+  warmupIndex: 0,
+  quizQuestions: [],
+  quizAnswers: [],
+  quizIndex: 0,
+  scores: null,
+  chatHistory: [],
+  chatTurn: 0,
+  maxTurns: 6,
+  resultData: null
+};
+
+// ===================================================
+// QUESTION POOLS
+// ===================================================
+const warmupPool = [
+  {
+    text: "연인이 카톡을 2시간째 읽씹하고 있다. 나의 반응은?",
+    options: ["바쁜가 보다 하고 그냥 기다린다", "슬슬 불안해지며 '혹시 나한테 화났나?' 생각한다", "나도 할 일 하면서 신경 끈다", "이유를 직접 물어본다"]
+  },
+  {
+    text: "연인이 \"우리 좀 거리를 두자\"고 말했다. 첫 반응은?",
+    options: ["\"알겠어, 각자 시간 갖자\"", "가슴이 철렁, 이별 예감에 불안해진다", "솔직히 좀 홀가분하다", "무슨 의미인지 정확히 파악하려 한다"]
+  },
+  {
+    text: "첫 데이트 후 연락 빈도는?",
+    options: ["평소 페이스대로, 억지로 늘리지 않는다", "자꾸 생각나서 먼저 연락하게 된다", "상대가 연락할 때만 답한다", "적당히 주고받는 균형을 찾는다"]
+  },
+  {
+    text: "싸운 뒤 화해 방식은?",
+    options: ["감정이 가라앉으면 자연스럽게 대화한다", "먼저 사과하고 빨리 풀고 싶다", "혼자 냉각기가 필요하고, 먼저 다가가기 힘들다", "원인을 분석해서 논리적으로 해결한다"]
+  },
+  {
+    text: "연인이 나를 두고 친구들과만 여행을 간다면?",
+    options: ["나도 내 시간을 즐긴다", "섭섭하고 소외감을 느낀다", "잘 됐다, 혼자 시간이 생긴다", "다음엔 같이 가자고 미리 얘기해 둔다"]
+  },
+  {
+    text: "연애에서 \"나\"의 역할을 한 단어로 표현한다면?",
+    options: ["동반자", "전부", "독립체", "관찰자"]
+  },
+  {
+    text: "연인이 힘들다고 털어놓을 때 나는?",
+    options: ["공감하며 옆에 있어준다", "내 일처럼 같이 걱정한다", "조언을 주되 과도하게 개입하지 않는다", "솔직히 어떻게 반응해야 할지 모를 때가 있다"]
+  },
+  {
+    text: "연인과의 미래 계획을 이야기할 때 느낌은?",
+    options: ["설레고 즐겁다", "확인받는 느낌이 들어서 좋다", "너무 먼 미래 얘기는 부담스럽다", "현실적으로 따져본다"]
+  },
+  {
+    text: "연인과 처음 \"사랑해\"를 말하는 순간, 나는?",
+    options: ["자연스럽게 표현했다", "먼저 말하고 싶었지만 눈치를 봤다", "상대가 먼저 말할 때까지 기다렸다", "표현 자체가 조금 쑥스러웠다"]
+  },
+  {
+    text: "이별 후 회복 방식은?",
+    options: ["시간이 지나면서 자연스럽게 회복된다", "오래 그리워하며 SNS를 반복해서 본다", "빠르게 일상으로 복귀, 감정을 잘 드러내지 않는다", "원인을 분석하며 다음엔 다르게 하겠다고 다짐한다"]
+  }
+];
+
+const ecrPools = {
+  anxiety: [
+    { text: "나는 연인에게 버림받을까 봐 걱정된다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: false, dim: 'anxiety' },
+    { text: "연인이 나를 사랑하지 않게 될까 봐 두렵다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: false, dim: 'anxiety' },
+    { text: "연인과 가까워지고 싶지만, 상대가 나만큼 원하지 않을까 봐 불안하다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: false, dim: 'anxiety' },
+    { text: "나는 연인에게 내가 중요한 사람인지 자주 확인받고 싶다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: false, dim: 'anxiety' },
+    { text: "연인이 나를 정말 소중히 여기는지 확신이 없다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: false, dim: 'anxiety' },
+    { text: "연인이 나를 떠날까 봐 때때로 걱정된다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: false, dim: 'anxiety' },
+    { text: "나는 연인을 잃을까 봐 별로 걱정하지 않는다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: true, dim: 'anxiety' },
+    { text: "연인과 헤어질지도 모른다는 생각이 거의 들지 않는다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: true, dim: 'anxiety' }
+  ],
+  avoidance: [
+    { text: "나는 연인에게 내 감정을 드러내는 것이 불편하다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: false, dim: 'avoidance' },
+    { text: "나는 연인에게 완전히 의지하는 것이 어렵다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: false, dim: 'avoidance' },
+    { text: "나는 연인과 너무 가까워지는 것이 부담스럽다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: false, dim: 'avoidance' },
+    { text: "나는 연인에게 속마음을 털어놓기가 쉽지 않다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: false, dim: 'avoidance' },
+    { text: "친밀한 관계를 맺는 것이 편안하다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: true, dim: 'avoidance' },
+    { text: "연인에게 의지하는 것이 편안하게 느껴진다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: true, dim: 'avoidance' },
+    { text: "나는 연인과 가까워지는 것을 즐긴다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: true, dim: 'avoidance' },
+    { text: "나는 연인이 나에게 의지하는 것이 불편하다.", options: ["전혀 그렇지 않다","별로 그렇지 않다","약간 그렇지 않다","보통이다","약간 그렇다","꽤 그렇다","매우 그렇다"], reverse: false, dim: 'avoidance' }
+  ]
+};
+
+const celebrities = [
+  { name: '오바마', anxiety: 2.0, avoidance: 2.0, color: '#4a8c5c' },
+  { name: '미셸 오바마', anxiety: 2.2, avoidance: 2.3, color: '#4a8c5c' },
+  { name: '헤르미온느*', anxiety: 2.8, avoidance: 2.5, color: '#6a9c7c' },
+  { name: '엘리자베스 베넷*', anxiety: 2.5, avoidance: 2.8, color: '#6a9c7c' },
+  { name: '로미오*', anxiety: 6.2, avoidance: 1.8, color: '#c87060' },
+  { name: '히스클리프*', anxiety: 6.5, avoidance: 1.2, color: '#b05040' },
+  { name: '아나스타샤*', anxiety: 5.8, avoidance: 1.5, color: '#d06060' },
+  { name: '셜록 홈즈*', anxiety: 1.2, avoidance: 6.8, color: '#5080b0' },
+  { name: '닥터 하우스*', anxiety: 2.5, avoidance: 6.0, color: '#4070a0' },
+  { name: '클레어 언더우드*', anxiety: 2.0, avoidance: 6.2, color: '#4070a0' },
+  { name: '캐리 브래드쇼*', anxiety: 5.2, avoidance: 4.8, color: '#b06090' },
+  { name: '미스터 빅*', anxiety: 5.5, avoidance: 5.0, color: '#906080' },
+];
+
+// ===================================================
+// UTILITIES
+// ===================================================
+function samplePool(pool, n) {
+  return [...pool].sort(() => Math.random() - 0.5).slice(0, n);
+}
+
+function buildSessionQuestions() {
+  const anx = samplePool(ecrPools.anxiety, 6);
+  const avo = samplePool(ecrPools.avoidance, 6);
+  return [...anx, ...avo].sort(() => Math.random() - 0.5);
+}
+
+function calcScores(answers, questions) {
+  let aSum = 0, aCount = 0, vSum = 0, vCount = 0;
+  questions.forEach((q, i) => {
+    let score = answers[i] + 1; // 0-indexed → 1-based raw
+    if (q.reverse) score = 8 - score;
+    if (q.dim === 'anxiety') { aSum += score; aCount++; }
+    else { vSum += score; vCount++; }
+  });
+  const anxiety = aCount > 0 ? aSum / aCount : 4;
+  const avoidance = vCount > 0 ? vSum / vCount : 4;
+  const highAnx = anxiety >= 4.0;
+  const highAvo = avoidance >= 4.0;
+  let typeName, typeCode, typeEmoji;
+  if (!highAnx && !highAvo) { typeName = '따뜻한 안착형'; typeCode = 'secure'; typeEmoji = '🌿'; }
+  else if (highAnx && !highAvo) { typeName = '소용돌이형'; typeCode = 'preoccupied'; typeEmoji = '🌪️'; }
+  else if (!highAnx && highAvo) { typeName = '고독한 고지형'; typeCode = 'dismissive'; typeEmoji = '🏔️'; }
+  else { typeName = '이중심리형'; typeCode = 'fearful'; typeEmoji = '🎭'; }
+  const academicName = { secure: '안정형 (Secure)', preoccupied: '집착형 (Preoccupied)', dismissive: '거부-회피형 (Dismissive)', fearful: '두려움-회피형 (Fearful-Avoidant)' }[typeCode];
+  return { anxiety, avoidance, typeName, typeCode, typeEmoji, academicName, highAnx, highAvo };
+}
+
+function extractText(data, provider) {
+  try {
+    if (provider === 'claude') return data.content[0].text;
+    else return data.choices[0].message.content;
+  } catch (e) { return ''; }
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-' + id);
+  if (el) el.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showError(elId, msg) {
+  const el = document.getElementById(elId);
+  if (el) { el.textContent = msg; el.classList.add('show'); }
+}
+function hideError(elId) {
+  const el = document.getElementById(elId);
+  if (el) el.classList.remove('show');
+}
+
+// ===================================================
+// API
+// ===================================================
+async function callLLM(messages, systemPrompt, maxTokens = 1024) {
+  const { provider, apiKey } = appState;
+  if (provider === 'claude') {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: maxTokens,
+        system: systemPrompt,
+        messages: messages
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `API 오류 (${res.status})`);
+    }
+    return extractText(await res.json(), 'claude');
+  } else {
+    const msgs = [{ role: 'system', content: systemPrompt }, ...messages];
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        max_tokens: maxTokens,
+        messages: msgs
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `API 오류 (${res.status})`);
+    }
+    return extractText(await res.json(), 'openai');
+  }
+}
+
+// ===================================================
+// SYSTEM PROMPTS
+// ===================================================
+function buildChatSystemPrompt(scores, warmupAnswers, quizQuestions, quizAnswers) {
+  const warmupSummary = warmupAnswers.map((a, i) =>
+    `W${i+1}: "${a.text}" → "${a.selected}"`
+  ).join('\n');
+  const qSummary = quizQuestions.map((q, i) =>
+    `Q${i+1}[${q.dim}${q.reverse?'/역채점':''}]: "${q.text}" → ${quizAnswers[i]+1}점(원점수)`
+  ).join('\n');
+  return `당신은 성인 애착 이론(Brennan et al., 1998 ECR 척도) 전문 심리 분석가입니다.
+
+## 사용자 ECR 검사 결과
+- 불안(Anxiety) 평균: ${scores.anxiety.toFixed(1)}/7
+- 회피(Avoidance) 평균: ${scores.avoidance.toFixed(1)}/7
+- 예비 유형: ${scores.typeName} (${scores.academicName})
+
+## 워밍업 응답
+${warmupSummary}
+
+## 문항별 응답
+${qSummary}
+
+## 지시
+1. 검사 결과를 컨텍스트로 자연스러운 한국어 대화를 시작하라
+2. 총 6턴 이내에 연애 패턴을 심층 탐색하라
+3. "왜"를 캐묻는 질문으로 표면 행동 아래 감정 패턴을 발굴하라
+4. 판단하지 않고 공감하면서, 사용자 발언을 결과 인용구로 포착하라
+5. 한 번에 질문은 하나만
+6. 마지막(6번째) AI 답변은 반드시 "분석을 마쳤습니다. 결과를 확인해볼게요 ✦"로 끝낼 것
+7. 수치(점수)를 직접 언급하지 말고, 문항 응답 패턴에서 흥미로운 것을 포착해 자연스럽게 질문할 것`;
+}
+
+function buildResultPrompt(scores, chatHistory) {
+  const convo = chatHistory
+    .map(m => `${m.role === 'user' ? '사용자' : 'AI'}: ${m.content}`)
+    .join('\n\n');
+  return `성인 애착 이론 전문가. 아래 데이터로 JSON만 응답 (마크다운 코드블록 없이, 순수 JSON만):
+
+ECR 점수:
+- 불안(Anxiety): ${scores.anxiety.toFixed(1)}/7
+- 회피(Avoidance): ${scores.avoidance.toFixed(1)}/7
+- 예비 유형: ${scores.typeName}
+
+대화 내용:
+${convo}
+
+반드시 아래 JSON 형식 그대로 응답하라 (마크다운 없이):
+{
+  "emoji": "이모지 1개",
+  "name": "감성적 유형 이름 (10자 이내)",
+  "sub": "한 줄 저격 요약 (20자 이내)",
+  "pattern": "연애 패턴 설명 (100자, 이 사람의 실제 대화를 반영)",
+  "coreWound": "핵심 상처/공포 (80자)",
+  "strength": "이 유형의 연애 강점 (60자)",
+  "growth": "성장을 위한 조언 (60자)",
+  "warning1_title": "주의 상황 제목 (15자 이내)",
+  "warning1_desc": "주의 내용 (60자)",
+  "warning2_title": "주의 상황 제목 (15자 이내)",
+  "warning2_desc": "주의 내용 (60자)",
+  "action1": "행동 제안 제목",
+  "action1_desc": "행동 설명 (60자)",
+  "action2": "행동 제안 제목",
+  "action2_desc": "행동 설명 (60자)",
+  "action3": "행동 제안 제목",
+  "action3_desc": "행동 설명 (60자)",
+  "mindset_q": "생각해볼 질문 (30자)",
+  "mindset_desc": "설명 (80자)",
+  "match": "잘 맞는 상대 유형 설명 (60자)",
+  "famousMatch": "닮은 유명인/캐릭터 이름 + 한 줄 설명 (60자)",
+  "quotes": ["대화에서 인상적인 사용자 발언 직접 인용 1", "사용자 발언 2"]
+}`;
+}
+
+// ===================================================
+// INTRO
+// ===================================================
+function selectProvider(p) {
+  appState.provider = p;
+  document.getElementById('btn-claude').classList.toggle('active', p === 'claude');
+  document.getElementById('btn-openai').classList.toggle('active', p === 'openai');
+  const input = document.getElementById('api-key-input');
+  const hint = document.getElementById('api-hint');
+  if (p === 'claude') {
+    input.placeholder = 'sk-ant-api03-...';
+    hint.textContent = 'Claude API 키를 입력하세요. 키는 세션 종료 시 자동으로 삭제됩니다.';
+  } else {
+    input.placeholder = 'sk-proj-...';
+    hint.textContent = 'OpenAI API 키를 입력하세요. 키는 세션 종료 시 자동으로 삭제됩니다.';
+  }
+}
+
+function toggleApiVis() {
+  const input = document.getElementById('api-key-input');
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+function startApp() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key) { showError('intro-error', 'API 키를 입력해주세요.'); return; }
+  hideError('intro-error');
+  appState.apiKey = key;
+  sessionStorage.setItem('llm_api_key', key);
+  sessionStorage.setItem('llm_provider', appState.provider);
+
+  appState.warmupQuestions = samplePool(warmupPool, 3);
+  appState.warmupAnswers = [];
+  appState.warmupIndex = 0;
+  renderWarmup();
+  showScreen('warmup');
+}
+
+// ===================================================
+// WARMUP
+// ===================================================
+function renderWarmup() {
+  const i = appState.warmupIndex;
+  const q = appState.warmupQuestions[i];
+  const pct = ((i) / 3) * 100;
+  document.getElementById('warmup-progress').style.width = pct + '%';
+  document.getElementById('warmup-label').textContent = `워밍업 ${i+1} / 3`;
+
+  const html = `
+    <div class="q-card">
+      <p class="q-eyebrow">워밍업 · ${i+1}/3</p>
+      <p class="q-text">${q.text}</p>
+      <div class="options-grid">
+        ${q.options.map((opt, oi) => `
+          <button class="option-btn" onclick="selectWarmup(${oi})">${opt}</button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  document.getElementById('warmup-card').innerHTML = html;
+}
+
+function selectWarmup(optionIndex) {
+  const i = appState.warmupIndex;
+  const q = appState.warmupQuestions[i];
+  appState.warmupAnswers.push({ text: q.text, selected: q.options[optionIndex] });
+  appState.warmupIndex++;
+
+  if (appState.warmupIndex >= 3) {
+    appState.quizQuestions = buildSessionQuestions();
+    appState.quizAnswers = [];
+    appState.quizIndex = 0;
+    renderQuiz();
+    showScreen('quiz');
+  } else {
+    renderWarmup();
+  }
+}
+
+// ===================================================
+// QUIZ
+// ===================================================
+function renderQuiz() {
+  const i = appState.quizIndex;
+  const q = appState.quizQuestions[i];
+  const pct = (i / 12) * 100;
+  document.getElementById('quiz-progress').style.width = pct + '%';
+  document.getElementById('quiz-label').textContent = `측정 ${i+1} / 12`;
+
+  const html = `
+    <div class="q-card">
+      <p class="q-eyebrow">${q.dim === 'anxiety' ? '애착 불안' : '애착 회피'} · ${i+1}/12</p>
+      <p class="q-text">${q.text}</p>
+      <div class="likert-wrap">
+        <div class="likert-labels">
+          <span>전혀 그렇지 않다</span>
+          <span>매우 그렇다</span>
+        </div>
+        <div class="likert-scale">
+          ${[1,2,3,4,5,6,7].map(v => `
+            <button class="likert-btn" onclick="selectQuiz(${v-1})">${v}</button>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('quiz-card').innerHTML = html;
+}
+
+function selectQuiz(valueIndex) {
+  // Highlight
+  document.querySelectorAll('.likert-btn').forEach((btn, bi) => {
+    btn.classList.toggle('selected', bi === valueIndex);
+  });
+  appState.quizAnswers.push(valueIndex);
+  appState.quizIndex++;
+
+  setTimeout(() => {
+    if (appState.quizIndex >= 12) {
+      appState.scores = calcScores(appState.quizAnswers, appState.quizQuestions);
+      startChat();
+    } else {
+      renderQuiz();
+    }
+  }, 300);
+}
+
+// ===================================================
+// CHAT
+// ===================================================
+async function startChat() {
+  appState.chatHistory = [];
+  appState.chatTurn = 0;
+  showScreen('chat');
+  updateTurnBadge();
+
+  const systemPrompt = buildChatSystemPrompt(
+    appState.scores,
+    appState.warmupAnswers,
+    appState.quizQuestions,
+    appState.quizAnswers
+  );
+  appState._chatSystemPrompt = systemPrompt;
+
+  // AI opens conversation
+  setChatInputEnabled(false);
+  addTypingIndicator();
+  try {
+    const reply = await callLLM([], systemPrompt, 600);
+    removeTypingIndicator();
+    addBubble('ai', reply);
+  } catch (e) {
+    removeTypingIndicator();
+    showChatError('AI 연결 오류: ' + e.message);
+    setChatInputEnabled(true);
+    return;
+  }
+  setChatInputEnabled(true);
+}
+
+function addBubble(role, text) {
+  const win = document.getElementById('chat-window');
+  const div = document.createElement('div');
+  div.className = 'chat-bubble ' + role;
+  div.textContent = text;
+  win.appendChild(div);
+  win.scrollTop = win.scrollHeight;
+}
+
+function addTypingIndicator() {
+  const win = document.getElementById('chat-window');
+  const div = document.createElement('div');
+  div.className = 'chat-bubble ai typing';
+  div.id = 'typing-indicator';
+  div.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  win.appendChild(div);
+  win.scrollTop = win.scrollHeight;
+}
+
+function removeTypingIndicator() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+function setChatInputEnabled(enabled) {
+  const textarea = document.getElementById('chat-input');
+  const btn = document.getElementById('chat-send-btn');
+  textarea.disabled = !enabled;
+  btn.disabled = !enabled;
+}
+
+function showChatError(msg) {
+  const el = document.getElementById('chat-error');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+function updateTurnBadge() {
+  const remaining = appState.maxTurns - appState.chatTurn;
+  document.getElementById('chat-turn-badge').textContent = `남은 대화 ${remaining}턴`;
+}
+
+function chatKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChat();
+  }
+}
+
+async function sendChat() {
+  const textarea = document.getElementById('chat-input');
+  const text = textarea.value.trim();
+  if (!text) return;
+  hideError('chat-error');
+
+  textarea.value = '';
+  addBubble('user', text);
+  appState.chatHistory.push({ role: 'user', content: text });
+  appState.chatTurn++;
+  updateTurnBadge();
+  setChatInputEnabled(false);
+
+  if (appState.chatTurn >= appState.maxTurns) {
+    // Last turn — get final AI message
+    addTypingIndicator();
+    try {
+      const reply = await callLLM(appState.chatHistory, appState._chatSystemPrompt, 400);
+      removeTypingIndicator();
+      appState.chatHistory.push({ role: 'assistant', content: reply });
+      addBubble('ai', reply);
+    } catch (e) {
+      removeTypingIndicator();
+    }
+    // Hide input, go to loading after delay
+    document.getElementById('chat-input-area').style.display = 'none';
+    setTimeout(() => generateResult(), 1200);
+    return;
+  }
+
+  addTypingIndicator();
+  try {
+    const reply = await callLLM(appState.chatHistory, appState._chatSystemPrompt, 500);
+    removeTypingIndicator();
+    appState.chatHistory.push({ role: 'assistant', content: reply });
+    addBubble('ai', reply);
+    setChatInputEnabled(true);
+    document.getElementById('chat-input').focus();
+  } catch (e) {
+    removeTypingIndicator();
+    showChatError('오류가 발생했습니다: ' + e.message);
+    setChatInputEnabled(true);
+  }
+}
+
+// ===================================================
+// RESULT GENERATION
+// ===================================================
+const loadingTexts = [
+  '당신의 패턴을 분석하고 있어요...',
+  '대화에서 단서를 찾는 중...',
+  '연애 DNA 리포트 작성 중...',
+  '유형 좌표를 계산하는 중...',
+  '마지막 인사이트를 정리하는 중...'
+];
+
+async function generateResult() {
+  showScreen('loading');
+  let li = 0;
+  const ltEl = document.getElementById('loading-text');
+  ltEl.textContent = loadingTexts[0];
+  const ltInterval = setInterval(() => {
+    li = (li + 1) % loadingTexts.length;
+    ltEl.textContent = loadingTexts[li];
+  }, 2000);
+
+  const prompt = buildResultPrompt(appState.scores, appState.chatHistory);
+  let raw = '';
+  try {
+    raw = await callLLM([], prompt, 1200);
+  } catch (e) {
+    clearInterval(ltInterval);
+    renderResult(buildFallbackResult());
+    return;
+  }
+  clearInterval(ltInterval);
+
+  let resultData = parseResult(raw);
+  appState.resultData = resultData;
+  renderResult(resultData);
+}
+
+function parseResult(raw) {
+  // Try direct parse
+  try {
+    return JSON.parse(raw.trim());
+  } catch (_) {}
+  // Try extracting JSON block
+  const match = raw.match(/\{[\s\S]*\}/);
+  if (match) {
+    try { return JSON.parse(match[0]); } catch (_) {}
+  }
+  return buildFallbackResult();
+}
+
+function buildFallbackResult() {
+  const s = appState.scores || { typeName: '분석형', typeEmoji: '✦', academicName: '–', anxiety: 4, avoidance: 4 };
+  return {
+    emoji: s.typeEmoji || '✦',
+    name: s.typeName || '나만의 유형',
+    sub: '당신만의 연애 패턴이 있습니다',
+    pattern: '검사 결과와 대화를 종합하면, 당신은 연애에서 독특한 패턴을 보입니다. 더 깊이 탐색하면 흥미로운 인사이트를 발견할 수 있을 것입니다.',
+    coreWound: '아직 완전히 파악되지 않은 내면의 패턴이 있습니다.',
+    strength: '자기 자신을 탐색하려는 용기와 의지',
+    growth: '자신의 패턴을 인식하는 것이 변화의 첫걸음',
+    warning1_title: '과잉 반응',
+    warning1_desc: '감정이 격해질 때 일시 정지하는 연습을 해보세요.',
+    warning2_title: '소통 단절',
+    warning2_desc: '필요할 때 먼저 대화를 시작하는 연습을 해보세요.',
+    action1: '일기 쓰기',
+    action1_desc: '매일 감정을 기록해 패턴을 파악하세요.',
+    action2: '취약성 연습',
+    action2_desc: '신뢰하는 사람에게 솔직한 감정을 나눠보세요.',
+    action3: '경계 설정',
+    action3_desc: '자신의 필요와 한계를 명확히 표현해보세요.',
+    mindset_q: '나는 어떤 연애를 원하는가?',
+    mindset_desc: '원하는 관계를 먼저 상상하고, 그 방향으로 작은 한 걸음씩 내딛어 보세요.',
+    match: '서로의 패턴을 이해하고 존중하는 상대',
+    famousMatch: '탐색 중 — 대화에서 더 많은 정보를 나눠주세요',
+    quotes: ['이 대화를 통해 나를 더 잘 이해하게 되었어요.']
+  };
+}
+
+// ===================================================
+// RENDER RESULT
+// ===================================================
+function renderResult(r) {
+  const scores = appState.scores;
+
+  document.getElementById('res-emoji').textContent = r.emoji || scores.typeEmoji;
+  document.getElementById('res-name').textContent = r.name || scores.typeName;
+  document.getElementById('res-academic').textContent = scores.academicName;
+  document.getElementById('res-anxiety').textContent = scores.anxiety.toFixed(1);
+  document.getElementById('res-avoidance').textContent = scores.avoidance.toFixed(1);
+  document.getElementById('res-tagline').textContent = r.sub || '';
+  document.getElementById('res-pattern').textContent = r.pattern || '';
+  document.getElementById('res-wound').textContent = r.coreWound || r.growth || '';
+
+  // Warnings
+  const warnEl = document.getElementById('res-warnings');
+  warnEl.innerHTML = `
+    <div class="mini-card">
+      <div class="mini-card-title">${r.warning1_title || '주의 1'}</div>
+      <div class="mini-card-desc">${r.warning1_desc || ''}</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-card-title">${r.warning2_title || '주의 2'}</div>
+      <div class="mini-card-desc">${r.warning2_desc || ''}</div>
+    </div>
+  `;
+
+  // Actions
+  const actEl = document.getElementById('res-actions');
+  actEl.innerHTML = [
+    { t: r.action1, d: r.action1_desc },
+    { t: r.action2, d: r.action2_desc },
+    { t: r.action3, d: r.action3_desc }
+  ].map((a, i) => a.t ? `
+    <div class="action-item">
+      <div class="action-num">${i+1}</div>
+      <div class="action-content">
+        <div class="action-title">${a.t}</div>
+        <div class="action-desc">${a.d || ''}</div>
+      </div>
+    </div>
+  ` : '').join('');
+
+  // Mindset
+  document.getElementById('res-mindset-q').textContent = r.mindset_q || '';
+  document.getElementById('res-mindset-desc').textContent = r.mindset_desc || '';
+
+  // Quotes
+  const quotesEl = document.getElementById('res-quotes');
+  quotesEl.innerHTML = '';
+  const quotes = r.quotes || [];
+  if (quotes.length === 0) {
+    // fallback: use user chat messages
+    appState.chatHistory
+      .filter(m => m.role === 'user')
+      .slice(0, 2)
+      .forEach(m => quotes.push(m.content.slice(0, 80)));
+  }
+  quotes.forEach(q => {
+    const div = document.createElement('div');
+    div.className = 'quote-box';
+    div.textContent = q;
+    quotesEl.appendChild(div);
+  });
+
+  // Compatible match
+  document.getElementById('res-match').textContent = r.match || '';
+
+  // Famous match
+  document.getElementById('res-famous').textContent = r.famousMatch || '';
+
+  // Scatter plot
+  renderScatter(scores.anxiety, scores.avoidance);
+
+  showScreen('result');
+}
+
+// ===================================================
+// SCATTER PLOT
+// ===================================================
+function renderScatter(userAnxiety, userAvoidance) {
+  const W = 420, H = 400;
+  const PAD = { top: 30, right: 20, bottom: 50, left: 50 };
+  const plotW = W - PAD.left - PAD.right;
+  const plotH = H - PAD.top - PAD.bottom;
+
+  function toX(avo) { return PAD.left + ((avo - 1) / 6) * plotW; }
+  function toY(anx) { return PAD.top + (1 - (anx - 1) / 6) * plotH; }
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" id="scatter-svg">`;
+
+  // Quadrant backgrounds
+  const cx = toX(4), cy = toY(4);
+  svg += `
+    <rect x="${PAD.left}" y="${PAD.top}" width="${cx - PAD.left}" height="${cy - PAD.top}" fill="rgba(200,169,110,0.04)"/>
+    <rect x="${cx}" y="${PAD.top}" width="${W - PAD.right - cx}" height="${cy - PAD.top}" fill="rgba(80,130,200,0.04)"/>
+    <rect x="${PAD.left}" y="${cy}" width="${cx - PAD.left}" height="${H - PAD.bottom - cy}" fill="rgba(80,180,120,0.05)"/>
+    <rect x="${cx}" y="${cy}" width="${W - PAD.right - cx}" height="${H - PAD.bottom - cy}" fill="rgba(200,110,110,0.04)"/>
+  `;
+
+  // Quadrant labels
+  const ql = [
+    { x: PAD.left + 8, y: cy - 8, t: '집착형', color: '#c8a96e' },
+    { x: cx + 8, y: cy - 8, t: '이중심리형', color: '#c87080' },
+    { x: PAD.left + 8, y: cy + 14, t: '안정형', color: '#80c898' },
+    { x: cx + 8, y: cy + 14, t: '고지형', color: '#6090c0' }
+  ];
+  ql.forEach(l => {
+    svg += `<text x="${l.x}" y="${l.y}" font-size="9" fill="${l.color}" opacity="0.7" font-family="Noto Sans KR">${l.t}</text>`;
+  });
+
+  // Grid lines
+  svg += `
+    <line x1="${PAD.left}" y1="${cy}" x2="${W - PAD.right}" y2="${cy}" stroke="rgba(200,169,110,0.15)" stroke-width="1" stroke-dasharray="4,4"/>
+    <line x1="${cx}" y1="${PAD.top}" x2="${cx}" y2="${H - PAD.bottom}" stroke="rgba(200,169,110,0.15)" stroke-width="1" stroke-dasharray="4,4"/>
+    <rect x="${PAD.left}" y="${PAD.top}" width="${plotW}" height="${plotH}" fill="none" stroke="rgba(200,169,110,0.12)" stroke-width="1"/>
+  `;
+
+  // Axes
+  svg += `
+    <line x1="${PAD.left}" y1="${H - PAD.bottom}" x2="${W - PAD.right}" y2="${H - PAD.bottom}" stroke="rgba(200,169,110,0.3)" stroke-width="1"/>
+    <line x1="${PAD.left}" y1="${PAD.top}" x2="${PAD.left}" y2="${H - PAD.bottom}" stroke="rgba(200,169,110,0.3)" stroke-width="1"/>
+    <text x="${W/2}" y="${H - 8}" font-size="10" fill="#8a8a9a" text-anchor="middle" font-family="Noto Sans KR">회피 (Avoidance) →</text>
+    <text x="14" y="${H/2}" font-size="10" fill="#8a8a9a" text-anchor="middle" transform="rotate(-90,14,${H/2})" font-family="Noto Sans KR">불안 (Anxiety) →</text>
+  `;
+
+  // Axis ticks
+  for (let v = 1; v <= 7; v++) {
+    const tx = toX(v), ty = toY(v);
+    svg += `<text x="${tx}" y="${H - PAD.bottom + 14}" font-size="8" fill="#6a6a7a" text-anchor="middle" font-family="sans-serif">${v}</text>`;
+    svg += `<text x="${PAD.left - 8}" y="${ty + 3}" font-size="8" fill="#6a6a7a" text-anchor="end" font-family="sans-serif">${v}</text>`;
+  }
+
+  // Celebrity dots
+  celebrities.forEach(c => {
+    const x = toX(c.avoidance), y = toY(c.anxiety);
+    svg += `<circle cx="${x}" cy="${y}" r="4" fill="${c.color}" opacity="0.55"/>`;
+    // Label positioning to avoid overlap with edges
+    const lx = x + 6, ly = y - 6;
+    svg += `<text x="${lx}" y="${ly}" font-size="8" fill="${c.color}" opacity="0.7" font-family="Noto Sans KR">${c.name}</text>`;
+  });
+
+  // User dot
+  const ux = toX(userAvoidance), uy = toY(userAnxiety);
+  svg += `
+    <circle cx="${ux}" cy="${uy}" r="12" fill="none" stroke="rgba(200,169,110,0.3)" stroke-width="1"/>
+    <circle cx="${ux}" cy="${uy}" r="7" fill="#c8a96e" opacity="0.95"/>
+    <text x="${ux}" y="${uy - 15}" font-size="10" fill="#c8a96e" text-anchor="middle" font-weight="bold" font-family="Noto Sans KR">나</text>
+  `;
+
+  svg += `</svg>`;
+  document.getElementById('scatter-svg').outerHTML = svg;
+}
+
+// ===================================================
+// SHARING
+// ===================================================
+function shareResult() {
+  const r = appState.resultData;
+  const text = r ? `나의 연애 유형은 ${r.emoji} ${r.name}\n"${r.sub}"\n\n당신의 연애 패턴을 알아보세요 →` : '나의 연애 유형을 알아봤어요!';
+  if (navigator.share) {
+    navigator.share({ title: '나의 연애 유형', text, url: window.location.href })
+      .catch(() => copyToClipboard(text + '\n' + window.location.href));
+  } else {
+    copyToClipboard(text + '\n' + window.location.href);
+  }
+}
+
+function copyInvite() {
+  const url = window.location.href;
+  copyToClipboard('당신의 연애 패턴을 알아보세요 → ' + url);
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('클립보드에 복사되었습니다 ✦');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('클립보드에 복사되었습니다 ✦');
+  });
+}
+
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = `
+      position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
+      background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+      padding:12px 24px;color:var(--gold);font-size:0.88rem;z-index:10000;
+      font-family:'Noto Sans KR',sans-serif;
+      animation:fadeUp 0.3s ease;
+      white-space:nowrap;
+    `;
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(t._timeout);
+  t._timeout = setTimeout(() => { t.style.display = 'none'; }, 2500);
+}
+
+// ===================================================
+// RESTART
+// ===================================================
+function restartApp() {
+  appState.warmupAnswers = [];
+  appState.warmupIndex = 0;
+  appState.quizAnswers = [];
+  appState.quizIndex = 0;
+  appState.scores = null;
+  appState.chatHistory = [];
+  appState.chatTurn = 0;
+  appState.resultData = null;
+  document.getElementById('chat-input-area').style.display = '';
+  showScreen('intro');
+}
+</script>
+</body>
+</html>

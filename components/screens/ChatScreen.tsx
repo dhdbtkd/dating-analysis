@@ -1,0 +1,221 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useAppStore } from '@/store/useAppStore';
+import { GoldButton } from '@/components/ui/GoldButton';
+import type { ChatMessage } from '@/types';
+
+const MAX_TURNS = 6;
+
+export function ChatScreen() {
+  const { ecrScores, userInfo, warmupAnswers, setChatHistory, chatHistory, setStep } = useAppStore();
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const userTurns = chatHistory.filter((m) => m.role === 'user').length;
+
+  useEffect(() => {
+    if (chatHistory.length === 0) {
+      startConversation();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatHistory]);
+
+  async function startConversation() {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          messages: [],
+          ecrScores,
+          userInfo,
+          warmupAnswers,
+        }),
+      });
+      if (!res.ok) throw new Error('대화 시작에 실패했습니다.');
+      const data = await res.json() as { message: string };
+      setChatHistory([{ role: 'assistant', content: data.message }]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSend() {
+    if (!input.trim() || loading) return;
+    const userMsg: ChatMessage = { role: 'user', content: input.trim() };
+    const updatedHistory = [...chatHistory, userMsg];
+    setChatHistory(updatedHistory);
+    setInput('');
+    setLoading(true);
+    setError('');
+
+    const newUserTurns = updatedHistory.filter((m) => m.role === 'user').length;
+
+    if (newUserTurns >= MAX_TURNS) {
+      // Done
+      setLoading(false);
+      setStep('loading');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          messages: updatedHistory,
+          ecrScores,
+          userInfo,
+          warmupAnswers,
+        }),
+      });
+      if (!res.ok) throw new Error('응답 생성에 실패했습니다.');
+      const data = await res.json() as { message: string };
+      setChatHistory([...updatedHistory, { role: 'assistant', content: data.message }]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4 }}
+      className="flex flex-col min-h-screen relative z-10"
+    >
+      {/* Header */}
+      <div
+        className="px-4 py-4 border-b"
+        style={{ borderColor: '#1e1e2e', backgroundColor: '#0a0a0f' }}
+      >
+        <div className="max-w-lg mx-auto">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs" style={{ color: '#c8a96e' }}>심층 대화</p>
+              <p className="text-sm font-medium" style={{ color: '#e8e8f0' }}>
+                {ecrScores?.typeName && `${ecrScores.typeName} 유형`}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs" style={{ color: '#8a8a9a' }}>
+                {userTurns} / {MAX_TURNS} 턴
+              </p>
+              <div className="flex gap-1 mt-1">
+                {Array.from({ length: MAX_TURNS }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-4 h-1 rounded-full"
+                    style={{ backgroundColor: i < userTurns ? '#c8a96e' : '#1e1e2e' }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="max-w-lg mx-auto flex flex-col gap-4">
+          {chatHistory.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div
+                className="max-w-xs rounded-2xl px-4 py-3 text-sm leading-relaxed"
+                style={{
+                  backgroundColor: msg.role === 'user' ? 'rgba(200,169,110,0.15)' : '#111118',
+                  border: msg.role === 'user' ? '1px solid rgba(200,169,110,0.3)' : '1px solid #1e1e2e',
+                  color: '#e8e8f0',
+                }}
+              >
+                {msg.content}
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div className="flex justify-start">
+              <div
+                className="rounded-2xl px-4 py-3"
+                style={{ backgroundColor: '#111118', border: '1px solid #1e1e2e' }}
+              >
+                <div className="flex gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="w-2 h-2 rounded-full animate-bounce"
+                      style={{
+                        backgroundColor: '#c8a96e',
+                        animationDelay: `${i * 0.1}s`,
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      {/* Input */}
+      <div
+        className="px-4 py-4 border-t"
+        style={{ borderColor: '#1e1e2e', backgroundColor: '#0a0a0f' }}
+      >
+        <div className="max-w-lg mx-auto">
+          {error && <p className="text-red-400 text-xs mb-2">{error}</p>}
+          {userTurns < MAX_TURNS ? (
+            <div className="flex gap-2">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="솔직하게 답변해주세요... (Enter로 전송)"
+                rows={2}
+                disabled={loading}
+                className="flex-1 px-4 py-3 rounded-xl text-sm outline-none resize-none transition-colors"
+                style={{
+                  backgroundColor: '#111118',
+                  border: '1px solid #1e1e2e',
+                  color: '#e8e8f0',
+                }}
+                onFocus={(e) => (e.target.style.borderColor = '#c8a96e')}
+                onBlur={(e) => (e.target.style.borderColor = '#1e1e2e')}
+              />
+              <GoldButton onClick={handleSend} disabled={!input.trim() || loading} className="self-end">
+                전송
+              </GoldButton>
+            </div>
+          ) : (
+            <div className="text-center py-2">
+              <p className="text-sm mb-3" style={{ color: '#8a8a9a' }}>
+                대화가 완료되었습니다. 결과를 분석합니다.
+              </p>
+              <GoldButton onClick={() => setStep('loading')}>결과 보기</GoldButton>
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
