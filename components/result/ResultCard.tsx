@@ -526,7 +526,7 @@ export function ResultCard({
                     <>
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                             <p className="mb-5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                관계 반응 시퀀스
+                                연애에서 내 마음이 움직이는 순서
                             </p>
                             <div className="flex flex-col gap-3">
                                 {currentDetail.reactionSequence.map((step, index) => (
@@ -547,7 +547,7 @@ export function ResultCard({
 
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                             <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                특히 흔들리는 장면
+                                내가 특히 흔들리기 쉬운 순간
                             </p>
                             <div className="flex flex-wrap gap-2">
                                 {currentDetail.dominantTriggers.map((trigger) => (
@@ -565,7 +565,7 @@ export function ResultCard({
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                                 <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                    겉으로 보이는 나
+                                    겉으로 나는 이렇게 보여요
                                 </p>
                                 <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
                                     {currentDetail.outerSignal}
@@ -573,7 +573,7 @@ export function ResultCard({
                             </div>
                             <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                                 <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                    속에서 실제로 일어나는 일
+                                    내 속마음은 이쪽에 가까워요
                                 </p>
                                 <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
                                     {currentDetail.innerSignal}
@@ -583,7 +583,7 @@ export function ResultCard({
 
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                             <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                상대는 이렇게 느낄 수 있어요
+                                상대는 나를 이렇게 느끼기 쉬워요
                             </p>
                             <div className="flex flex-col gap-3">
                                 {currentDetail.partnerImpact.map((item) => (
@@ -597,7 +597,7 @@ export function ResultCard({
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                                 <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                    안정감을 느낄 때의 강점
+                                    내가 편안할 때 더 잘 드러나는 모습
                                 </p>
                                 <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
                                     {currentDetail.protectiveStrength}
@@ -605,7 +605,7 @@ export function ResultCard({
                             </div>
                             <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                                 <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                    흔들릴 때의 방어 반응
+                                    내가 불안해지면 이렇게 반응해요
                                 </p>
                                 <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
                                     {currentDetail.threatResponse}
@@ -615,7 +615,7 @@ export function ResultCard({
 
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                             <p className="mb-5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                변화 로드맵
+                                내가 관계를 바꾸는 연습 순서
                             </p>
                             <div className="flex flex-col gap-4">
                                 {currentDetail.growthRoadmap.map((item, index) => (
@@ -636,7 +636,7 @@ export function ResultCard({
 
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                             <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                이번 분석에 특히 크게 반영된 단서
+                                이번 결과에 내 입력 중 많이 반영된 단서
                             </p>
                             <div className="flex flex-col gap-3">
                                 {currentDetail.analysisSignals.map((signal) => (
@@ -663,8 +663,8 @@ export function ResultCard({
                     <DetailLoadingBlock
                         message={
                             currentDetailStatus === 'pending'
-                                ? '상단 결과는 먼저 보여드렸고, 지금 관계 반응 흐름과 근거 단서를 더 촘촘하게 정리하고 있어요.'
-                                : '더 깊은 분석 섹션을 준비 중입니다.'
+                                ? '상단 결과는 먼저 보여드렸고, 지금 내 마음이 움직이는 흐름과 왜 그런지까지 더 자세히 정리하고 있어요.'
+                                : '상단 결과를 바탕으로 내 관계 패턴을 더 자세히 풀어내고 있어요.'
                         }
                     />
                 )}
