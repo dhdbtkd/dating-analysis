@@ -9,7 +9,8 @@ import type { ChatMessage } from '@/types';
 const MAX_TURNS = 6;
 
 export function ChatScreen() {
-  const { ecrScores, userInfo, warmupAnswers, setChatHistory, chatHistory, setStep } = useAppStore();
+  const { ecrScores, userInfo, warmupAnswers, selectedQuestions, quizAnswers, setChatHistory, chatHistory, setStep } = useAppStore();
+  const quizDetails = selectedQuestions.map((q, i) => ({ questionText: q.text, score: quizAnswers[i] ?? 0 }));
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,27 +28,44 @@ export function ChatScreen() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
 
-  async function startConversation() {
+  async function streamAssistantReply(history: ChatMessage[]) {
     setLoading(true);
+    setError('');
+    // placeholder message to stream into
+    setChatHistory([...history, { role: 'assistant', content: '' }]);
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          messages: [],
-          ecrScores,
-          userInfo,
-          warmupAnswers,
-        }),
+        body: JSON.stringify({ messages: history, ecrScores, userInfo, warmupAnswers, quizDetails }),
       });
-      if (!res.ok) throw new Error('대화 시작에 실패했습니다.');
-      const data = await res.json() as { message: string };
-      setChatHistory([{ role: 'assistant', content: data.message }]);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: '응답 생성에 실패했습니다.' })) as { error?: string };
+        throw new Error(err.error ?? '응답 생성에 실패했습니다.');
+      }
+
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let text = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        text += decoder.decode(value, { stream: true });
+        const snapshot = text;
+        setChatHistory([...history, { role: 'assistant', content: snapshot }]);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : '오류가 발생했습니다.');
+      setChatHistory(history); // remove empty placeholder
     } finally {
       setLoading(false);
     }
+  }
+
+  async function startConversation() {
+    await streamAssistantReply([]);
   }
 
   async function handleSend() {
@@ -56,37 +74,14 @@ export function ChatScreen() {
     const updatedHistory = [...chatHistory, userMsg];
     setChatHistory(updatedHistory);
     setInput('');
-    setLoading(true);
-    setError('');
 
     const newUserTurns = updatedHistory.filter((m) => m.role === 'user').length;
-
     if (newUserTurns >= MAX_TURNS) {
-      // Done
-      setLoading(false);
       setStep('loading');
       return;
     }
 
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          messages: updatedHistory,
-          ecrScores,
-          userInfo,
-          warmupAnswers,
-        }),
-      });
-      if (!res.ok) throw new Error('응답 생성에 실패했습니다.');
-      const data = await res.json() as { message: string };
-      setChatHistory([...updatedHistory, { role: 'assistant', content: data.message }]);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : '오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
-    }
+    await streamAssistantReply(updatedHistory);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
