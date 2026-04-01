@@ -43,7 +43,7 @@ function ConsentModal({ onAccept, onReject, loading }: ConsentModalProps) {
           <button
             onClick={onReject}
             disabled={loading}
-            className="flex-1 py-2.5 rounded-xl text-sm border transition-all"
+            className="flex-1 py-3 rounded-xl text-sm border transition-all min-h-[44px]"
             style={{ borderColor: '#1e1e2e', color: '#8a8a9a' }}
           >
             거절
@@ -131,7 +131,7 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
         />
       )}
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 break-words">
         {/* Header */}
         <div
           className="rounded-2xl p-6 border text-center"

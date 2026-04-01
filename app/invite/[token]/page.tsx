@@ -64,7 +64,7 @@ export default function InvitePage({ params }: InvitePageProps) {
 
   if (checkingInvite) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen relative z-10">
+      <div className="flex flex-col items-center justify-center min-h-[100dvh] relative z-10">
         <p style={{ color: '#8a8a9a' }}>초대 링크 확인 중...</p>
       </div>
     );
@@ -72,7 +72,7 @@ export default function InvitePage({ params }: InvitePageProps) {
 
   if (inviteError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen px-4 relative z-10">
+      <div className="flex flex-col items-center justify-center min-h-[100dvh] px-4 relative z-10">
         <div className="text-center">
           <p className="text-4xl mb-4">🚫</p>
           <p className="text-lg" style={{ color: '#e0c898' }}>{inviteError}</p>

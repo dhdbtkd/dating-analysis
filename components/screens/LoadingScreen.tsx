@@ -81,7 +81,7 @@ export function LoadingScreen() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col items-center justify-center min-h-screen px-4 relative z-10"
+      className="flex flex-col items-center justify-center min-h-[100dvh] px-4 relative z-10"
     >
       <div className="text-center">
         <div className="relative w-24 h-24 mx-auto mb-8">
@@ -115,7 +115,7 @@ export function LoadingScreen() {
             <p className="text-red-400 text-sm mb-3">{error}</p>
             <button
               onClick={analyze}
-              className="px-6 py-2 rounded-xl text-sm"
+              className="px-6 py-3 rounded-xl text-sm min-h-[44px]"
               style={{ backgroundColor: '#c8a96e', color: '#0a0a0f' }}
             >
               재시도

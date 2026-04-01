@@ -34,7 +34,7 @@ export function WarmupScreen() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col items-center justify-center min-h-screen px-4 py-12 relative z-10"
+      className="flex flex-col items-center justify-center min-h-[100dvh] px-4 py-12 relative z-10"
     >
       <div className="w-full max-w-lg">
         <div className="mb-6">

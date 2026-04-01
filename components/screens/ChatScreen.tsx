@@ -102,7 +102,7 @@ export function ChatScreen() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col min-h-screen relative z-10"
+      className="flex flex-col min-h-[100dvh] relative z-10"
     >
       {/* Header */}
       <div
@@ -141,7 +141,7 @@ export function ChatScreen() {
           {chatHistory.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className="max-w-xs rounded-2xl px-4 py-3 text-sm leading-relaxed"
+                className="max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed break-words"
                 style={{
                   backgroundColor: msg.role === 'user' ? 'rgba(200,169,110,0.15)' : '#111118',
                   border: msg.role === 'user' ? '1px solid rgba(200,169,110,0.3)' : '1px solid #1e1e2e',
@@ -179,7 +179,7 @@ export function ChatScreen() {
 
       {/* Input */}
       <div
-        className="px-4 py-4 border-t"
+        className="px-4 py-4 border-t pb-[env(safe-area-inset-bottom,16px)]"
         style={{ borderColor: '#1e1e2e', backgroundColor: '#0a0a0f' }}
       >
         <div className="max-w-lg mx-auto">
@@ -193,11 +193,12 @@ export function ChatScreen() {
                 placeholder="솔직하게 답변해주세요... (Enter로 전송)"
                 rows={2}
                 disabled={loading}
-                className="flex-1 px-4 py-3 rounded-xl text-sm outline-none resize-none transition-colors"
+                className="flex-1 px-4 py-3 rounded-xl outline-none resize-none transition-colors"
                 style={{
                   backgroundColor: '#111118',
                   border: '1px solid #1e1e2e',
                   color: '#e8e8f0',
+                  fontSize: '16px',
                 }}
                 onFocus={(e) => (e.target.style.borderColor = '#c8a96e')}
                 onBlur={(e) => (e.target.style.borderColor = '#1e1e2e')}

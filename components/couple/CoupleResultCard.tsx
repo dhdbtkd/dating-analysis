@@ -11,7 +11,7 @@ interface CoupleResultCardProps {
 
 export function CoupleResultCard({ session1, session2, analysis }: CoupleResultCardProps) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 break-words">
       {/* Header */}
       <div
         className="rounded-2xl p-6 border text-center"

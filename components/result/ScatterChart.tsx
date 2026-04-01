@@ -53,8 +53,8 @@ export function ScatterChart({ anxietyScore, avoidanceScore }: ScatterChartProps
         <span>불안 ↑</span>
         <span>회피 →</span>
       </div>
-      <ResponsiveContainer width="100%" height={300}>
-        <ReScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+      <ResponsiveContainer width="100%" height={250}>
+        <ReScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
           {/* quadrant backgrounds */}
           <defs>
             <linearGradient id="q1" x1="0" y1="0" x2="1" y2="1">

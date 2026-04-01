@@ -29,7 +29,7 @@ export function IntroScreen() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col items-center justify-center min-h-screen px-4 py-12 relative z-10"
+      className="flex flex-col items-center justify-center min-h-[100dvh] px-4 py-12 relative z-10"
     >
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
@@ -79,11 +79,12 @@ export function IntroScreen() {
                 onChange={(e) => setNickname(e.target.value)}
                 placeholder="검사에서 사용할 별명"
                 maxLength={20}
-                className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors"
+                className="w-full px-4 py-3 rounded-xl outline-none transition-colors"
                 style={{
                   backgroundColor: '#0a0a0f',
                   border: '1px solid #1e1e2e',
                   color: '#e8e8f0',
+                  fontSize: '16px',
                 }}
                 onFocus={(e) => (e.target.style.borderColor = '#c8a96e')}
                 onBlur={(e) => (e.target.style.borderColor = '#1e1e2e')}
@@ -98,11 +99,12 @@ export function IntroScreen() {
                 placeholder="나이 (숫자)"
                 min={16}
                 max={99}
-                className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors"
+                className="w-full px-4 py-3 rounded-xl outline-none transition-colors"
                 style={{
                   backgroundColor: '#0a0a0f',
                   border: '1px solid #1e1e2e',
                   color: '#e8e8f0',
+                  fontSize: '16px',
                 }}
                 onFocus={(e) => (e.target.style.borderColor = '#c8a96e')}
                 onBlur={(e) => (e.target.style.borderColor = '#1e1e2e')}
@@ -119,7 +121,7 @@ export function IntroScreen() {
                   <button
                     key={g.value}
                     onClick={() => setGender(g.value)}
-                    className="flex-1 py-2 rounded-xl text-sm border transition-all duration-200"
+                    className="flex-1 py-3 rounded-xl text-sm border transition-all duration-200 min-h-[44px]"
                     style={{
                       backgroundColor: gender === g.value ? 'rgba(200,169,110,0.12)' : '#0a0a0f',
                       borderColor: gender === g.value ? '#c8a96e' : '#1e1e2e',

@@ -60,7 +60,7 @@ export function QuizScreen() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col items-center justify-center min-h-screen px-4 py-12 relative z-10"
+      className="flex flex-col items-center justify-center min-h-[100dvh] px-4 py-12 relative z-10"
     >
       <div className="w-full max-w-lg">
         <div className="mb-6">
@@ -84,14 +84,14 @@ export function QuizScreen() {
                 <button
                   key={i}
                   onClick={() => setSelected(i)}
-                  className="flex flex-col items-center gap-2 py-3 rounded-xl border transition-all duration-200"
+                  className="flex flex-col items-center gap-2 py-3 rounded-xl border transition-all duration-200 min-h-[52px]"
                   style={{
                     backgroundColor: selected === i ? 'rgba(200,169,110,0.12)' : '#0a0a0f',
                     borderColor: selected === i ? '#c8a96e' : '#1e1e2e',
                   }}
                 >
                   <span
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold"
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold"
                     style={{
                       backgroundColor: selected === i ? '#c8a96e' : '#1e1e2e',
                       color: selected === i ? '#0a0a0f' : '#8a8a9a',
@@ -104,7 +104,7 @@ export function QuizScreen() {
             </div>
             <div className="grid grid-cols-7 gap-1 mt-1">
               {LIKERT_LABELS.map((label, i) => (
-                <p key={i} className="text-center text-xs leading-tight whitespace-pre-line" style={{ color: '#8a8a9a', fontSize: '10px' }}>
+                <p key={i} className="text-center leading-tight whitespace-pre-line" style={{ color: '#8a8a9a', fontSize: '11px' }}>
                   {label}
                 </p>
               ))}
