@@ -10,6 +10,21 @@ export async function callLLM(messages: ChatMessage[], system?: string): Promise
   return callAnthropic(messages, system, model);
 }
 
+export async function callLLMJson<T>(
+  messages: ChatMessage[],
+  schema: Record<string, unknown>,
+  schemaName: string,
+  system?: string,
+): Promise<T> {
+  const provider = process.env.LLM_PROVIDER || 'anthropic';
+  const model = process.env.LLM_MODEL || 'claude-opus-4-5';
+
+  if (provider === 'openai') {
+    return callOpenAIJson<T>(messages, schema, schemaName, system, model);
+  }
+  return callAnthropicJson<T>(messages, schema, system, model);
+}
+
 export async function callLLMStream(messages: ChatMessage[], system?: string): Promise<ReadableStream<Uint8Array>> {
   const provider = process.env.LLM_PROVIDER || 'anthropic';
   const model = process.env.LLM_MODEL || 'claude-opus-4-5';
@@ -49,6 +64,43 @@ async function callAnthropic(messages: ChatMessage[], system: string | undefined
   return data.content[0].text;
 }
 
+async function callAnthropicJson<T>(
+  messages: ChatMessage[],
+  schema: Record<string, unknown>,
+  system: string | undefined,
+  model: string,
+): Promise<T> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
+
+  const body: Record<string, unknown> = {
+    model,
+    max_tokens: 1024,
+    messages,
+    output_config: { format: { type: 'json_schema', schema } },
+  };
+  if (system) body.system = system;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => '');
+    console.error('[Anthropic] error', res.status, errBody);
+    throw new Error(`Anthropic API ${res.status}: ${errBody}`);
+  }
+
+  const data = await res.json() as { content: { text: string }[] };
+  return JSON.parse(data.content[0].text) as T;
+}
+
 async function callAnthropicStream(messages: ChatMessage[], system: string | undefined, model: string): Promise<ReadableStream<Uint8Array>> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
@@ -82,6 +134,50 @@ async function callAnthropicStream(messages: ChatMessage[], system: string | und
 }
 
 // ── OpenAI ───────────────────────────────────────────────────────────────────
+
+async function callOpenAIJson<T>(
+  messages: ChatMessage[],
+  schema: Record<string, unknown>,
+  schemaName: string,
+  system: string | undefined,
+  model: string,
+): Promise<T> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error('OPENAI_API_KEY not configured');
+
+  const body: Record<string, unknown> = {
+    model,
+    max_output_tokens: 1024,
+    input: buildOpenAIInput(messages),
+    text: {
+      format: {
+        type: 'json_schema',
+        name: schemaName,
+        schema,
+        strict: true,
+      },
+    },
+  };
+  if (system) body.instructions = system;
+
+  const res = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => '');
+    console.error('[OpenAI] error', res.status, errBody);
+    throw new Error(`OpenAI API ${res.status}: ${errBody}`);
+  }
+
+  const data = await res.json() as { output: { content: { text: string }[] }[] };
+  return JSON.parse(data.output[0].content[0].text) as T;
+}
 
 function buildOpenAIInput(messages: ChatMessage[]): { role: string; content: string }[] | string {
   if (messages.length === 0) return '대화를 시작해주세요.';

@@ -10,7 +10,6 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from 'recharts';
-import { famousCoordinates } from '@/lib/questions';
 
 interface ScatterChartProps {
   anxietyScore: number;
@@ -39,12 +38,6 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Toolti
 }
 
 export function ScatterChart({ anxietyScore, avoidanceScore }: ScatterChartProps) {
-  const famousData = famousCoordinates.map((f) => ({
-    name: f.name,
-    avoidance: f.avoidance,
-    anxiety: f.anxiety,
-  }));
-
   const userData = [{ name: '나', avoidance: avoidanceScore, anxiety: anxietyScore }];
 
   return (
@@ -55,7 +48,6 @@ export function ScatterChart({ anxietyScore, avoidanceScore }: ScatterChartProps
       </div>
       <ResponsiveContainer width="100%" height={250}>
         <ReScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
-          {/* quadrant backgrounds */}
           <defs>
             <linearGradient id="q1" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="#22c55e" stopOpacity={0.05} />
@@ -90,20 +82,9 @@ export function ScatterChart({ anxietyScore, avoidanceScore }: ScatterChartProps
           <Tooltip content={<CustomTooltip />} />
           <ReferenceLine x={4} stroke="#1e1e2e" strokeWidth={1.5} strokeDasharray="4 4" />
           <ReferenceLine y={4} stroke="#1e1e2e" strokeWidth={1.5} strokeDasharray="4 4" />
-          <Scatter data={famousData} shape="circle" fill="#8a7049" opacity={0.7} />
           <Scatter data={userData} shape="circle" fill="#c8a96e" />
         </ReScatterChart>
       </ResponsiveContainer>
-      <div className="flex gap-4 justify-center mt-2">
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#c8a96e' }} />
-          <span className="text-xs" style={{ color: '#8a8a9a' }}>나</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#8a7049' }} />
-          <span className="text-xs" style={{ color: '#8a8a9a' }}>유명인/캐릭터</span>
-        </div>
-      </div>
     </div>
   );
 }

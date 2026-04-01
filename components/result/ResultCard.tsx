@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { ScatterChart } from './ScatterChart';
-import { QuoteBlock } from './QuoteBlock';
 import { ActionItems } from './ActionItems';
 import { GoldButton } from '@/components/ui/GoldButton';
 import type { ResultJson } from '@/types';
@@ -148,10 +147,31 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
           <p className="text-xs leading-relaxed" style={{ color: '#c8a96e' }}>
             {result.tagline}
           </p>
-          <div className="flex gap-4 justify-center mt-4 text-xs" style={{ color: '#8a8a9a' }}>
-            <span>불안 {result.anxietyScore.toFixed(1)}</span>
-            <span>|</span>
-            <span>회피 {result.avoidanceScore.toFixed(1)}</span>
+          <div className="mt-4 flex flex-col gap-2 w-full max-w-xs mx-auto">
+            {(
+              [
+                { label: '감정 반응 (불안)', score: result.anxietyScore },
+                { label: '거리 유지 (회피)', score: result.avoidanceScore },
+              ] as const
+            ).map(({ label, score }) => {
+              const pct = ((score - 1) / 6) * 100;
+              const intensity = score < 3.5 ? '낮음' : score <= 4.5 ? '중간' : '높음';
+              const color = score < 3.5 ? '#6db88a' : score <= 4.5 ? '#c8a96e' : '#c8696e';
+              return (
+                <div key={label}>
+                  <div className="flex justify-between text-xs mb-1" style={{ color: '#8a8a9a' }}>
+                    <span>{label}</span>
+                    <span style={{ color }}>{score.toFixed(1)} · {intensity}</span>
+                  </div>
+                  <div className="w-full h-1.5 rounded-full" style={{ backgroundColor: '#1e1e2e' }}>
+                    <div
+                      className="h-1.5 rounded-full transition-all"
+                      style={{ width: `${pct}%`, backgroundColor: color }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -182,9 +202,6 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
           <p className="text-xs leading-relaxed" style={{ color: '#e8e8f0' }}>{result.coreWound}</p>
         </div>
 
-        {/* Quote */}
-        <QuoteBlock quote={result.quote} />
-
         {/* Action Tips */}
         <div
           className="rounded-2xl p-5 border"
@@ -205,15 +222,6 @@ export function ResultCard({ result, sessionId }: ResultCardProps) {
           >
             {result.mindset}
           </p>
-        </div>
-
-        {/* Famous Match */}
-        <div
-          className="rounded-2xl p-5 border"
-          style={{ backgroundColor: '#111118', borderColor: '#1e1e2e' }}
-        >
-          <h2 className="text-xs font-semibold mb-2" style={{ color: '#e0c898' }}>닮은 유명인/캐릭터</h2>
-          <p className="text-xs" style={{ color: '#e8e8f0' }}>{result.famousMatch}</p>
         </div>
 
         {/* Actions */}

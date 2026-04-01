@@ -15,6 +15,7 @@ export function ChatScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const userTurns = chatHistory.filter((m) => m.role === 'user').length;
 
   useEffect(() => {
@@ -27,6 +28,10 @@ export function ChatScreen() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
+
+  useEffect(() => {
+    if (!loading) inputRef.current?.focus();
+  }, [loading]);
 
   async function streamAssistantReply(history: ChatMessage[]) {
     setLoading(true);
@@ -180,27 +185,47 @@ export function ChatScreen() {
         <div className="max-w-lg mx-auto">
           {error && <p className="text-red-400 text-xs mb-2">{error}</p>}
           {userTurns < MAX_TURNS ? (
-            <div className="flex gap-2">
+            <div
+              className="flex items-end gap-2 rounded-2xl px-3 py-2 transition-colors"
+              style={{ backgroundColor: '#111118', border: '1px solid #1e1e2e' }}
+              onFocusCapture={(e) => ((e.currentTarget as HTMLDivElement).style.borderColor = '#c8a96e')}
+              onBlurCapture={(e) => ((e.currentTarget as HTMLDivElement).style.borderColor = '#1e1e2e')}
+            >
               <textarea
+                ref={inputRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="솔직하게 답변해주세요... (Enter로 전송)"
-                rows={2}
-                disabled={loading}
-                className="flex-1 px-4 py-3 rounded-xl outline-none resize-none transition-colors"
-                style={{
-                  backgroundColor: '#111118',
-                  border: '1px solid #1e1e2e',
-                  color: '#e8e8f0',
-                  fontSize: '16px',
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
                 }}
-                onFocus={(e) => (e.target.style.borderColor = '#c8a96e')}
-                onBlur={(e) => (e.target.style.borderColor = '#1e1e2e')}
+                onKeyDown={handleKeyDown}
+                placeholder="솔직하게 답해주세요"
+                rows={1}
+                disabled={loading}
+                className="flex-1 bg-transparent outline-none resize-none leading-relaxed"
+                style={{
+                  color: '#e8e8f0',
+                  fontSize: '13px',
+                  caretColor: '#c8a96e',
+                  paddingTop: '4px',
+                  paddingBottom: '4px',
+                }}
               />
-              <GoldButton onClick={handleSend} disabled={!input.trim() || loading} className="self-end">
-                전송
-              </GoldButton>
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || loading}
+                className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+                style={{
+                  backgroundColor: input.trim() && !loading ? '#c8a96e' : '#1e1e2e',
+                  color: input.trim() && !loading ? '#0a0a0f' : '#8a8a9a',
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+              </button>
             </div>
           ) : (
             <div className="text-center py-2">

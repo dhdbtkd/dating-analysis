@@ -37,10 +37,10 @@ export interface ResultJson {
   coreWound: string;
   actionTip: string[];
   mindset: string;
-  quote: string;
-  famousMatch: string;
   anxietyScore: number;
   avoidanceScore: number;
+  emotionalIntensity: '낮음' | '중간' | '높음';
+  distanceTendency: '낮음' | '중간' | '높음';
 }
 
 export interface SessionRow {

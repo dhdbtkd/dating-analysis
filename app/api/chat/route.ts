@@ -42,7 +42,6 @@ export async function POST(request: NextRequest) {
 - 이름: ${userInfo.nickname}, 나이: ${userInfo.age}세, 성별: ${userInfo.gender}
 - ECR 불안 점수: ${ecrScores.anxiety.toFixed(2)} / 7
 - ECR 회피 점수: ${ecrScores.avoidance.toFixed(2)} / 7
-- 애착 유형: ${ecrScores.typeName}
 
 워밍업 응답:
 ${warmupSummary || '없음'}

@@ -285,20 +285,3 @@ export function getAttachmentAcademic(anxiety: number, avoidance: number): strin
   return '두려움-회피형';
 }
 
-export const famousCoordinates = [
-  { name: '오바마', anxiety: 2.0, avoidance: 2.0 },
-  { name: '미셸 오바마', anxiety: 2.2, avoidance: 2.3 },
-  { name: '헤르미온느', anxiety: 2.8, avoidance: 2.5 },
-  { name: '엘리자베스 베넷', anxiety: 2.5, avoidance: 2.8 },
-  { name: '비욘세', anxiety: 2.0, avoidance: 2.1 },
-  { name: '로미오', anxiety: 6.2, avoidance: 1.8 },
-  { name: '미스터 빅', anxiety: 5.5, avoidance: 5.0 },
-  { name: '아나스타샤', anxiety: 5.8, avoidance: 1.5 },
-  { name: '닥터 하우스', anxiety: 2.5, avoidance: 6.0 },
-  { name: '사만다(Her)', anxiety: 1.8, avoidance: 6.5 },
-  { name: '캐리 브래드쇼', anxiety: 5.2, avoidance: 4.8 },
-  { name: '히스클리프', anxiety: 6.5, avoidance: 1.2 },
-  { name: '셜록 홈즈', anxiety: 1.2, avoidance: 6.8 },
-  { name: '조이 트리비아니', anxiety: 2.3, avoidance: 2.0 },
-  { name: '클레어 언더우드', anxiety: 2.0, avoidance: 6.2 },
-];

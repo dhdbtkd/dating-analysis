@@ -1,95 +1,88 @@
-import { callLLM } from '@/lib/llm';
+import { callLLMJson } from '@/lib/llm';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 import { createServerClient } from '@/lib/supabase/server';
 import type { NextRequest } from 'next/server';
 import type { ChatMessage, ResultJson, WarmupAnswer, QuizDetail } from '@/types';
 
 interface AnalyzeRequestBody {
-  sessionId?: string;
-  chatHistory?: ChatMessage[];
-  ecrScores?: { anxiety: number; avoidance: number; typeName: string };
-  userInfo?: { nickname: string; age: number; gender: string };
-  warmupAnswers?: WarmupAnswer[];
-  quizDetails?: QuizDetail[];
+    sessionId?: string;
+    chatHistory?: ChatMessage[];
+    ecrScores?: { anxiety: number; avoidance: number; typeName: string };
+    userInfo?: { nickname: string; age: number; gender: string };
+    warmupAnswers?: WarmupAnswer[];
+    quizDetails?: QuizDetail[];
 }
 
-const DEFAULT_RESULT: ResultJson = {
-  typeName: '탐색 중인 연인',
-  tagline: '아직 나의 패턴을 찾아가는 중',
-  lovePattern: '연애에서 자신만의 패턴을 형성하는 과정에 있습니다.',
-  coreWound: '아직 명확히 드러나지 않은 내면의 욕구가 있습니다.',
-  actionTip: ['자신의 감정에 귀 기울이기', '파트너와 솔직한 대화 시도하기', '연애 일기 써보기'],
-  mindset: '지금 이 순간의 나도 충분히 괜찮습니다.',
-  quote: '나 자신을 이해하는 것이 사랑의 첫 걸음입니다.',
-  famousMatch: '헤르미온느 그레인저 — 이성과 감성의 균형을 찾아가는 중',
-  anxietyScore: 0,
-  avoidanceScore: 0,
+function interpretScore(score: number, axis: 'anxiety' | 'avoidance'): string {
+    const labels =
+        axis === 'anxiety'
+            ? { low: '안정에 가까움', mid: '보통 수준', high: '불안 경향 강함' }
+            : { low: '친밀감 허용', mid: '보통 수준', high: '거리 두는 경향 강함' };
+    if (score < 3.5) return `평균보다 낮음 (${labels.low})`;
+    if (score <= 4.5) return `경계값 — 혼합 양상 가능성 높음`;
+    return `평균보다 높음 (${labels.high})`;
+}
+
+const RESULT_SCHEMA = {
+    type: 'object',
+    properties: {
+        typeName: { type: 'string' },
+        tagline: { type: 'string' },
+        lovePattern: { type: 'string' },
+        coreWound: { type: 'string' },
+        actionTip: { type: 'array', items: { type: 'string' } },
+        mindset: { type: 'string' },
+        emotionalIntensity: { type: 'string', enum: ['낮음', '중간', '높음'] },
+        distanceTendency: { type: 'string', enum: ['낮음', '중간', '높음'] },
+    },
+    required: [
+        'typeName',
+        'tagline',
+        'lovePattern',
+        'coreWound',
+        'actionTip',
+        'mindset',
+        'emotionalIntensity',
+        'distanceTendency',
+    ],
+    additionalProperties: false,
 };
 
-function parseResultJson(text: string, anxiety: number, avoidance: number): ResultJson {
-  let parsed: Partial<ResultJson> | null = null;
-
-  // Try direct JSON parse
-  try {
-    const match = text.match(/\{[\s\S]*\}/);
-    if (match) {
-      parsed = JSON.parse(match[0]) as Partial<ResultJson>;
-    }
-  } catch {
-    // ignore
-  }
-
-  if (!parsed) return { ...DEFAULT_RESULT, anxietyScore: anxiety, avoidanceScore: avoidance };
-
-  return {
-    typeName: typeof parsed.typeName === 'string' ? parsed.typeName : DEFAULT_RESULT.typeName,
-    tagline: typeof parsed.tagline === 'string' ? parsed.tagline : DEFAULT_RESULT.tagline,
-    lovePattern: typeof parsed.lovePattern === 'string' ? parsed.lovePattern : DEFAULT_RESULT.lovePattern,
-    coreWound: typeof parsed.coreWound === 'string' ? parsed.coreWound : DEFAULT_RESULT.coreWound,
-    actionTip: Array.isArray(parsed.actionTip) ? parsed.actionTip as string[] : DEFAULT_RESULT.actionTip,
-    mindset: typeof parsed.mindset === 'string' ? parsed.mindset : DEFAULT_RESULT.mindset,
-    quote: typeof parsed.quote === 'string' ? parsed.quote : DEFAULT_RESULT.quote,
-    famousMatch: typeof parsed.famousMatch === 'string' ? parsed.famousMatch : DEFAULT_RESULT.famousMatch,
-    anxietyScore: anxiety,
-    avoidanceScore: avoidance,
-  };
-}
-
 export async function POST(request: NextRequest) {
-  const ip = getClientIp(request);
-  if (!checkRateLimit(`analyze:${ip}`, 10)) {
-    return Response.json({ error: '요청이 너무 많습니다.' }, { status: 429 });
-  }
-
-  try {
-    const body = await request.json() as AnalyzeRequestBody;
-    const { sessionId, chatHistory = [], ecrScores, userInfo, warmupAnswers = [], quizDetails = [] } = body;
-
-    if (!sessionId || !ecrScores || !userInfo) {
-      return Response.json({ error: '잘못된 요청입니다.' }, { status: 400 });
+    const ip = getClientIp(request);
+    if (!checkRateLimit(`analyze:${ip}`, 10)) {
+        return Response.json({ error: '요청이 너무 많습니다.' }, { status: 429 });
     }
 
-    const LIKERT_LEGEND = '1=전혀 그렇지 않다 / 2=그렇지 않다 / 3=약간 그렇지 않다 / 4=보통 / 5=약간 그렇다 / 6=그렇다 / 7=매우 그렇다';
+    try {
+        const body = (await request.json()) as AnalyzeRequestBody;
+        const { sessionId, chatHistory = [], ecrScores, userInfo, warmupAnswers = [], quizDetails = [] } = body;
 
-    const warmupSummary = warmupAnswers
-      .map((a) => `[측정: ${a.measures}]\n질문: ${a.questionText}\n답변: ${a.selectedText}`)
-      .join('\n\n');
+        if (!sessionId || !ecrScores || !userInfo) {
+            return Response.json({ error: '잘못된 요청입니다.' }, { status: 400 });
+        }
 
-    const quizSummary = quizDetails
-      .map((q, i) => `Q${i + 1}. ${q.questionText}\n선택한 점수: ${q.score}`)
-      .join('\n\n');
+        const LIKERT_LEGEND =
+            '1=전혀 그렇지 않다 / 2=그렇지 않다 / 3=약간 그렇지 않다 / 4=보통 / 5=약간 그렇다 / 6=그렇다 / 7=매우 그렇다';
 
-    const conversationText = chatHistory
-      .map((m) => `${m.role === 'user' ? '사용자' : 'AI'}: ${m.content}`)
-      .join('\n');
+        const warmupSummary = warmupAnswers
+            .map((a) => `[측정: ${a.measures}]\n질문: ${a.questionText}\n답변: ${a.selectedText}`)
+            .join('\n\n');
 
-    const system = `당신은 심리 분석 전문가입니다. 아래 대화와 ECR 점수를 바탕으로 사용자의 연애 패턴을 분석하고 정확히 아래 JSON 형식으로만 응답하세요. JSON 이외의 텍스트는 절대 포함하지 마세요.`;
+        const quizSummary = quizDetails
+            .map((q, i) => `Q${i + 1}. ${q.questionText}\n선택한 점수: ${q.score}`)
+            .join('\n\n');
 
-    const prompt = `사용자 정보:
+        const conversationText = chatHistory
+            .map((m) => `${m.role === 'user' ? '사용자' : 'AI'}: ${m.content}`)
+            .join('\n');
+
+        const system = `당신은 심리 분석 전문가입니다. 아래 데이터를 바탕으로 사용자의 연애 패턴을 분석하세요.`;
+
+        const prompt = `사용자 정보:
 - 이름: ${userInfo.nickname}, 나이: ${userInfo.age}세
-- ECR 불안 점수: ${ecrScores.anxiety.toFixed(2)} (1~7)
-- ECR 회피 점수: ${ecrScores.avoidance.toFixed(2)} (1~7)
-- 애착 유형: ${ecrScores.typeName}
+- ECR 불안 점수: ${ecrScores.anxiety.toFixed(2)} → ${interpretScore(ecrScores.anxiety, 'anxiety')}
+- ECR 회피 점수: ${ecrScores.avoidance.toFixed(2)} → ${interpretScore(ecrScores.avoidance, 'avoidance')}
 
 워밍업 응답:
 ${warmupSummary || '없음'}
@@ -100,43 +93,49 @@ ${quizSummary || '없음'}
 심층 대화:
 ${conversationText}
 
-아래 JSON 스키마로 정확히 응답하세요:
-{
-  "typeName": "감성적 유형명 (예: '소용돌이 속의 별', '침묵의 성채' 등 창의적으로)",
-  "tagline": "한 줄 저격 문장 (50자 이내)",
-  "lovePattern": "연애 패턴 설명 (200자 이내)",
-  "coreWound": "핵심 상처/공포 (100자 이내)",
-  "actionTip": ["구체적 행동 지침 1", "구체적 행동 지침 2", "구체적 행동 지침 3"],
-  "mindset": "마인드셋 전환 문장 (100자 이내)",
-  "quote": "대화 중 인상적인 사용자 발언 직접 인용 또는 유형 대표 인용구",
-  "famousMatch": "유명인/캐릭터 이름 + 한 줄 설명",
-  "anxietyScore": ${ecrScores!.anxiety},
-  "avoidanceScore": ${ecrScores!.avoidance}
-}`;
+각 필드 작성 지침:
+작성 지침:
+- typeName: 감성적 유형명 (예: '소용돌이 속의 별', '침묵의 성채' 등 창의적으로) — 동일 점수대라도 반드시 이 사람만의 고유한 이름으로
+- tagline: 한 줄 저격 문장 (50자 이내)
+- lovePattern: 연애 패턴 설명 (300자 이내)
+- coreWound: 핵심 상처/공포 (200자 이내)
+- actionTip: 구체적 행동 지침 3가지 배열
+- mindset: 마인드셋 전환 문장 (150자 이내)
+- anxietyScore: ${ecrScores.anxiety.toFixed(1)}
+- avoidanceScore: ${ecrScores.avoidance.toFixed(1)}
+- emotionalIntensity: 불안 점수 기반 — 3.5 미만=낮음 / 3.5~4.5=중간 / 4.5 초과=높음
+- distanceTendency: 회피 점수 기반 — 3.5 미만=낮음 / 3.5~4.5=중간 / 4.5 초과=높음
 
-    console.log('\n========== [/api/analyze] SYSTEM PROMPT ==========');
-    console.log(system);
-    console.log('\n========== [/api/analyze] USER PROMPT ==========');
-    console.log(prompt);
-    console.log('===================================================\n');
+주의사항:
+- 일반적인 유형 설명 금지 — 이 사람의 점수와 대화 내용에서만 도출할 것
+- 경계값(3.5~4.5) 점수는 반드시 혼합형 양상으로 표현할 것
+- 동일 유형이어도 점수 강도가 다르면 완전히 다른 결과를 생성할 것`;
 
-    // TODO: LLM 호출 임시 중단 — 프롬프트 확인 후 아래 두 줄 제거
-    return Response.json({ error: 'LLM 호출 임시 중단 중입니다.' }, { status: 503 });
-    // ↑ 여기까지 제거
+        console.log('\n========== [/api/analyze] SYSTEM PROMPT ==========');
+        console.log(system);
+        console.log('\n========== [/api/analyze] USER PROMPT ==========');
+        console.log(prompt);
+        console.log('===================================================\n');
 
-    const text = await callLLM([{ role: 'user', content: prompt }], system);
-    const result = parseResultJson(text, ecrScores.anxiety, ecrScores.avoidance);
+        const llmResult = await callLLMJson<Omit<ResultJson, 'anxietyScore' | 'avoidanceScore'>>(
+            [{ role: 'user', content: prompt }],
+            RESULT_SCHEMA,
+            'love_pattern_result',
+            system,
+        );
+        const result: ResultJson = {
+            ...llmResult,
+            anxietyScore: Math.round(ecrScores.anxiety * 10) / 10,
+            avoidanceScore: Math.round(ecrScores.avoidance * 10) / 10,
+        };
 
-    const supabase = createServerClient();
-    await supabase
-      .from('sessions')
-      .update({ result, consent: false })
-      .eq('id', sessionId);
+        const supabase = createServerClient();
+        await supabase.from('sessions').update({ result, consent: false }).eq('id', sessionId);
 
-    return Response.json(result);
-  } catch (err) {
-    console.error('[/api/analyze]', err);
-    const message = err instanceof Error ? err.message : String(err);
-    return Response.json({ error: '분석에 실패했습니다.', detail: message }, { status: 500 });
-  }
+        return Response.json(result);
+    } catch (err) {
+        console.error('[/api/analyze]', err);
+        const message = err instanceof Error ? err.message : String(err);
+        return Response.json({ error: '분석에 실패했습니다.', detail: message }, { status: 500 });
+    }
 }
