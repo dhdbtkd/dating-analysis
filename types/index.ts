@@ -30,7 +30,7 @@ export interface Question {
   reverse: boolean;
 }
 
-export interface ResultJson {
+export interface ResultCoreJson {
   typeName: string;
   tagline: string;
   lovePattern: string;
@@ -43,6 +43,23 @@ export interface ResultJson {
   distanceTendency: '낮음' | '중간' | '높음';
 }
 
+export interface ResultDetailJson {
+  reactionSequence: string[];
+  dominantTriggers: string[];
+  outerSignal: string;
+  innerSignal: string;
+  partnerImpact: string[];
+  protectiveStrength: string;
+  threatResponse: string;
+  growthRoadmap: string[];
+  analysisSignals: string[];
+}
+
+export type ResultJson = ResultCoreJson;
+
+export type ResultDetailStatus = 'idle' | 'pending' | 'completed' | 'failed';
+export type ResultCoreStatus = 'idle' | 'pending' | 'completed' | 'failed';
+
 export interface SessionRow {
   id: string;
   nickname: string;
@@ -54,7 +71,12 @@ export interface SessionRow {
   chat_history: ChatMessage[];
   warmup_answers: WarmupAnswer[];
   quiz_details: QuizDetail[];
-  result: ResultJson | null;
+  result: ResultCoreJson | null;
+  result_status: ResultCoreStatus;
+  result_error: string | null;
+  result_detail: ResultDetailJson | null;
+  result_detail_status: ResultDetailStatus;
+  result_detail_error: string | null;
   consent: boolean;
   created_at: string;
 }

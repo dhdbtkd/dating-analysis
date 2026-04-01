@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
@@ -12,12 +12,25 @@ const MESSAGES = [
   '결과 카드를 완성하는 중입니다...',
 ];
 
+const activeAnalysisKeys = new Set<string>();
+
 export function LoadingScreen() {
   const { ecrScores, userInfo, chatHistory, sessionId, setSessionId, setStep, selectedQuestions, quizAnswers, warmupAnswers } = useAppStore();
   const quizDetails = selectedQuestions.map((q, i) => ({ questionText: q.text, score: quizAnswers[i] ?? 0 }));
   const [msgIndex, setMsgIndex] = useState(0);
   const [error, setError] = useState('');
   const router = useRouter();
+  const analysisKey = useMemo(() => JSON.stringify({
+    nickname: userInfo?.nickname,
+    age: userInfo?.age,
+    gender: userInfo?.gender,
+    anxiety: ecrScores?.anxiety,
+    avoidance: ecrScores?.avoidance,
+    attachment: ecrScores?.typeName,
+    chatHistory,
+    warmupAnswers,
+    quizDetails,
+  }), [chatHistory, ecrScores?.anxiety, ecrScores?.avoidance, ecrScores?.typeName, quizDetails, userInfo?.age, userInfo?.gender, userInfo?.nickname, warmupAnswers]);
 
   useEffect(() => {
     const interval = setInterval(() => setMsgIndex((i) => (i + 1) % MESSAGES.length), 1800);
@@ -25,7 +38,13 @@ export function LoadingScreen() {
   }, []);
 
   const analyze = useCallback(async () => {
+    if (activeAnalysisKeys.has(analysisKey)) {
+      return;
+    }
+
+    activeAnalysisKeys.add(analysisKey);
     try {
+      setError('');
       let sid = sessionId;
       if (!sid) {
         const sessionRes = await fetch('/api/sessions', {
@@ -49,18 +68,42 @@ export function LoadingScreen() {
         setSessionId(sid);
         localStorage.setItem('dating_session_id', sid);
       }
+
+      const detailPromise = fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ sessionId: sid, mode: 'detail' }),
+        keepalive: true,
+      }).then((response) => {
+        if (!response.ok && response.status !== 202) {
+          throw new Error('상세 분석 실패');
+        }
+      });
+
       const analyzeRes = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ sessionId: sid, chatHistory, ecrScores, userInfo, warmupAnswers, quizDetails }),
+        body: JSON.stringify({
+          sessionId: sid,
+          mode: 'core',
+          chatHistory,
+          ecrScores,
+          userInfo,
+          warmupAnswers,
+          quizDetails,
+        }),
       });
       if (!analyzeRes.ok) throw new Error('분석 실패');
+      void detailPromise.catch((detailError) => {
+        console.error('[LoadingScreen] detail analyze failed', detailError);
+      });
       setStep('done');
       router.push(`/result/${sid}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : '오류가 발생했습니다. 다시 시도해주세요.');
+      activeAnalysisKeys.delete(analysisKey);
     }
-  }, [chatHistory, ecrScores, quizDetails, router, sessionId, setSessionId, setStep, userInfo, warmupAnswers]);
+  }, [analysisKey, chatHistory, ecrScores, quizDetails, router, sessionId, setSessionId, setStep, userInfo, warmupAnswers]);
 
   useEffect(() => {
     analyze();

@@ -1,6 +1,6 @@
 import { createServerClient } from '@/lib/supabase/server';
 import { ResultCard } from '@/components/result/ResultCard';
-import type { SessionRow, ResultJson } from '@/types';
+import type { SessionRow, ResultCoreJson, ResultDetailJson, ResultDetailStatus } from '@/types';
 
 interface PageProps {
   params: Promise<{ sessionId: string }>;
@@ -45,7 +45,10 @@ export default async function ResultPage({ params }: PageProps) {
     <div className="min-h-[100dvh] px-4 py-12 relative z-10">
       <div className="max-w-lg mx-auto">
         <ResultCard
-          result={session.result as ResultJson}
+          result={session.result as ResultCoreJson}
+          detailResult={session.result_detail as ResultDetailJson | null}
+          detailStatus={session.result_detail_status as ResultDetailStatus}
+          detailError={session.result_detail_error}
           sessionId={sessionId}
           nickname={session.nickname}
         />

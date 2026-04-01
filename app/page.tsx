@@ -13,7 +13,7 @@ export default function Home() {
   const { step } = useAppStore();
 
   return (
-    <main className="flex-1 relative z-10">
+    <main className="flex-1 relative z-10 overflow-hidden">
       <AnimatePresence mode="wait">
         {step === 'splash' && <SplashScreen key="splash" />}
         {step === 'intro' && <IntroScreen key="intro" />}

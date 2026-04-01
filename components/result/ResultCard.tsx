@@ -1,28 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-const ScatterChart = dynamic(() => import('./ScatterChart').then((m) => m.ScatterChart), { ssr: false });
 import { GoldButton } from '@/components/ui/GoldButton';
-import type { ResultJson, SessionRow } from '@/types';
+import type { ResultCoreJson, ResultDetailJson, ResultDetailStatus, SessionRow } from '@/types';
+
+const ScatterChart = dynamic(() => import('./ScatterChart').then((module) => module.ScatterChart), { ssr: false });
 
 function splitIntoParagraphs(text: string): string[] {
     if (text.length <= 80) return [text];
     const mid = Math.floor(text.length / 2);
-    // mid 기준으로 앞뒤에서 가장 가까운 마침표(。.!) 찾기
     const before = text.lastIndexOf('.', mid);
     const after = text.indexOf('.', mid);
     let cut = -1;
     if (before === -1 && after === -1) return [text];
-    else if (before === -1) cut = after;
+    if (before === -1) cut = after;
     else if (after === -1) cut = before;
     else cut = mid - before <= after - mid ? before : after;
     return [text.slice(0, cut + 1).trim(), text.slice(cut + 1).trim()].filter(Boolean);
 }
 
 interface ResultCardProps {
-    result: ResultJson;
+    result: ResultCoreJson;
+    detailResult: ResultDetailJson | null;
+    detailStatus: ResultDetailStatus;
+    detailError: string | null;
     sessionId: string;
     nickname: string;
 }
@@ -36,16 +39,16 @@ interface ConsentModalProps {
 
 function ConsentModal({ onAccept, onClose, onDelete, loading }: ConsentModalProps) {
     return (
-        <div className="fixed inset-0 flex items-center justify-center z-50 px-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
             <div
                 className="absolute inset-0"
                 style={{ backgroundColor: 'rgba(247,249,251,0.9)', backdropFilter: 'blur(8px)' }}
             />
-            <div className="relative rounded-3xl p-6 max-w-sm w-full soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                <h3 className="text-base font-bold mb-3" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
+            <div className="relative w-full max-w-sm rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                <h3 className="mb-3 text-base font-bold" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
                     개인정보 저장 동의
                 </h3>
-                <p className="text-sm mb-5 leading-relaxed" style={{ color: '#43474e' }}>
+                <p className="mb-5 text-sm leading-relaxed" style={{ color: '#43474e' }}>
                     커플 분석을 위해 검사 결과(닉네임, 애착 유형, 대화 내용)가 서버에 저장됩니다. 초대 링크를 통해
                     파트너와 함께 분석 결과를 확인하게 됩니다.
                 </p>
@@ -54,7 +57,7 @@ function ConsentModal({ onAccept, onClose, onDelete, loading }: ConsentModalProp
                         type="button"
                         onClick={onClose}
                         disabled={loading}
-                        className="flex-1 py-3 rounded-2xl text-sm transition-all"
+                        className="flex-1 rounded-2xl py-3 text-sm transition-all"
                         style={{ backgroundColor: '#f2f4f6', color: '#43474e' }}
                     >
                         닫기
@@ -67,7 +70,7 @@ function ConsentModal({ onAccept, onClose, onDelete, loading }: ConsentModalProp
                     type="button"
                     onClick={onDelete}
                     disabled={loading}
-                    className="w-full mt-3 py-3 rounded-2xl text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="mt-3 w-full rounded-2xl py-3 text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40"
                     style={{ backgroundColor: '#ffdad5', color: '#ba1a1a' }}
                 >
                     결과 삭제
@@ -77,8 +80,37 @@ function ConsentModal({ onAccept, onClose, onDelete, loading }: ConsentModalProp
     );
 }
 
-export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
+function DetailLoadingBlock({ message }: { message: string }) {
+    return (
+        <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                더 깊은 분석을 정리하는 중
+            </p>
+            <p className="text-xs leading-relaxed" style={{ color: '#43474e' }}>
+                {message}
+            </p>
+            <div className="mt-5 space-y-3">
+                <div className="h-3 w-4/5 animate-pulse rounded-full" style={{ backgroundColor: '#eceef0' }} />
+                <div className="h-3 w-full animate-pulse rounded-full" style={{ backgroundColor: '#eceef0' }} />
+                <div className="h-3 w-3/4 animate-pulse rounded-full" style={{ backgroundColor: '#eceef0' }} />
+            </div>
+        </div>
+    );
+}
+
+export function ResultCard({
+    result,
+    detailResult,
+    detailStatus,
+    detailError,
+    sessionId,
+    nickname,
+}: ResultCardProps) {
     const router = useRouter();
+    const [currentResult, setCurrentResult] = useState(result);
+    const [currentDetail, setCurrentDetail] = useState<ResultDetailJson | null>(detailResult);
+    const [currentDetailStatus, setCurrentDetailStatus] = useState<ResultDetailStatus>(detailStatus);
+    const [currentDetailError, setCurrentDetailError] = useState<string | null>(detailError);
     const [showConsent, setShowConsent] = useState(false);
     const [inviteUrl, setInviteUrl] = useState<string | null>(null);
     const [consentLoading, setConsentLoading] = useState(false);
@@ -89,16 +121,80 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
     const [regenLoading, setRegenLoading] = useState(false);
     const [regenMessage, setRegenMessage] = useState<string | null>(null);
 
+    useEffect(() => {
+        setCurrentResult(result);
+    }, [result]);
+
+    useEffect(() => {
+        setCurrentDetail(detailResult);
+        setCurrentDetailStatus(detailStatus);
+        setCurrentDetailError(detailError);
+    }, [detailError, detailResult, detailStatus]);
+
+    useEffect(() => {
+        if (currentDetail || currentDetailStatus === 'completed' || currentDetailStatus === 'failed') {
+            return;
+        }
+
+        let cancelled = false;
+        let retryTimer: number | undefined;
+
+        async function requestDetail() {
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ sessionId, mode: 'detail' }),
+                });
+
+                if (cancelled) return;
+
+                if (response.status === 202) {
+                    setCurrentDetailStatus('pending');
+                    retryTimer = window.setTimeout(() => {
+                        void requestDetail();
+                    }, 1800);
+                    return;
+                }
+
+                const payload = (await response.json()) as ResultDetailJson | { error?: string; detail?: string };
+
+                if (!response.ok) {
+                    const errorPayload = payload as { error?: string; detail?: string };
+                    throw new Error(errorPayload.detail ?? errorPayload.error ?? '상세 분석을 불러오지 못했습니다.');
+                }
+
+                const detailPayload: ResultDetailJson = payload as ResultDetailJson;
+                setCurrentDetail(detailPayload);
+                setCurrentDetailStatus('completed');
+                setCurrentDetailError(null);
+            } catch (error) {
+                if (cancelled) return;
+                setCurrentDetailStatus('failed');
+                setCurrentDetailError(error instanceof Error ? error.message : '상세 분석을 불러오지 못했습니다.');
+            }
+        }
+
+        if (currentDetailStatus === 'idle' || currentDetailStatus === 'pending') {
+            void requestDetail();
+        }
+
+        return () => {
+            cancelled = true;
+            if (retryTimer) window.clearTimeout(retryTimer);
+        };
+    }, [currentDetail, currentDetailStatus, sessionId]);
+
     async function handleConsent() {
         setConsentLoading(true);
         try {
-            const res = await fetch('/api/invite/create', {
+            const response = await fetch('/api/invite/create', {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
                 body: JSON.stringify({ sessionId }),
             });
-            if (!res.ok) throw new Error('초대 링크 생성 실패');
-            const data = (await res.json()) as { inviteUrl: string };
+            if (!response.ok) throw new Error('초대 링크 생성 실패');
+            const data = (await response.json()) as { inviteUrl: string };
             setInviteUrl(data.inviteUrl);
             setShowConsent(false);
         } catch {
@@ -111,6 +207,7 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
     async function handleDelete() {
         const confirmed = window.confirm('결과를 삭제하면 복구할 수 없습니다. 정말 삭제하시겠습니까?');
         if (!confirmed) return;
+
         try {
             setConsentLoading(true);
             await fetch('/api/sessions', {
@@ -128,24 +225,27 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
 
     async function handleCopy() {
         if (!inviteUrl) return;
+
         try {
             await navigator.clipboard.writeText(inviteUrl);
             setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+            window.setTimeout(() => setCopied(false), 2000);
         } catch {
             alert(inviteUrl);
         }
     }
 
     async function handleShare() {
-        const text = `[${result.typeName}] — 나의 연애 패턴 테스트 결과`;
+        const text = `[${currentResult.typeName}] — 나의 연애 패턴 테스트 결과`;
         const url = window.location.href;
+
         if (navigator.share) {
             await navigator.share({ title: text, url });
-        } else {
-            await navigator.clipboard.writeText(`${text} | ${url}`);
-            alert('링크가 복사되었습니다!');
+            return;
         }
+
+        await navigator.clipboard.writeText(`${text} | ${url}`);
+        alert('링크가 복사되었습니다!');
     }
 
     function handleAdminTriggerClick() {
@@ -158,26 +258,35 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
         }
     }
 
+    async function fetchSessionForRegenerate() {
+        const response = await fetch(`/api/sessions?id=${sessionId}`);
+        const payload = (await response.json()) as SessionRow | { error?: string };
+
+        if (!response.ok || !('warmup_answers' in payload) || !('quiz_details' in payload)) {
+            throw new Error('세션 정보를 불러오지 못했습니다.');
+        }
+
+        return payload;
+    }
+
     async function handleRegenerate() {
         setRegenLoading(true);
         setRegenMessage(null);
+
         try {
-            const sessionRes = await fetch(`/api/sessions?id=${sessionId}`);
-            const sessionData = (await sessionRes.json()) as SessionRow | { error?: string };
-            if (!sessionRes.ok || !('warmup_answers' in sessionData) || !('quiz_details' in sessionData)) {
-                throw new Error('세션 정보를 불러오지 못했습니다.');
-            }
+            const sessionData = await fetchSessionForRegenerate();
 
             if (!sessionData.warmup_answers.length || !sessionData.quiz_details.length) {
                 setRegenMessage('이 세션은 선택지 저장 이전 데이터라 정확 재생성이 불가능합니다.');
                 return;
             }
 
-            const analyzeRes = await fetch('/api/analyze', {
+            const coreResponse = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
                 body: JSON.stringify({
                     sessionId,
+                    mode: 'core',
                     chatHistory: sessionData.chat_history,
                     ecrScores: {
                         anxiety: sessionData.ecr_anxiety,
@@ -191,20 +300,42 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
                     },
                     warmupAnswers: sessionData.warmup_answers,
                     quizDetails: sessionData.quiz_details,
+                    resetDetail: true,
                 }),
             });
 
-            if (!analyzeRes.ok) {
-                throw new Error('결과 재생성에 실패했습니다.');
+            const corePayload = (await coreResponse.json()) as ResultCoreJson | { error?: string; detail?: string };
+            if (!coreResponse.ok) {
+                const errorPayload = corePayload as { error?: string; detail?: string };
+                throw new Error(errorPayload.detail ?? errorPayload.error ?? '결과 재생성에 실패했습니다.');
             }
 
-            setRegenMessage('저장된 선택지와 대화로 결과를 다시 생성했습니다.');
-            router.refresh();
+            const nextCoreResult: ResultCoreJson = corePayload as ResultCoreJson;
+            setCurrentResult(nextCoreResult);
+            setCurrentDetail(null);
+            setCurrentDetailStatus('pending');
+            setCurrentDetailError(null);
+            setRegenMessage('핵심 결과를 새로 만들었고, 하단의 상세 분석도 이어서 정리하고 있습니다.');
+
+            void fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ sessionId, mode: 'detail' }),
+                keepalive: true,
+            }).catch((error) => {
+                console.error('[ResultCard] detail regenerate failed', error);
+            });
         } catch (error) {
             setRegenMessage(error instanceof Error ? error.message : '결과 재생성에 실패했습니다.');
         } finally {
             setRegenLoading(false);
         }
+    }
+
+    async function handleRetryDetail() {
+        setCurrentDetail(null);
+        setCurrentDetailStatus('idle');
+        setCurrentDetailError(null);
     }
 
     return (
@@ -218,8 +349,8 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
                         className="w-full max-w-sm rounded-3xl p-7 text-center soft-lift"
                         style={{ backgroundColor: '#ffffff' }}
                     >
-                        <p className="text-4xl mb-4">삭제됨</p>
-                        <h2 className="text-xl font-bold mb-3" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
+                        <p className="mb-4 text-4xl">삭제됨</p>
+                        <h2 className="mb-3 text-xl font-bold" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
                             결과가 안전하게 삭제됐어요
                         </h2>
                         <p className="text-sm leading-relaxed" style={{ color: '#43474e' }}>
@@ -228,6 +359,7 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
                     </div>
                 </div>
             )}
+
             {showConsent && (
                 <ConsentModal
                     onAccept={handleConsent}
@@ -238,72 +370,78 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
             )}
 
             <div className="flex flex-col gap-8 break-words">
-                {/* 1블록: 첫 인상 */}
                 <div className="px-6">
                     <button
                         type="button"
                         onClick={handleAdminTriggerClick}
-                        className="w-full text-lg text-center font-semibold uppercase tracking-wider mb-6 text-zinc-600"
+                        className="mb-6 w-full text-center text-lg font-semibold uppercase tracking-wider text-zinc-600"
                     >
                         {nickname}님의 결과지
                     </button>
+
                     {adminUnlocked && (
                         <div className="mb-6 rounded-2xl p-4 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#ba1a1a' }}>
+                            <p className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: '#ba1a1a' }}>
                                 Admin
                             </p>
-                            <p className="text-xs leading-relaxed mb-3" style={{ color: '#43474e' }}>
-                                저장된 워밍업/퀴즈 선택지와 대화 기록으로 현재 결과를 다시 생성합니다.
+                            <p className="mb-3 text-xs leading-relaxed" style={{ color: '#43474e' }}>
+                                저장된 선택지와 대화 기록으로 핵심 결과를 먼저 다시 만들고, 하단의 깊은 분석은 이어서
+                                갱신합니다.
                             </p>
                             <GoldButton onClick={handleRegenerate} disabled={regenLoading} className="w-full">
                                 {regenLoading ? '재생성 중...' : '결과 다시 생성'}
                             </GoldButton>
                             {regenMessage && (
-                                <p className="text-xs leading-relaxed mt-3" style={{ color: regenMessage.includes('실패') || regenMessage.includes('불가능') ? '#ba1a1a' : '#0060ac' }}>
+                                <p
+                                    className="mt-3 text-xs leading-relaxed"
+                                    style={{
+                                        color:
+                                            regenMessage.includes('실패') || regenMessage.includes('불가능')
+                                                ? '#ba1a1a'
+                                                : '#0060ac',
+                                    }}
+                                >
                                     {regenMessage}
                                 </p>
                             )}
                         </div>
                     )}
+
                     <p className="text-xs">{nickname}님은</p>
-                    <h1
-                        className="text-3xl font-bold mb-4 leading-tight"
-                        style={{ fontFamily: 'Paperozi', color: '#002045' }}
-                    >
-                        {result.typeName}
+                    <h1 className="mb-4 text-3xl font-bold leading-tight" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
+                        {currentResult.typeName}
                     </h1>
-                    <p className="text-base leading-relaxed mb-6" style={{ color: '#43474e' }}>
-                        {result.tagline}
+                    <p className="mb-6 text-base leading-relaxed" style={{ color: '#43474e' }}>
+                        {currentResult.tagline}
                     </p>
                     <button
                         type="button"
                         onClick={handleShare}
-                        className="text-sm px-5 py-2.5 rounded-2xl transition-all active:scale-[0.98]"
+                        className="rounded-2xl px-5 py-2.5 text-sm transition-all active:scale-[0.98]"
                         style={{ backgroundColor: '#f2f4f6', color: '#43474e' }}
                     >
                         결과 공유하기
                     </button>
                 </div>
 
-                {/* 2블록: 좌표 맵 */}
                 <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                    <p className="text-xs font-semibold uppercase tracking-wider mb-5" style={{ color: '#0060ac' }}>
+                    <p className="mb-5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
                         2축 애착 지도
                     </p>
-                    <ScatterChart anxietyScore={result.anxietyScore} avoidanceScore={result.avoidanceScore} />
+                    <ScatterChart anxietyScore={currentResult.anxietyScore} avoidanceScore={currentResult.avoidanceScore} />
 
                     <div className="mt-5 flex flex-col gap-4">
                         {(
                             [
                                 {
                                     label: '감정 반응 강도',
-                                    score: result.anxietyScore,
-                                    intensity: result.emotionalIntensity,
+                                    score: currentResult.anxietyScore,
+                                    intensity: currentResult.emotionalIntensity,
                                 },
                                 {
                                     label: '거리 유지 성향',
-                                    score: result.avoidanceScore,
-                                    intensity: result.distanceTendency,
+                                    score: currentResult.avoidanceScore,
+                                    intensity: currentResult.distanceTendency,
                                 },
                             ] as const
                         ).map(({ label, score, intensity }) => {
@@ -312,13 +450,13 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
                                 intensity === '낮음' ? '#0060ac' : intensity === '중간' ? '#f97316' : '#ba1a1a';
                             return (
                                 <div key={label}>
-                                    <div className="flex justify-between text-xs font-semibold mb-2">
+                                    <div className="mb-2 flex justify-between text-xs font-semibold">
                                         <span style={{ color: '#43474e' }}>{label}</span>
                                         <span style={{ color }}>
                                             {score.toFixed(1)} · {intensity}
                                         </span>
                                     </div>
-                                    <div className="w-full h-1.5 rounded-full" style={{ backgroundColor: '#eceef0' }}>
+                                    <div className="h-1.5 w-full rounded-full" style={{ backgroundColor: '#eceef0' }}>
                                         <div
                                             className="h-1.5 rounded-full"
                                             style={{ width: `${pct}%`, backgroundColor: color }}
@@ -330,60 +468,53 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
                     </div>
                 </div>
 
-                {/* 3블록: 연애 패턴 */}
                 <div className="px-6">
-                    <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#0060ac' }}>
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
                         연애에서의 당신
                     </p>
-                    {splitIntoParagraphs(result.lovePattern).map((para, i) => (
+                    {splitIntoParagraphs(currentResult.lovePattern).map((paragraph, index) => (
                         <p
-                            key={para}
-                            className={`text-xs leading-relaxed ${i > 0 ? 'mt-4' : ''}`}
+                            key={paragraph}
+                            className={`text-xs leading-relaxed ${index > 0 ? 'mt-4' : ''}`}
                             style={{ color: '#191c1e' }}
                         >
-                            {para}
+                            {paragraph}
                         </p>
                     ))}
                 </div>
 
-                {/* 4블록: 핵심 상처 */}
                 <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                    <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#0060ac' }}>
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
                         마음이 예민해지는 지점
                     </p>
                     <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
-                        {result.coreWound}
+                        {currentResult.coreWound}
                     </p>
                 </div>
 
-                {/* 5블록: 마인드셋 전환 — 감정 강조 카드 */}
                 <div className="rounded-3xl p-7" style={{ backgroundColor: '#ffdad5' }}>
-                    <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: '#c8724a' }}>
+                    <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#c8724a' }}>
                         연인과의 관계를 다르게 보는 연습
                     </p>
-                    <p
-                        className="text-xs leading-relaxed font-medium"
-                        style={{ fontFamily: 'Paperozi', color: '#002045' }}
-                    >
-                        {result.mindset}
+                    <p className="text-xs font-medium leading-relaxed" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
+                        {currentResult.mindset}
                     </p>
                 </div>
 
-                {/* 6블록: 행동 팁 */}
                 <div className="px-6">
-                    <p className="text-xs font-semibold uppercase tracking-wider mb-5" style={{ color: '#0060ac' }}>
+                    <p className="mb-5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
                         앞으로 이렇게 해보세요.
                     </p>
                     <div className="flex flex-col gap-4">
-                        {result.actionTip.map((tip, i) => (
-                            <div key={tip} className="flex gap-4 items-start">
+                        {currentResult.actionTip.map((tip, index) => (
+                            <div key={tip} className="flex items-start gap-4">
                                 <div
-                                    className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                                    className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
                                     style={{ backgroundColor: '#dbeafe', color: '#002045' }}
                                 >
-                                    {i + 1}
+                                    {index + 1}
                                 </div>
-                                <p className="text-xs leading-relaxed pt-0.5" style={{ color: '#191c1e' }}>
+                                <p className="pt-0.5 text-xs leading-relaxed" style={{ color: '#191c1e' }}>
                                     {tip}
                                 </p>
                             </div>
@@ -391,14 +522,160 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
                     </div>
                 </div>
 
-                {/* 커플 분석 CTA */}
+                {currentDetail ? (
+                    <>
+                        <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                            <p className="mb-5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                관계 반응 시퀀스
+                            </p>
+                            <div className="flex flex-col gap-3">
+                                {currentDetail.reactionSequence.map((step, index) => (
+                                    <div key={step} className="flex items-start gap-3">
+                                        <div
+                                            className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                                            style={{ backgroundColor: '#002045', color: '#ffffff' }}
+                                        >
+                                            {index + 1}
+                                        </div>
+                                        <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                            {step}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                            <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                특히 흔들리는 장면
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {currentDetail.dominantTriggers.map((trigger) => (
+                                    <span
+                                        key={trigger}
+                                        className="rounded-full px-3 py-2 text-xs"
+                                        style={{ backgroundColor: '#f2f4f6', color: '#43474e' }}
+                                    >
+                                        {trigger}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                                <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                    겉으로 보이는 나
+                                </p>
+                                <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                    {currentDetail.outerSignal}
+                                </p>
+                            </div>
+                            <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                                <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                    속에서 실제로 일어나는 일
+                                </p>
+                                <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                    {currentDetail.innerSignal}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                            <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                상대는 이렇게 느낄 수 있어요
+                            </p>
+                            <div className="flex flex-col gap-3">
+                                {currentDetail.partnerImpact.map((item) => (
+                                    <p key={item} className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                        • {item}
+                                    </p>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                                <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                    안정감을 느낄 때의 강점
+                                </p>
+                                <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                    {currentDetail.protectiveStrength}
+                                </p>
+                            </div>
+                            <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                                <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                    흔들릴 때의 방어 반응
+                                </p>
+                                <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                    {currentDetail.threatResponse}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                            <p className="mb-5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                변화 로드맵
+                            </p>
+                            <div className="flex flex-col gap-4">
+                                {currentDetail.growthRoadmap.map((item, index) => (
+                                    <div key={item} className="flex items-start gap-4">
+                                        <div
+                                            className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                                            style={{ backgroundColor: '#dbeafe', color: '#002045' }}
+                                        >
+                                            {index + 1}
+                                        </div>
+                                        <p className="pt-0.5 text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                            {item}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                            <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                이번 분석에 특히 크게 반영된 단서
+                            </p>
+                            <div className="flex flex-col gap-3">
+                                {currentDetail.analysisSignals.map((signal) => (
+                                    <p key={signal} className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                        • {signal}
+                                    </p>
+                                ))}
+                            </div>
+                        </div>
+                    </>
+                ) : currentDetailStatus === 'failed' ? (
+                    <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#ba1a1a' }}>
+                            상세 분석을 아직 완성하지 못했어요
+                        </p>
+                        <p className="text-xs leading-relaxed" style={{ color: '#43474e' }}>
+                            {currentDetailError ?? '하단의 근거 기반 분석 섹션을 가져오는 중 문제가 발생했습니다.'}
+                        </p>
+                        <GoldButton onClick={handleRetryDetail} className="mt-5 w-full">
+                            상세 분석 다시 시도
+                        </GoldButton>
+                    </div>
+                ) : (
+                    <DetailLoadingBlock
+                        message={
+                            currentDetailStatus === 'pending'
+                                ? '상단 결과는 먼저 보여드렸고, 지금 관계 반응 흐름과 근거 단서를 더 촘촘하게 정리하고 있어요.'
+                                : '더 깊은 분석 섹션을 준비 중입니다.'
+                        }
+                    />
+                )}
+
                 <div className="flex flex-col gap-3 pb-12">
                     {inviteUrl ? (
                         <div className="rounded-3xl p-5 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                            <p className="text-xs font-semibold mb-2" style={{ color: '#43474e' }}>
+                            <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>
                                 초대 링크가 생성되었습니다
                             </p>
-                            <p className="text-xs mb-4 break-all" style={{ color: '#0060ac' }}>
+                            <p className="mb-4 break-all text-xs" style={{ color: '#0060ac' }}>
                                 {inviteUrl}
                             </p>
                             <GoldButton onClick={handleCopy} className="w-full">
@@ -410,7 +687,7 @@ export function ResultCard({ result, sessionId, nickname }: ResultCardProps) {
                             <GoldButton onClick={() => setShowConsent(true)} className="w-full">
                                 연인에게 보내기 💑
                             </GoldButton>
-                            <p className="text-xs text-center mt-3 leading-relaxed" style={{ color: '#74777f' }}>
+                            <p className="mt-3 text-center text-xs leading-relaxed" style={{ color: '#74777f' }}>
                                 연인도 검사를 완료하면, 두 사람의 애착 패턴이 어떻게 맞물리는지 함께 더 잘 연애하는
                                 방법을 분석해 드립니다.
                             </p>
