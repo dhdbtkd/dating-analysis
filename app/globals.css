@@ -1,99 +1,99 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @font-face {
-  font-family: 'Paperozi';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-3Light.woff2') format('woff2');
-  font-weight: 300;
-  font-display: swap;
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-3Light.woff2') format('woff2');
+    font-weight: 300;
+    font-display: swap;
 }
 @font-face {
-  font-family: 'Paperozi';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-display: swap;
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
 }
 @font-face {
-  font-family: 'Paperozi';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2');
-  font-weight: 500;
-  font-display: swap;
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-display: swap;
 }
 @font-face {
-  font-family: 'Paperozi';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2') format('woff2');
-  font-weight: 600;
-  font-display: swap;
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2') format('woff2');
+    font-weight: 600;
+    font-display: swap;
 }
 @font-face {
-  font-family: 'Paperozi';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-display: swap;
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
 }
 
 :root {
-  /* Surface hierarchy */
-  --color-surface: #f7f9fb;
-  --color-surface-low: #f2f4f6;
-  --color-surface-mid: #eceef0;
-  --color-surface-high: #e6e8ea;
-  --color-surface-card: #ffffff;
+    /* Surface hierarchy */
+    --color-surface: #f7f9fb;
+    --color-surface-low: #f2f4f6;
+    --color-surface-mid: #eceef0;
+    --color-surface-high: #e6e8ea;
+    --color-surface-card: #ffffff;
 
-  /* Primary — Deep Navy */
-  --color-primary: #002045;
-  --color-primary-container: #1a365d;
-  --color-primary-dim: #adc7f7;
+    /* Primary — Deep Navy */
+    --color-primary: #002045;
+    --color-primary-container: #1a365d;
+    --color-primary-dim: #adc7f7;
 
-  /* Secondary — Soft Blue */
-  --color-secondary: #0060ac;
-  --color-secondary-container: #64a8fe;
+    /* Secondary — Soft Blue */
+    --color-secondary: #0060ac;
+    --color-secondary-container: #64a8fe;
 
-  /* Tertiary — Warm Coral (emotional moments) */
-  --color-tertiary: #c8724a;
-  --color-tertiary-container: #ffdad5;
+    /* Tertiary — Warm Coral (emotional moments) */
+    --color-tertiary: #c8724a;
+    --color-tertiary-container: #ffdad5;
 
-  /* Text */
-  --color-on-surface: #191c1e;
-  --color-on-surface-variant: #43474e;
-  --color-outline: #74777f;
-  --color-outline-variant: #c4c6cf;
+    /* Text */
+    --color-on-surface: #191c1e;
+    --color-on-surface-variant: #43474e;
+    --color-outline: #74777f;
+    --color-outline-variant: #c4c6cf;
 
-  /* Fonts */
-  --font-display: 'Paperozi', 'Manrope', sans-serif;
-  --font-body: 'Inter', sans-serif;
+    /* Fonts */
+    --font-display: 'Paperozi', 'Manrope', sans-serif;
+    --font-body: 'Inter', sans-serif;
 
-  --background: var(--color-surface);
-  --foreground: var(--color-on-surface);
+    --background: var(--color-surface);
+    --foreground: var(--color-on-surface);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: 'Inter', sans-serif;
-  min-height: 100dvh;
-  overflow-x: hidden;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-  -webkit-tap-highlight-color: transparent;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Frosted glass utility */
 .glass {
-  background: rgba(247, 249, 251, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+    background: rgba(247, 249, 251, 0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 /* Premium CTA gradient */
 .cta-gradient {
-  background: linear-gradient(135deg, #002045 0%, #1a365d 100%);
+    background: linear-gradient(135deg, #002045 0%, #1a365d 100%);
 }
 
 /* Soft lift shadow */
 .soft-lift {
-  box-shadow: 0px 12px 32px rgba(25, 28, 30, 0.06);
+    box-shadow: 0px 12px 32px rgba(25, 28, 30, 0.06);
 }
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
