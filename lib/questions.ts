@@ -160,49 +160,49 @@ export const warmupPool: WarmupQuestion[] = [
 export const anxietyPool: Question[] = [
   {
     id: 'A1',
-    text: '연인에게 연락이 평소보다 늦게 올 때, 마음속에서 가장 먼저 떠오르는 생각은 어느 쪽에 가깝나요?',
+    text: '연인에게 연락이 평소보다 늦게 오면, 나를 덜 좋아하게 된 건 아닌지 먼저 떠오르는 편이다.',
     dimension: 'anxiety',
     reverse: false,
   },
   {
     id: 'A2',
-    text: '관계가 잘 흘러가고 있을 때도, 문득 "이게 언제까지 계속될까" 하는 생각이 찾아오는 편인가요?',
+    text: '관계가 잘 흘러가고 있어도, 문득 이게 오래가지 않을까 봐 불안해지는 편이다.',
     dimension: 'anxiety',
     reverse: false,
   },
   {
     id: 'A3',
-    text: '내가 원하는 만큼 상대도 이 관계에 마음을 쏟고 있는지, 가끔 가늠하기 어렵게 느껴지나요?',
+    text: '내가 원하는 만큼 상대도 이 관계에 마음을 쏟고 있는지 확신이 잘 서지 않는 편이다.',
     dimension: 'anxiety',
     reverse: false,
   },
   {
     id: 'A4',
-    text: '연인에게 "나 요즘 어때 보여?" 같은 말을 건네거나, 내가 소중한 사람인지 확인하고 싶어질 때가 있나요?',
+    text: '연인에게 내가 소중한 사람인지 확인받고 싶어질 때가 자주 있다.',
     dimension: 'anxiety',
     reverse: false,
   },
   {
     id: 'A5',
-    text: '연인이 나를 얼마나 아끼는지, 직접 말해주지 않으면 잘 믿어지지 않는 편인가요?',
+    text: '연인이 나를 아낀다고 직접 표현해주지 않으면 잘 믿기 어려운 편이다.',
     dimension: 'anxiety',
     reverse: false,
   },
   {
     id: 'A6',
-    text: '사소한 다툼이나 냉랭한 분위기 뒤에, "혹시 이게 끝의 시작일까" 하는 불안이 스치나요?',
+    text: '사소한 다툼이나 냉랭한 분위기 뒤에는, 이 관계가 끝나가는 건 아닐까 불안해지는 편이다.',
     dimension: 'anxiety',
     reverse: false,
   },
   {
     id: 'A7',
-    text: '연인과의 관계가 흔들릴지 모른다는 걱정 없이, 지금 이 순간에 온전히 있을 수 있는 편인가요?',
+    text: '연인과 함께 있을 때는 관계가 흔들릴까 봐 걱정하기보다, 그 순간에 편하게 머무를 수 있는 편이다.',
     dimension: 'anxiety',
     reverse: true,
   },
   {
     id: 'A8',
-    text: '연인이 갑자기 마음이 식으면 어떡하나 하는 생각이, 일상 속에서 거의 떠오르지 않는 편인가요?',
+    text: '연인이 갑자기 마음이 식을까 봐 걱정하는 생각이, 일상에서 자주 떠오르지는 않는 편이다.',
     dimension: 'anxiety',
     reverse: true,
   },
@@ -211,49 +211,49 @@ export const anxietyPool: Question[] = [
 export const avoidancePool: Question[] = [
   {
     id: 'V1',
-    text: '연인이 "요즘 무슨 생각 해?" 하고 물어올 때, 속마음을 그대로 꺼내기보다 적당히 추스르게 되나요?',
+    text: '연인이 요즘 무슨 생각을 하냐고 물어보면, 속마음을 그대로 말하기보다 한 번 정리해서 말하는 편이다.',
     dimension: 'avoidance',
     reverse: false,
   },
   {
     id: 'V2',
-    text: '힘든 일이 생겼을 때, 연인보다 혼자 해결하는 쪽이 더 편하게 느껴지나요?',
+    text: '힘든 일이 생기면, 연인에게 기대기보다 혼자 해결하는 쪽이 더 편한 편이다.',
     dimension: 'avoidance',
     reverse: false,
   },
   {
     id: 'V3',
-    text: '관계가 깊어질수록 오히려 살짝 물러서고 싶어지거나, 숨이 막히는 느낌이 드는 편인가요?',
+    text: '관계가 깊어질수록 오히려 한발 물러나고 싶어지거나 답답해지는 편이다.',
     dimension: 'avoidance',
     reverse: false,
   },
   {
     id: 'V4',
-    text: '연인에게 털어놓기 전에, "이 얘기까지 해야 하나?" 하고 한 번 더 망설이게 되나요?',
+    text: '연인에게 털어놓기 전에는, 이 얘기까지 해야 하나 하고 한 번 더 망설이는 편이다.',
     dimension: 'avoidance',
     reverse: false,
   },
   {
     id: 'V5',
-    text: '연인과 마음이 가까워지는 느낌이 들 때, 자연스럽고 편안한 편인가요?',
+    text: '연인과 마음이 가까워지는 느낌이 들 때, 자연스럽고 편안한 편이다.',
     dimension: 'avoidance',
     reverse: true,
   },
   {
     id: 'V6',
-    text: '기댈 수 있는 사람이 곁에 있다는 느낌, 연인과의 관계에서 쉽게 느껴지나요?',
+    text: '연인과 함께 있을 때, 기댈 수 있는 사람이 곁에 있다는 느낌을 쉽게 받는 편이다.',
     dimension: 'avoidance',
     reverse: true,
   },
   {
     id: 'V7',
-    text: '서로의 일상에 자연스럽게 스며드는 것, 연인과의 관계에서 즐거운 편인가요?',
+    text: '연인과 서로의 일상에 자연스럽게 스며드는 과정이 즐거운 편이다.',
     dimension: 'avoidance',
     reverse: true,
   },
   {
     id: 'V8',
-    text: '연인이 감정적으로 많이 기대오거나 의지하려 할 때, 부담스럽거나 불편해지는 편인가요?',
+    text: '연인이 감정적으로 많이 기대거나 의지하려 하면, 부담스럽게 느껴지는 편이다.',
     dimension: 'avoidance',
     reverse: false,
   },
@@ -284,4 +284,3 @@ export function getAttachmentAcademic(anxiety: number, avoidance: number): strin
   if (anxiety < 4 && avoidance >= 4) return '거부-회피형';
   return '두려움-회피형';
 }
-
