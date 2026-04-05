@@ -37,8 +37,8 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950">
-      <div className="w-full max-w-sm p-8 bg-gray-900 rounded-2xl shadow-xl">
+    <div className="min-h-[100dvh] flex items-center justify-center bg-gray-950 px-4">
+      <div className="w-full max-w-sm p-6 md:p-8 bg-gray-900 rounded-2xl shadow-xl">
         <h1 className="text-xl font-semibold text-white mb-6">Admin</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input

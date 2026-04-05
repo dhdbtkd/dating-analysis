@@ -96,39 +96,44 @@ export default function AdminDashboardPage() {
   const availableModels = selected ? (PROVIDER_MODELS[selected.provider] ?? []) : [];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex">
-      {/* Sidebar */}
-      <aside className="w-56 shrink-0 border-r border-gray-800 p-4 flex flex-col gap-1">
-        <p className="text-xs text-gray-500 font-medium uppercase tracking-widest mb-3">Prompts</p>
-        {configs.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => selectConfig(c)}
-            className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-              selected?.id === c.id
-                ? 'bg-gray-800 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-            }`}
-          >
-            {CONFIG_LABELS[c.key] ?? c.key}
-            {!c.is_active && <span className="ml-1 text-xs text-gray-600">(off)</span>}
-          </button>
-        ))}
-      </aside>
+    <div className="min-h-screen bg-gray-950 text-white flex flex-col md:flex-row">
+      {/* Nav — horizontal tabs on mobile, vertical sidebar on desktop */}
+      <nav className="md:w-52 md:shrink-0 md:border-r md:border-gray-800 md:p-4 md:flex md:flex-col md:gap-1
+                      border-b border-gray-800 overflow-x-auto">
+        <p className="hidden md:block text-xs text-gray-500 font-medium uppercase tracking-widest mb-3">Prompts</p>
+        <div className="flex md:flex-col gap-1 p-3 md:p-0">
+          {configs.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => selectConfig(c)}
+              className={`shrink-0 text-left px-3 py-2 rounded-lg text-sm transition-colors whitespace-nowrap ${
+                selected?.id === c.id
+                  ? 'bg-gray-800 text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+              }`}
+            >
+              {CONFIG_LABELS[c.key] ?? c.key}
+              {!c.is_active && <span className="ml-1 text-xs text-gray-600">(off)</span>}
+            </button>
+          ))}
+        </div>
+      </nav>
 
       {/* Main */}
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto">
         {selected ? (
-          <div className="max-w-3xl flex flex-col gap-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-lg font-semibold">{CONFIG_LABELS[selected.key] ?? selected.key}</h1>
-              <div className="flex items-center gap-3">
-                {saved && <span className="text-green-400 text-sm">저장됨</span>}
-                {error && <span className="text-red-400 text-sm">{error}</span>}
+          <div className="flex flex-col gap-5 p-4 md:p-8 max-w-3xl">
+            {/* Header — sticky on mobile */}
+            <div className="sticky top-0 z-10 bg-gray-950 py-3 -mx-4 px-4 md:static md:p-0 md:bg-transparent
+                            flex items-center justify-between border-b border-gray-800/60 md:border-0">
+              <h1 className="text-base md:text-lg font-semibold">{CONFIG_LABELS[selected.key] ?? selected.key}</h1>
+              <div className="flex items-center gap-2 md:gap-3">
+                {saved && <span className="text-green-400 text-xs md:text-sm">저장됨</span>}
+                {error && <span className="text-red-400 text-xs md:text-sm max-w-[140px] text-right leading-tight">{error}</span>}
                 <button
                   onClick={save}
                   disabled={saving}
-                  className="px-4 py-2 rounded-lg bg-white text-gray-900 text-sm font-medium hover:bg-gray-100 disabled:opacity-40 transition-colors"
+                  className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg bg-white text-gray-900 text-sm font-medium hover:bg-gray-100 disabled:opacity-40 transition-colors"
                 >
                   {saving ? '저장 중...' : '저장'}
                 </button>
@@ -136,7 +141,7 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Provider & Model */}
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex flex-col gap-1.5 flex-1">
                 <label className="text-xs text-gray-400">Provider</label>
                 <select
@@ -147,7 +152,7 @@ export default function AdminDashboardPage() {
                     setSelected({ ...selected, provider: p, model: firstModel });
                     setSaved(false);
                   }}
-                  className="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-sm focus:outline-none focus:border-gray-500"
+                  className="px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-sm focus:outline-none focus:border-gray-500"
                 >
                   {Object.keys(PROVIDER_MODELS).map((p) => (
                     <option key={p} value={p}>{p}</option>
@@ -160,14 +165,14 @@ export default function AdminDashboardPage() {
                   list={`models-${selected.id}`}
                   value={selected.model}
                   onChange={(e) => updateField('model', e.target.value)}
-                  className="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-sm focus:outline-none focus:border-gray-500"
+                  className="px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-sm focus:outline-none focus:border-gray-500"
                 />
                 <datalist id={`models-${selected.id}`}>
                   {availableModels.map((m) => <option key={m} value={m} />)}
                 </datalist>
               </div>
-              <div className="flex flex-col gap-1.5 justify-end">
-                <label className="flex items-center gap-2 cursor-pointer pb-2">
+              <div className="flex items-center sm:items-end sm:pb-0.5">
+                <label className="flex items-center gap-2 cursor-pointer py-2 sm:py-0">
                   <input
                     type="checkbox"
                     checked={selected.is_active}
@@ -185,7 +190,7 @@ export default function AdminDashboardPage() {
               <textarea
                 value={selected.system_prompt}
                 onChange={(e) => updateField('system_prompt', e.target.value)}
-                rows={8}
+                rows={7}
                 className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-sm font-mono leading-relaxed resize-y focus:outline-none focus:border-gray-500"
               />
               {selected.key === 'chat' && (
@@ -207,7 +212,7 @@ export default function AdminDashboardPage() {
                     <textarea
                       value={part.content}
                       onChange={(e) => updatePart(i, e.target.value)}
-                      rows={6}
+                      rows={5}
                       className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-sm font-mono leading-relaxed resize-y focus:outline-none focus:border-gray-500"
                     />
                   </div>
@@ -215,12 +220,12 @@ export default function AdminDashboardPage() {
               </div>
             )}
 
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 pb-6">
               마지막 수정: {new Date(selected.updated_at).toLocaleString('ko-KR')}
             </p>
           </div>
         ) : (
-          <p className="text-gray-500">설정을 불러오는 중...</p>
+          <p className="p-6 text-gray-500 text-sm">설정을 불러오는 중...</p>
         )}
       </main>
     </div>
