@@ -181,15 +181,15 @@ export default function AdminDashboardPage() {
               </div>
               <div className="flex flex-col gap-1.5 flex-1">
                 <label className="text-xs text-gray-400">Model</label>
-                <input
-                  list={`models-${selected.id}`}
+                <select
                   value={selected.model}
                   onChange={(e) => updateField('model', e.target.value)}
                   className="px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-sm focus:outline-none focus:border-gray-500"
-                />
-                <datalist id={`models-${selected.id}`}>
-                  {availableModels.map((m) => <option key={m} value={m} />)}
-                </datalist>
+                >
+                  {availableModels.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
               </div>
               <div className="flex items-center sm:items-end sm:pb-0.5">
                 <label className="flex items-center gap-2 cursor-pointer py-2 sm:py-0">
