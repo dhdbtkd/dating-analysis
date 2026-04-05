@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 
 interface PromptPart {
   key: string;
@@ -147,6 +147,7 @@ export default function AdminDashboardPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [modal, setModal] = useState<ExpandModal | null>(null);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetch('/api/admin/config')
@@ -158,35 +159,14 @@ export default function AdminDashboardPage() {
       .catch(() => setError('설정을 불러오지 못했습니다.'));
   }, []);
 
-  function selectConfig(config: LlmConfig) {
-    setSelected(structuredClone(config));
-    setSaved(false);
-    setError('');
-  }
-
-  function updateField<K extends keyof LlmConfig>(field: K, value: LlmConfig[K]) {
-    if (!selected) return;
-    setSelected({ ...selected, [field]: value });
-    setSaved(false);
-  }
-
-  function updatePart(index: number, content: string) {
-    if (!selected) return;
-    const parts = [...selected.prompt_parts];
-    parts[index] = { ...parts[index], content };
-    setSelected({ ...selected, prompt_parts: parts });
-    setSaved(false);
-  }
-
-  async function save() {
-    if (!selected) return;
+  const save = useCallback(async (config: LlmConfig) => {
     setSaving(true);
     setError('');
     try {
       const res = await fetch('/api/admin/config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(selected),
+        body: JSON.stringify(config),
       });
       const data = await res.json() as LlmConfig & { error?: string };
       if (!res.ok) {
@@ -201,6 +181,35 @@ export default function AdminDashboardPage() {
     } finally {
       setSaving(false);
     }
+  }, []);
+
+  function scheduleAutoSave(config: LlmConfig) {
+    setSaved(false);
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => save(config), 3000);
+  }
+
+  function selectConfig(config: LlmConfig) {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    setSelected(structuredClone(config));
+    setSaved(false);
+    setError('');
+  }
+
+  function updateField<K extends keyof LlmConfig>(field: K, value: LlmConfig[K]) {
+    if (!selected) return;
+    const next = { ...selected, [field]: value };
+    setSelected(next);
+    scheduleAutoSave(next);
+  }
+
+  function updatePart(index: number, content: string) {
+    if (!selected) return;
+    const parts = [...selected.prompt_parts];
+    parts[index] = { ...parts[index], content };
+    const next = { ...selected, prompt_parts: parts };
+    setSelected(next);
+    scheduleAutoSave(next);
   }
 
   const availableModels = selected ? (PROVIDER_MODELS[selected.provider] ?? []) : [];
@@ -241,14 +250,16 @@ export default function AdminDashboardPage() {
                               flex items-center justify-between border-b border-gray-800/60 md:border-0">
                 <h1 className="text-base md:text-lg font-semibold">{CONFIG_LABELS[selected.key] ?? selected.key}</h1>
                 <div className="flex items-center gap-2 md:gap-3">
-                  {saved && <span className="text-green-400 text-xs md:text-sm">저장됨</span>}
+                  {saving && <span className="text-gray-500 text-xs md:text-sm">저장 중...</span>}
+                  {!saving && saved && <span className="text-green-400 text-xs md:text-sm">저장됨</span>}
+                  {!saving && !saved && !error && <span className="text-gray-600 text-xs">3초 후 자동저장</span>}
                   {error && <span className="text-red-400 text-xs md:text-sm max-w-[140px] text-right leading-tight">{error}</span>}
                   <button
-                    onClick={save}
+                    onClick={() => { if (debounceTimer.current) clearTimeout(debounceTimer.current); if (selected) save(selected); }}
                     disabled={saving}
                     className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg bg-white text-gray-900 text-sm font-medium hover:bg-gray-100 disabled:opacity-40 transition-colors"
                   >
-                    {saving ? '저장 중...' : '저장'}
+                    저장
                   </button>
                 </div>
               </div>
