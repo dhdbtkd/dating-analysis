@@ -63,8 +63,8 @@ export const warmupPool: WarmupQuestion[] = [
     options: [
       { label: 'A', text: '동반자' },
       { label: 'B', text: '전부' },
-      { label: 'C', text: '독립체' },
-      { label: 'D', text: '관찰자' },
+      { label: 'C', text: '나 자신' },
+      { label: 'D', text: '지켜보는 사람' },
     ],
   },
   {
@@ -172,7 +172,7 @@ export const anxietyPool: Question[] = [
   },
   {
     id: 'A3',
-    text: '내가 원하는 만큼 상대도 이 관계에 마음을 쏟고 있는지 확신이 잘 서지 않는 편이다.',
+    text: '상대가 나만큼 이 관계에 진심인지, 가끔 확신이 서지 않는 편이다.',
     dimension: 'anxiety',
     reverse: false,
   },
@@ -196,13 +196,13 @@ export const anxietyPool: Question[] = [
   },
   {
     id: 'A7',
-    text: '연인과 함께 있을 때는 관계가 흔들릴까 봐 걱정하기보다, 그 순간에 편하게 머무를 수 있는 편이다.',
+    text: '연인과 함께 있을 때는 관계가 흔들릴까 봐 걱정하기보다, 그 순간을 그냥 편하게 즐기는 편이다.',
     dimension: 'anxiety',
     reverse: true,
   },
   {
     id: 'A8',
-    text: '연인이 갑자기 마음이 식을까 봐 걱정하는 생각이, 일상에서 자주 떠오르지는 않는 편이다.',
+    text: '연인이 마음이 식을까 봐 걱정하는 일이 일상에서 자주 있지는 않은 편이다.',
     dimension: 'anxiety',
     reverse: true,
   },
@@ -223,7 +223,7 @@ export const avoidancePool: Question[] = [
   },
   {
     id: 'V3',
-    text: '관계가 깊어질수록 오히려 한발 물러나고 싶어지거나 답답해지는 편이다.',
+    text: '관계가 깊어질수록 오히려 조금 숨이 막히거나 거리를 두고 싶어지는 편이다.',
     dimension: 'avoidance',
     reverse: false,
   },
@@ -241,7 +241,7 @@ export const avoidancePool: Question[] = [
   },
   {
     id: 'V6',
-    text: '연인과 함께 있을 때, 기댈 수 있는 사람이 곁에 있다는 느낌을 쉽게 받는 편이다.',
+    text: '연인이 곁에 있으면 기댈 수 있다는 느낌을 자연스럽게 받는 편이다.',
     dimension: 'avoidance',
     reverse: true,
   },

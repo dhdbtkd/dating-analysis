@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope' });
 
 export const metadata: Metadata = {
-  title: "당신도 몰랐던 나의 연애 패턴",
+  title: "알고보면 보이는 나의 연애",
   description: "ECR 척도 기반 성인 애착 유형 측정 + LLM 심층 대화로 나의 연애 패턴을 탐색해보세요.",
 };
 
