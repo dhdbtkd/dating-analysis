@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import type { CoupleAnalysis, SessionRow } from '@/types';
 
 function GenderIcon({ gender }: { gender: string }) {
@@ -32,10 +32,24 @@ interface CoupleResultCardProps {
 
 export function CoupleResultCard({ coupleId, session1, session2, analysis: initialAnalysis }: CoupleResultCardProps) {
   const [analysis, setAnalysis] = useState(initialAnalysis);
+  console.log('[CoupleResultCard] 초기 분석 데이터:', initialAnalysis);
   const [adminUnlocked, setAdminUnlocked] = useState(false);
   const [clickTimestamps, setClickTimestamps] = useState<number[]>([]);
   const [regenLoading, setRegenLoading] = useState(false);
   const [regenMessage, setRegenMessage] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = useCallback(async () => {
+    const url = window.location.href;
+    const text = `${session1.nickname}님과 ${session2.nickname}님의 커플 연애 패턴 분석 결과`;
+    if (navigator.share) {
+      await navigator.share({ title: text, url }).catch(() => {});
+      return;
+    }
+    await navigator.clipboard.writeText(url).catch(() => {});
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
+  }, [session1.nickname, session2.nickname]);
 
   function handleAdminTriggerClick() {
     const now = Date.now();
@@ -61,6 +75,7 @@ export function CoupleResultCard({ coupleId, session1, session2, analysis: initi
         throw new Error(err.error ?? '재생성에 실패했습니다.');
       }
       const next = (await res.json()) as CoupleAnalysis;
+      console.log('[CoupleResultCard] 재생성 결과:', next);
       setAnalysis(next);
       setRegenMessage('커플 분석을 다시 생성했습니다.');
     } catch (e) {
@@ -236,6 +251,21 @@ export function CoupleResultCard({ coupleId, session1, session2, analysis: initi
           style={{ fontFamily: 'Paperozi', color: '#002045' }}
         >
           {analysis.compatibilityNote}
+        </p>
+      </div>
+
+      {/* Share */}
+      <div className="flex flex-col items-center gap-3 pb-10">
+        <button
+          type="button"
+          onClick={handleShare}
+          className="rounded-2xl px-6 py-3 text-sm font-semibold transition-all active:scale-[0.98]"
+          style={{ backgroundColor: '#f2f4f6', color: '#43474e' }}
+        >
+          {copied ? '링크 복사됨!' : '결과 공유하기'}
+        </button>
+        <p className="text-xs text-center" style={{ color: '#74777f' }}>
+          상대방에게 이 링크를 공유하면 함께 볼 수 있어요
         </p>
       </div>
     </div>

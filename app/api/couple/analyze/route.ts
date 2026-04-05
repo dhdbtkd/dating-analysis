@@ -82,37 +82,92 @@ export async function POST(request: NextRequest) {
 }`;
     const llmOpts = dbConfig ? { provider: dbConfig.provider, model: dbConfig.model } : undefined;
 
-    const prompt = `두 사람의 애착 프로필:
+    function buildPersonContext(s: SessionRow): string {
+      const likertLegend = '1=전혀 그렇지 않다 / 4=보통 / 7=매우 그렇다';
 
-${s1.nickname}님 (${s1.attachment_type})
-   - 불안: ${s1.ecr_anxiety.toFixed(2)}, 회피: ${s1.ecr_avoidance.toFixed(2)}
+      const warmup = Array.isArray(s.warmup_answers) && s.warmup_answers.length > 0
+        ? s.warmup_answers.map((a) => `  [${a.measures}] ${a.questionText}\n  → ${a.selectedText}`).join('\n')
+        : '  없음';
 
-${s2.nickname}님 (${s2.attachment_type})
-   - 불안: ${s2.ecr_anxiety.toFixed(2)}, 회피: ${s2.ecr_avoidance.toFixed(2)}
+      const quiz = Array.isArray(s.quiz_details) && s.quiz_details.length > 0
+        ? s.quiz_details.map((q, i) => `  Q${i + 1}. ${q.questionText} → ${q.score}점`).join('\n')
+        : '  없음';
 
-분석 결과에서 두 사람을 지칭할 때는 반드시 "${s1.nickname}님", "${s2.nickname}님"으로 이름을 사용하세요. 숫자나 "1번", "2번" 표현을 사용하지 마세요.
+      const chat = Array.isArray(s.chat_history) && s.chat_history.length > 0
+        ? s.chat_history.map((m) => `  ${m.role === 'user' ? `${s.nickname}` : 'AI'}: ${m.content}`).join('\n')
+        : '  없음';
+
+      const typeName = (s.result as { typeName?: string } | null)?.typeName ?? s.attachment_type;
+
+      return `[${s.nickname}님 — ${s.age}세, ${s.gender === 'female' ? '여성' : '남성'}]
+유형: ${typeName}
+ECR 불안: ${s.ecr_anxiety.toFixed(2)} / 회피: ${s.ecr_avoidance.toFixed(2)}
+
+워밍업 응답:
+${warmup}
+
+ECR 척도 응답 (${likertLegend}):
+${quiz}
+
+심층 대화:
+${chat}`;
+    }
+
+    const prompt = `아래는 두 사람의 상세 프로필입니다. 각자의 연애 패턴, 대화 내용, 척도 응답을 충분히 읽고 두 사람의 조합을 분석하세요.
+
+${buildPersonContext(s1)}
+
+────────────────────────
+
+${buildPersonContext(s2)}
+
+────────────────────────
+
+분석 시 유의사항:
+- 두 사람을 지칭할 때는 반드시 "${s1.nickname}님", "${s2.nickname}님"으로 이름을 사용하세요
+- 두 사람의 나이대와 성별을 고려해 현실적인 언어로 분석하세요
+- 일반론이 아닌, 위 대화와 응답에서 실제로 보이는 패턴만 근거로 삼으세요
 
 ${staticInstructions}`;
+
+    console.log('\n========== [/api/couple/analyze] PROMPT ==========');
+    console.log(prompt);
+    console.log(`\n--- 컨텍스트 요약 ---`);
+    console.log(`${s1.nickname}: 워밍업 ${s1.warmup_answers?.length ?? 0}개, 척도 ${s1.quiz_details?.length ?? 0}개, 대화 ${s1.chat_history?.length ?? 0}턴`);
+    console.log(`${s2.nickname}: 워밍업 ${s2.warmup_answers?.length ?? 0}개, 척도 ${s2.quiz_details?.length ?? 0}개, 대화 ${s2.chat_history?.length ?? 0}턴`);
+    console.log('====================================================\n');
 
     const DEFAULT_ANALYSIS = buildDefaultAnalysis(s1.nickname, s2.nickname);
     let analysis: CoupleAnalysis = DEFAULT_ANALYSIS;
     try {
       const text = await callLLM([{ role: 'user', content: prompt }], system, llmOpts);
+      console.log('\n========== [/api/couple/analyze] LLM RAW RESPONSE ==========');
+      console.log(text);
+      console.log('=============================================================\n');
+
       const match = text.match(/\{[\s\S]*\}/);
-      if (match) {
-        const parsed = JSON.parse(match[0]) as Partial<CoupleAnalysis>;
-        analysis = {
-          summary: typeof parsed.summary === 'string' ? parsed.summary : DEFAULT_ANALYSIS.summary,
-          conflictPattern: typeof parsed.conflictPattern === 'string' ? parsed.conflictPattern : DEFAULT_ANALYSIS.conflictPattern,
-                eachPersonsCore: Array.isArray(parsed.eachPersonsCore) ? parsed.eachPersonsCore as { name: string; core: string }[] : DEFAULT_ANALYSIS.eachPersonsCore,
-          coupleStrengths: typeof parsed.coupleStrengths === 'string' ? parsed.coupleStrengths : DEFAULT_ANALYSIS.coupleStrengths,
-          communicationTips: Array.isArray(parsed.communicationTips) ? parsed.communicationTips as string[] : DEFAULT_ANALYSIS.communicationTips,
-          crisisScript: typeof parsed.crisisScript === 'string' ? parsed.crisisScript : DEFAULT_ANALYSIS.crisisScript,
-          compatibilityNote: typeof parsed.compatibilityNote === 'string' ? parsed.compatibilityNote : DEFAULT_ANALYSIS.compatibilityNote,
-        };
+      if (!match) {
+        console.error('[/api/couple/analyze] JSON 추출 실패 — 정규식 매칭 안 됨');
+      } else {
+        try {
+          const parsed = JSON.parse(match[0]) as Partial<CoupleAnalysis>;
+          console.log('[/api/couple/analyze] JSON 파싱 성공:', JSON.stringify(parsed, null, 2));
+          analysis = {
+            summary: typeof parsed.summary === 'string' ? parsed.summary : DEFAULT_ANALYSIS.summary,
+            conflictPattern: typeof parsed.conflictPattern === 'string' ? parsed.conflictPattern : DEFAULT_ANALYSIS.conflictPattern,
+            eachPersonsCore: Array.isArray(parsed.eachPersonsCore) ? parsed.eachPersonsCore as { name: string; core: string }[] : DEFAULT_ANALYSIS.eachPersonsCore,
+            coupleStrengths: typeof parsed.coupleStrengths === 'string' ? parsed.coupleStrengths : DEFAULT_ANALYSIS.coupleStrengths,
+            communicationTips: Array.isArray(parsed.communicationTips) ? parsed.communicationTips as string[] : DEFAULT_ANALYSIS.communicationTips,
+            crisisScript: typeof parsed.crisisScript === 'string' ? parsed.crisisScript : DEFAULT_ANALYSIS.crisisScript,
+            compatibilityNote: typeof parsed.compatibilityNote === 'string' ? parsed.compatibilityNote : DEFAULT_ANALYSIS.compatibilityNote,
+          };
+        } catch (parseError) {
+          console.error('[/api/couple/analyze] JSON.parse 실패:', parseError);
+          console.error('파싱 시도한 문자열:', match[0].slice(0, 500));
+        }
       }
-    } catch {
-      // use default
+    } catch (llmError) {
+      console.error('[/api/couple/analyze] LLM 호출 실패:', llmError);
     }
 
     await supabase

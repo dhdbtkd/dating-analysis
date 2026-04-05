@@ -31,7 +31,10 @@ export function ChatScreen() {
     const lastTypingEmitAtRef = useRef(0);
     const lastInputHadTextRef = useRef(false);
     const userTurns = chatHistory.filter((m) => m.role === 'user').length;
-    const lastMessageContent = chatHistory[chatHistory.length - 1]?.content ?? '';
+    const lastMessage = chatHistory[chatHistory.length - 1];
+    const lastMessageContent = lastMessage?.content ?? '';
+    // 첫 토큰 수신 전(빈 assistant 메시지)일 때만 ... 말풍선 표시
+    const showTypingIndicator = loading && lastMessage?.role === 'assistant' && lastMessageContent.length === 0;
 
     useEffect(() => {
         emitChatBgEnergy({ energy: 0.26, pulse: 0.06 });
@@ -167,13 +170,13 @@ export function ChatScreen() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-6 py-8">
                 <div className="max-w-lg mx-auto flex flex-col gap-4">
-                    {chatHistory.map((msg, i) => (
+                    {chatHistory.map((msg, i) => msg.role === 'assistant' && msg.content.length === 0 ? null : (
                         <div
                             key={messageKeysRef.current[i]}
                             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
                             <div
-                                className="max-w-[80%] rounded-3xl px-5 py-3.5 text-sm leading-relaxed break-words"
+                                className="max-w-[80%] rounded-3xl px-5 py-3.5 text-sm leading-relaxed break-words text-xs"
                                 style={
                                     msg.role === 'user'
                                         ? {
@@ -193,7 +196,7 @@ export function ChatScreen() {
                             </div>
                         </div>
                     ))}
-                    {loading && (
+                    {showTypingIndicator && (
                         <div className="flex justify-start">
                             <div
                                 className="rounded-3xl px-5 py-3.5"
