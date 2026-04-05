@@ -68,8 +68,59 @@ export default function InvitePage({ params }: InvitePageProps) {
 
   if (checkingInvite) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[100dvh] relative z-10">
-        <p style={{ color: '#8a8a9a' }}>초대 링크 확인 중...</p>
+      <div
+        className="flex flex-col items-center justify-center min-h-[100dvh] relative z-10"
+        style={{ backgroundColor: '#0a0a0f' }}
+      >
+        {/* Ambient glow */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            width: 360,
+            height: 360,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(200,169,110,0.08) 0%, transparent 70%)',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            filter: 'blur(40px)',
+          }}
+        />
+        <div className="relative flex flex-col items-center gap-6">
+          {/* Icon */}
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center"
+            style={{
+              background: 'radial-gradient(circle, rgba(200,169,110,0.15) 0%, transparent 70%)',
+              border: '1px solid rgba(200,169,110,0.2)',
+            }}
+          >
+            <span style={{ fontSize: 28 }}>💌</span>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-sm font-medium" style={{ color: '#e0c898' }}>초대 링크 확인 중</p>
+            {/* Dots */}
+            <div className="flex gap-1.5 mt-1">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{
+                    backgroundColor: '#c8a96e',
+                    opacity: 0.4,
+                    animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+        <style>{`
+          @keyframes pulse {
+            0%, 100% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+          }
+        `}</style>
       </div>
     );
   }
