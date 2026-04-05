@@ -28,6 +28,7 @@ interface ResultCardProps {
     detailError: string | null;
     sessionId: string;
     nickname: string;
+    coupleId?: string;
 }
 
 interface ConsentModalProps {
@@ -99,7 +100,7 @@ function DetailLoadingBlock({ message }: { message: string }) {
     );
 }
 
-export function ResultCard({ result, detailResult, detailStatus, detailError, sessionId, nickname }: ResultCardProps) {
+export function ResultCard({ result, detailResult, detailStatus, detailError, sessionId, nickname, coupleId }: ResultCardProps) {
     type RegenerateMode = 'both' | 'core' | 'detail';
 
     const router = useRouter();
@@ -117,6 +118,9 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
     const [regenLoading, setRegenLoading] = useState(false);
     const [regenMessage, setRegenMessage] = useState<string | null>(null);
     const [regenerateMode, setRegenerateMode] = useState<RegenerateMode>('both');
+    const [coupleAnalysisState, setCoupleAnalysisState] = useState<'loading' | 'ready' | 'error'>(
+        coupleId ? 'loading' : 'ready',
+    );
 
     useEffect(() => {
         setCurrentResult(result);
@@ -127,6 +131,26 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
         setCurrentDetailStatus(detailStatus);
         setCurrentDetailError(detailError);
     }, [detailError, detailResult, detailStatus]);
+
+    useEffect(() => {
+        if (!coupleId) return;
+        void (async () => {
+            try {
+                const res = await fetch('/api/couple/analyze', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ coupleId }),
+                });
+                if (res.ok) {
+                    setCoupleAnalysisState('ready');
+                } else {
+                    setCoupleAnalysisState('error');
+                }
+            } catch {
+                setCoupleAnalysisState('error');
+            }
+        })();
+    }, [coupleId]);
 
     useEffect(() => {
         if (currentDetail || currentDetailStatus === 'completed' || currentDetailStatus === 'failed') {
@@ -774,7 +798,48 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                 )}
 
                 <div className="flex flex-col gap-3 pb-12">
-                    {inviteUrl ? (
+                    {coupleId ? (
+                        <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                            <p className="mb-1 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                커플 분석
+                            </p>
+                            <p className="mb-4 text-sm font-bold leading-tight" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
+                                두 사람의 연애 패턴
+                            </p>
+                            <p className="mb-5 text-xs leading-relaxed" style={{ color: '#43474e' }}>
+                                {coupleAnalysisState === 'loading'
+                                    ? '상대방의 데이터와 대화를 함께 분석하고 있어요. 잠시만 기다려주세요.'
+                                    : coupleAnalysisState === 'error'
+                                      ? '커플 분석 중 문제가 생겼어요. 아래 버튼을 눌러 직접 확인해보세요.'
+                                      : '두 사람의 애착 패턴이 어떻게 맞물리는지 분석이 완료됐어요.'}
+                            </p>
+                            {coupleAnalysisState === 'loading' ? (
+                                <div
+                                    className="w-full rounded-2xl py-3 text-center text-sm font-semibold"
+                                    style={{ backgroundColor: '#eceef0', color: '#74777f' }}
+                                >
+                                    <span className="inline-flex items-center gap-2">
+                                        <span
+                                            className="inline-block w-3 h-3 rounded-full"
+                                            style={{
+                                                backgroundColor: '#74777f',
+                                                animation: 'pulse 1.2s ease-in-out infinite',
+                                            }}
+                                        />
+                                        분석 중...
+                                    </span>
+                                </div>
+                            ) : (
+                                <a
+                                    href={`/couple/${coupleId}`}
+                                    className="block w-full rounded-2xl py-3 text-center text-sm font-semibold transition-all active:scale-[0.98]"
+                                    style={{ backgroundColor: '#002045', color: '#ffffff' }}
+                                >
+                                    커플 분석 결과 보기 💑
+                                </a>
+                            )}
+                        </div>
+                    ) : inviteUrl ? (
                         <div className="rounded-3xl p-5 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                             <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>
                                 초대 링크가 생성되었습니다

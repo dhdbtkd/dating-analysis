@@ -119,8 +119,8 @@ const fragmentShader = `
     float vign = smoothstep(1.05, 0.30, length(p));
     col *= 0.88 + 0.12 * vign;
 
-    col = mix(col, uSurface, 0.18);
-    col = tonemap(col * (1.18 + 0.18 * e));
+    col = mix(col, uSurface, 0.30);
+    col = tonemap(col * (1.38 + 0.18 * e));
 
     float g = hash(uv * uResolution + vec2(uTime * 80.0, uTime * 23.0));
     col += (g - 0.5) * (0.015 + 0.008 * e);
@@ -139,10 +139,10 @@ function ShaderPlane({ energyTargetRef, energyPulseRef }: { energyTargetRef: { c
       uTime: { value: 0 },
       uEnergy: { value: 0.22 },
       uResolution: { value: new THREE.Vector2(1, 1) },
-      uA: { value: new THREE.Color('#002045') },
-      uB: { value: new THREE.Color('#0060ac') },
-      uC: { value: new THREE.Color('#64a8fe') },
-      uD: { value: new THREE.Color('#c8724a') },
+      uA: { value: new THREE.Color('#0a3868') },
+      uB: { value: new THREE.Color('#2278c8') },
+      uC: { value: new THREE.Color('#8fc4ff') },
+      uD: { value: new THREE.Color('#d4905a') },
       uSurface: { value: new THREE.Color('#f7f9fb') },
     };
   }, []);

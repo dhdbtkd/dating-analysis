@@ -4,10 +4,12 @@ import type { SessionRow, ResultCoreJson, ResultDetailJson, ResultDetailStatus }
 
 interface PageProps {
   params: Promise<{ sessionId: string }>;
+  searchParams: Promise<{ coupleId?: string }>;
 }
 
-export default async function ResultPage({ params }: PageProps) {
+export default async function ResultPage({ params, searchParams }: PageProps) {
   const { sessionId } = await params;
+  const { coupleId } = await searchParams;
   const supabase = createServerClient();
 
   const { data, error } = await supabase
@@ -51,6 +53,7 @@ export default async function ResultPage({ params }: PageProps) {
           detailError={session.result_detail_error}
           sessionId={sessionId}
           nickname={session.nickname}
+          coupleId={coupleId}
         />
       </div>
     </div>

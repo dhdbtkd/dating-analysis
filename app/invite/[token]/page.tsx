@@ -58,8 +58,8 @@ export default function InvitePage({ params }: InvitePageProps) {
       })
         .then((r) => r.json())
         .then((data: { coupleId?: string; error?: string }) => {
-          if (data.coupleId) {
-            router.push(`/couple/${data.coupleId}`);
+          if (data.coupleId && sessionId) {
+            router.push(`/result/${sessionId}?coupleId=${data.coupleId}`);
           }
         })
         .catch(() => {});

@@ -1,6 +1,6 @@
 import { callLLMJson } from '@/lib/llm';
 import { getLlmConfig, assemblePromptParts } from '@/lib/llmConfig';
-import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
+import { checkRateLimit, checkAndIncrementDailyQuota, getClientIp } from '@/lib/rateLimit';
 import { createServerClient } from '@/lib/supabase/server';
 import type { NextRequest } from 'next/server';
 import type { ChatMessage, ResultCoreJson, ResultDetailJson, WarmupAnswer, QuizDetail } from '@/types';
@@ -383,6 +383,17 @@ export async function POST(request: NextRequest) {
         const ip = getClientIp(request);
         if (!checkRateLimit(`analyze:${mode}:${ip}`, 10)) {
             return Response.json({ error: '요청이 너무 많습니다.' }, { status: 429 });
+        }
+
+        // core 분석만 일일 횟수 제한 (실제 LLM 비용 발생 지점)
+        if (mode === 'core') {
+            const allowed = await checkAndIncrementDailyQuota(ip);
+            if (!allowed) {
+                return Response.json(
+                    { error: '하루 검사 횟수(5회)를 초과했습니다. 내일 다시 시도해주세요.' },
+                    { status: 429 },
+                );
+            }
         }
 
         const {

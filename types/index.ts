@@ -94,9 +94,11 @@ export interface CoupleRow {
 
 export interface CoupleAnalysis {
   summary: string;
-  dynamics: string;
+  conflictPattern: string;
+  eachPersonsCore: { name: string; core: string }[];
+  coupleStrengths: string;
   communicationTips: string[];
-  growthSuggestions: string[];
+  crisisScript: string;
   compatibilityNote: string;
 }
 
