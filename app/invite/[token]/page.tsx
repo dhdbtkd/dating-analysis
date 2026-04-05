@@ -71,6 +71,7 @@ export default function InvitePage({ params }: InvitePageProps) {
       <div
         className="flex flex-col items-center justify-center min-h-[100dvh] relative z-10"
         style={{ backgroundColor: '#0a0a0f' }}
+        suppressHydrationWarning
       >
         {/* Ambient glow */}
         <div
