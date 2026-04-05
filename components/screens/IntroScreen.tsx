@@ -58,7 +58,7 @@ export function IntroScreen() {
             className="text-3xl font-bold mb-4 leading-tight"
             style={{ fontFamily: 'Paperozi', color: '#002045' }}
           >
-            당신도 몰랐던<br />나의 연애 패턴
+            알고보면 보이는<br />나의 연애
           </h1>
           <p className="text-sm leading-relaxed" style={{ color: '#43474e' }}>
             학술 연구 기반의 ECR 척도로 애착 유형을 측정하고,<br />AI 심층 대화로 나만의 패턴을 분석합니다.
