@@ -37,7 +37,7 @@ export function ChatIntroScreen() {
                     <h1 className="text-3xl font-bold leading-tight text-white" style={{ fontFamily: 'Paperozi' }}>
                         이제, 대화로
                         <br />
-                        {userInfo?.nickname ? `${userInfo.nickname}님, ` : '당신'}을 더 알아볼게요
+                        {userInfo?.nickname ? `${userInfo.nickname}님` : '당신'}을 더 알아볼게요
                     </h1>
                 </motion.div>
 
