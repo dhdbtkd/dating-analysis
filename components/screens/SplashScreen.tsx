@@ -55,6 +55,7 @@ export function SplashScreen() {
             transition={{ duration: 0.6 }}
             className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden"
             style={{ backgroundColor: '#0a0a0f' }}
+            suppressHydrationWarning
         >
             {/* Ambient orbs */}
             <div
@@ -176,27 +177,6 @@ export function SplashScreen() {
                     ))}
                 </motion.div>
             </div>
-
-            {/* Bottom badge */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.8, duration: 0.6 }}
-                className="absolute bottom-10 flex gap-3"
-            >
-                <span
-                    className="text-xs px-3 py-1 rounded-full border"
-                    style={{ borderColor: 'rgba(200,169,110,0.2)', color: 'rgba(200,169,110,0.5)' }}
-                >
-                    ECR Scale
-                </span>
-                <span
-                    className="text-xs px-3 py-1 rounded-full border"
-                    style={{ borderColor: 'rgba(200,169,110,0.2)', color: 'rgba(200,169,110,0.5)' }}
-                >
-                    AI 심층 대화
-                </span>
-            </motion.div>
         </motion.div>
     );
 }
