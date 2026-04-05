@@ -20,8 +20,28 @@ interface LlmConfig {
 }
 
 const PROVIDER_MODELS: Record<string, string[]> = {
-  anthropic: ['claude-opus-4-6', 'claude-sonnet-4-6', 'claude-haiku-4-5-20251001', 'claude-opus-4-5'],
-  openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o1', 'o3-mini'],
+  anthropic: [
+    // Current
+    'claude-opus-4-6',
+    'claude-sonnet-4-5-20250929',
+    'claude-haiku-4-5-20251001',
+    // Legacy
+    'claude-opus-4-5-20251101',
+    'claude-opus-4-1-20250805',
+    'claude-sonnet-4-20250514',
+    'claude-3-7-sonnet-20250219',
+    'claude-opus-4-20250514',
+    'claude-3-haiku-20240307',
+  ],
+  openai: [
+    // Current
+    'gpt-5.4',
+    'gpt-5.4-mini',
+    'gpt-5.4-nano',
+    // Legacy
+    'gpt-5.2',
+    'gpt-5.1',
+  ],
 };
 
 const CONFIG_LABELS: Record<string, string> = {
