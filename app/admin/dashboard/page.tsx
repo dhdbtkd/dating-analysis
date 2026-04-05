@@ -147,7 +147,9 @@ export default function AdminDashboardPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [modal, setModal] = useState<ExpandModal | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     fetch('/api/admin/config')
@@ -186,11 +188,26 @@ export default function AdminDashboardPage() {
   function scheduleAutoSave(config: LlmConfig) {
     setSaved(false);
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    if (countdownTimer.current) clearInterval(countdownTimer.current);
+
+    setCountdown(3);
+    countdownTimer.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === null || prev <= 1) {
+          clearInterval(countdownTimer.current!);
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
     debounceTimer.current = setTimeout(() => save(config), 3000);
   }
 
   function selectConfig(config: LlmConfig) {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    if (countdownTimer.current) clearInterval(countdownTimer.current);
+    setCountdown(null);
     setSelected(structuredClone(config));
     setSaved(false);
     setError('');
@@ -252,10 +269,17 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center gap-2 md:gap-3">
                   {saving && <span className="text-gray-500 text-xs md:text-sm">저장 중...</span>}
                   {!saving && saved && <span className="text-green-400 text-xs md:text-sm">저장됨</span>}
-                  {!saving && !saved && !error && <span className="text-gray-600 text-xs">3초 후 자동저장</span>}
+                  {!saving && !saved && countdown !== null && (
+                    <span className="text-gray-500 text-xs tabular-nums">{countdown}초 후 자동저장</span>
+                  )}
                   {error && <span className="text-red-400 text-xs md:text-sm max-w-[140px] text-right leading-tight">{error}</span>}
                   <button
-                    onClick={() => { if (debounceTimer.current) clearTimeout(debounceTimer.current); if (selected) save(selected); }}
+                    onClick={() => {
+                      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+                      if (countdownTimer.current) clearInterval(countdownTimer.current);
+                      setCountdown(null);
+                      if (selected) save(selected);
+                    }}
                     disabled={saving}
                     className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg bg-white text-gray-900 text-sm font-medium hover:bg-gray-100 disabled:opacity-40 transition-colors"
                   >
