@@ -48,10 +48,11 @@ function ConsentModal({ onAccept, onClose, onDelete, loading }: ConsentModalProp
                 <h3 className="mb-3 text-base font-bold" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
                     개인정보 저장 동의
                 </h3>
-                <p className="mb-5 text-sm leading-relaxed" style={{ color: '#43474e' }}>
-                    커플 분석을 위해 검사 결과(닉네임, 애착 유형, 대화 내용)가 서버에 저장됩니다. 초대 링크를 통해
-                    파트너와 함께 분석 결과를 확인하게 됩니다.
-                </p>
+                <ul className="mb-5 flex flex-col gap-1.5 text-xs leading-relaxed" style={{ color: '#43474e' }}>
+                    <li>• 닉네임, 애착 유형이 서버에 저장돼요</li>
+                    <li>• 연인도 같은 링크로 결과를 완성하면, 두 사람의 패턴을 함께 볼 수 있어요</li>
+                    <li>• 대화 내용은 상대방에게 공개되지 않아요</li>
+                </ul>
                 <div className="flex gap-3">
                     <button
                         type="button"
@@ -66,7 +67,7 @@ function ConsentModal({ onAccept, onClose, onDelete, loading }: ConsentModalProp
                         {loading ? '처리 중...' : '동의'}
                     </GoldButton>
                 </div>
-                <button
+                {/* <button
                     type="button"
                     onClick={onDelete}
                     disabled={loading}
@@ -74,7 +75,7 @@ function ConsentModal({ onAccept, onClose, onDelete, loading }: ConsentModalProp
                     style={{ backgroundColor: '#ffdad5', color: '#ba1a1a' }}
                 >
                     결과 삭제
-                </button>
+                </button> */}
             </div>
         </div>
     );
@@ -98,14 +99,7 @@ function DetailLoadingBlock({ message }: { message: string }) {
     );
 }
 
-export function ResultCard({
-    result,
-    detailResult,
-    detailStatus,
-    detailError,
-    sessionId,
-    nickname,
-}: ResultCardProps) {
+export function ResultCard({ result, detailResult, detailStatus, detailError, sessionId, nickname }: ResultCardProps) {
     type RegenerateMode = 'both' | 'core' | 'detail';
 
     const router = useRouter();
@@ -311,7 +305,9 @@ export function ResultCard({
                     return;
                 }
 
-                const detailPayload = (await detailResponse.json()) as ResultDetailJson | { error?: string; detail?: string };
+                const detailPayload = (await detailResponse.json()) as
+                    | ResultDetailJson
+                    | { error?: string; detail?: string };
                 if (!detailResponse.ok) {
                     const errorPayload = detailPayload as { error?: string; detail?: string };
                     throw new Error(errorPayload.detail ?? errorPayload.error ?? '상세 분석 재생성에 실패했습니다.');
@@ -422,7 +418,10 @@ export function ResultCard({
 
                     {adminUnlocked && (
                         <div className="mb-6 rounded-2xl p-4 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                            <p className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: '#ba1a1a' }}>
+                            <p
+                                className="mb-2 text-xs font-semibold uppercase tracking-wider"
+                                style={{ color: '#ba1a1a' }}
+                            >
                                 Admin
                             </p>
                             <p className="mb-3 text-xs leading-relaxed" style={{ color: '#43474e' }}>
@@ -442,8 +441,7 @@ export function ResultCard({
                                         disabled={regenLoading}
                                         className="rounded-2xl px-3 py-2 text-xs transition-all disabled:opacity-40"
                                         style={{
-                                            backgroundColor:
-                                                regenerateMode === option.value ? '#dbeafe' : '#f2f4f6',
+                                            backgroundColor: regenerateMode === option.value ? '#dbeafe' : '#f2f4f6',
                                             color: regenerateMode === option.value ? '#002045' : '#43474e',
                                             fontWeight: regenerateMode === option.value ? 600 : 500,
                                         }}
@@ -478,10 +476,13 @@ export function ResultCard({
                     )}
 
                     <p className="text-xs">{nickname}님은</p>
-                    <h1 className="mb-4 text-3xl font-bold leading-tight" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
+                    <h1
+                        className="mb-1.5 text-2xl font-bold leading-tight break-keep"
+                        style={{ fontFamily: 'Paperozi', color: '#002045' }}
+                    >
                         {currentResult.typeName}
                     </h1>
-                    <p className="mb-6 text-base leading-relaxed" style={{ color: '#43474e' }}>
+                    <p className="mb-6 text-xs leading-relaxed" style={{ color: '#43474e' }}>
                         {currentResult.tagline}
                     </p>
                     <button
@@ -496,9 +497,12 @@ export function ResultCard({
 
                 <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                     <p className="mb-5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                        2축 애착 지도
+                        애착 지도
                     </p>
-                    <ScatterChart anxietyScore={currentResult.anxietyScore} avoidanceScore={currentResult.avoidanceScore} />
+                    <ScatterChart
+                        anxietyScore={currentResult.anxietyScore}
+                        avoidanceScore={currentResult.avoidanceScore}
+                    />
 
                     <div className="mt-5 flex flex-col gap-4">
                         {(
@@ -566,7 +570,10 @@ export function ResultCard({
                     <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#c8724a' }}>
                         연인과의 관계를 다르게 보는 연습
                     </p>
-                    <p className="text-xs font-medium leading-relaxed" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
+                    <p
+                        className="text-xs font-medium leading-relaxed"
+                        style={{ fontFamily: 'Paperozi', color: '#002045' }}
+                    >
                         {currentResult.mindset}
                     </p>
                 </div>
@@ -595,7 +602,10 @@ export function ResultCard({
                 {currentDetail ? (
                     <>
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                            <p className="mb-5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                            <p
+                                className="mb-5 text-xs font-semibold uppercase tracking-wider"
+                                style={{ color: '#0060ac' }}
+                            >
                                 연애할 때 내 마음은 이렇게 흘러가요
                             </p>
                             <div className="flex flex-col gap-3">
@@ -616,7 +626,10 @@ export function ResultCard({
                         </div>
 
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                            <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                            <p
+                                className="mb-4 text-xs font-semibold uppercase tracking-wider"
+                                style={{ color: '#0060ac' }}
+                            >
                                 나는 이럴 때 특히 흔들려요
                             </p>
                             <div className="flex flex-wrap gap-2">
@@ -634,7 +647,10 @@ export function ResultCard({
 
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                                <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                <p
+                                    className="mb-3 text-xs font-semibold uppercase tracking-wider"
+                                    style={{ color: '#0060ac' }}
+                                >
                                     겉으로는 이렇게 보여요
                                 </p>
                                 <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
@@ -642,7 +658,10 @@ export function ResultCard({
                                 </p>
                             </div>
                             <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                                <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                <p
+                                    className="mb-3 text-xs font-semibold uppercase tracking-wider"
+                                    style={{ color: '#0060ac' }}
+                                >
                                     속으로는 이런 마음이 들어요
                                 </p>
                                 <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
@@ -652,7 +671,10 @@ export function ResultCard({
                         </div>
 
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                            <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                            <p
+                                className="mb-4 text-xs font-semibold uppercase tracking-wider"
+                                style={{ color: '#0060ac' }}
+                            >
                                 상대는 나를 이렇게 느끼기 쉬워요
                             </p>
                             <div className="flex flex-col gap-3">
@@ -666,7 +688,10 @@ export function ResultCard({
 
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                                <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                <p
+                                    className="mb-3 text-xs font-semibold uppercase tracking-wider"
+                                    style={{ color: '#0060ac' }}
+                                >
                                     내가 편할 때는 이런 모습이 나와요
                                 </p>
                                 <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
@@ -674,7 +699,10 @@ export function ResultCard({
                                 </p>
                             </div>
                             <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                                <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                <p
+                                    className="mb-3 text-xs font-semibold uppercase tracking-wider"
+                                    style={{ color: '#0060ac' }}
+                                >
                                     내가 불안해지면 이렇게 반응해요
                                 </p>
                                 <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
@@ -684,7 +712,10 @@ export function ResultCard({
                         </div>
 
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                            <p className="mb-5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                            <p
+                                className="mb-5 text-xs font-semibold uppercase tracking-wider"
+                                style={{ color: '#0060ac' }}
+                            >
                                 이제 나는 이렇게 해보면 좋아요
                             </p>
                             <div className="flex flex-col gap-4">
@@ -705,7 +736,10 @@ export function ResultCard({
                         </div>
 
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                            <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                            <p
+                                className="mb-4 text-xs font-semibold uppercase tracking-wider"
+                                style={{ color: '#0060ac' }}
+                            >
                                 이번 결과를 만든 단서예요
                             </p>
                             <div className="flex flex-col gap-3">
