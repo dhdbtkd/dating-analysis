@@ -1,12 +1,20 @@
 import type { ChatMessage } from '@/types';
 
-export async function callLLM(messages: ChatMessage[], system?: string): Promise<string> {
-  const provider = process.env.LLM_PROVIDER || 'anthropic';
-  const model = process.env.LLM_MODEL || 'claude-opus-4-5';
+export interface LlmCallOpts {
+  provider?: string;
+  model?: string;
+}
 
-  if (provider === 'openai') {
-    return callOpenAI(messages, system, model);
-  }
+function resolveOpts(opts?: LlmCallOpts): { provider: string; model: string } {
+  return {
+    provider: opts?.provider ?? process.env.LLM_PROVIDER ?? 'anthropic',
+    model: opts?.model ?? process.env.LLM_MODEL ?? 'claude-opus-4-5',
+  };
+}
+
+export async function callLLM(messages: ChatMessage[], system?: string, opts?: LlmCallOpts): Promise<string> {
+  const { provider, model } = resolveOpts(opts);
+  if (provider === 'openai') return callOpenAI(messages, system, model);
   return callAnthropic(messages, system, model);
 }
 
@@ -15,23 +23,16 @@ export async function callLLMJson<T>(
   schema: Record<string, unknown>,
   schemaName: string,
   system?: string,
+  opts?: LlmCallOpts,
 ): Promise<T> {
-  const provider = process.env.LLM_PROVIDER || 'anthropic';
-  const model = process.env.LLM_MODEL || 'claude-opus-4-5';
-
-  if (provider === 'openai') {
-    return callOpenAIJson<T>(messages, schema, schemaName, system, model);
-  }
+  const { provider, model } = resolveOpts(opts);
+  if (provider === 'openai') return callOpenAIJson<T>(messages, schema, schemaName, system, model);
   return callAnthropicJson<T>(messages, schema, system, model);
 }
 
-export async function callLLMStream(messages: ChatMessage[], system?: string): Promise<ReadableStream<Uint8Array>> {
-  const provider = process.env.LLM_PROVIDER || 'anthropic';
-  const model = process.env.LLM_MODEL || 'claude-opus-4-5';
-
-  if (provider === 'openai') {
-    return callOpenAIStream(messages, system, model);
-  }
+export async function callLLMStream(messages: ChatMessage[], system?: string, opts?: LlmCallOpts): Promise<ReadableStream<Uint8Array>> {
+  const { provider, model } = resolveOpts(opts);
+  if (provider === 'openai') return callOpenAIStream(messages, system, model);
   return callAnthropicStream(messages, system, model);
 }
 

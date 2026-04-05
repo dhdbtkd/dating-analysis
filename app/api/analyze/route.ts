@@ -1,4 +1,5 @@
 import { callLLMJson } from '@/lib/llm';
+import { getLlmConfig, assemblePromptParts } from '@/lib/llmConfig';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 import { createServerClient } from '@/lib/supabase/server';
 import type { NextRequest } from 'next/server';
@@ -116,7 +117,10 @@ ${quizSummary || '없음'}
 ${conversationText || '없음'}`;
 }
 
-function buildCorePrompt(context: string, ecrScores: { anxiety: number; avoidance: number }) {
+function buildCorePrompt(context: string, ecrScores: { anxiety: number; avoidance: number }, staticInstructions?: string) {
+    if (staticInstructions) {
+        return `${context}\n\n${staticInstructions}\n- anxietyScore: ${ecrScores.anxiety.toFixed(1)}\n- avoidanceScore: ${ecrScores.avoidance.toFixed(1)}`;
+    }
     return `${context}
 
 출력 형식:
@@ -173,7 +177,10 @@ JSON 객체 하나만 반환
 - 위로보다 전환`;
 }
 
-function buildDetailPrompt(context: string) {
+function buildDetailPrompt(context: string, staticInstructions?: string) {
+    if (staticInstructions) {
+        return `${context}\n\n${staticInstructions}`;
+    }
     return `${context}
 
 출력 형식:
@@ -273,9 +280,12 @@ async function buildCoreResult(
     context: string,
     ecrScores: { anxiety: number; avoidance: number },
 ): Promise<ResultCoreJson> {
-    const system =
+    const dbConfig = await getLlmConfig('analyze_core');
+    const system = dbConfig?.system_prompt ??
         '당신은 심리 분석 전문가입니다. 아래 데이터를 바탕으로 사용자의 연애 패턴 핵심 결과를 간결하지만 선명하게 정리하세요.';
-    const prompt = buildCorePrompt(context, ecrScores);
+    const staticInstructions = dbConfig ? assemblePromptParts(dbConfig.prompt_parts) : null;
+    const prompt = buildCorePrompt(context, ecrScores, staticInstructions ?? undefined);
+    const llmOpts = dbConfig ? { provider: dbConfig.provider, model: dbConfig.model } : undefined;
 
     console.log('\n========== [/api/analyze][core] SYSTEM PROMPT ==========');
     console.log(system);
@@ -288,6 +298,7 @@ async function buildCoreResult(
         CORE_RESULT_SCHEMA,
         'love_pattern_core_result',
         system,
+        llmOpts,
     );
 
     return {
@@ -298,9 +309,12 @@ async function buildCoreResult(
 }
 
 async function buildDetailResult(context: string): Promise<ResultDetailJson> {
-    const system =
+    const dbConfig = await getLlmConfig('analyze_detail');
+    const system = dbConfig?.system_prompt ??
         '당신은 심리 분석가이자 관계 패턴 에디터입니다. 사용자 입력에서 근거를 뽑아, 관계에서 실제로 어떻게 반응하는지 구조적으로 정리하세요.';
-    const prompt = buildDetailPrompt(context);
+    const staticInstructions = dbConfig ? assemblePromptParts(dbConfig.prompt_parts) : null;
+    const prompt = buildDetailPrompt(context, staticInstructions ?? undefined);
+    const llmOpts = dbConfig ? { provider: dbConfig.provider, model: dbConfig.model } : undefined;
 
     console.log('\n========== [/api/analyze][detail] SYSTEM PROMPT ==========');
     console.log(system);
@@ -313,6 +327,7 @@ async function buildDetailResult(context: string): Promise<ResultDetailJson> {
         DETAIL_RESULT_SCHEMA,
         'love_pattern_detail_result',
         system,
+        llmOpts,
     );
 }
 

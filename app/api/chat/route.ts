@@ -1,4 +1,5 @@
 import { callLLMStream } from '@/lib/llm';
+import { getLlmConfig, injectUserContext } from '@/lib/llmConfig';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 import type { NextRequest } from 'next/server';
 import type { ChatMessage, WarmupAnswer, QuizDetail } from '@/types';
@@ -36,9 +37,7 @@ export async function POST(request: NextRequest) {
             .map((q, i) => `Q${i + 1}. ${q.questionText}\n선택한 점수: ${q.score}`)
             .join('\n\n');
 
-        const system = `당신은 공감 능력이 뛰어난 심리 상담사입니다. 사용자의 연애 애착 패턴을 깊이 탐색하는 대화를 진행합니다.
-
-사용자 정보:
+        const userContext = `사용자 정보:
 - 이름: ${userInfo.nickname}, 나이: ${userInfo.age}세, 성별: ${userInfo.gender}
 - ECR 불안 점수: ${ecrScores.anxiety.toFixed(2)} / 7
 - ECR 회피 점수: ${ecrScores.avoidance.toFixed(2)} / 7
@@ -47,7 +46,16 @@ export async function POST(request: NextRequest) {
 ${warmupSummary || '없음'}
 
 ECR 척도 응답 (${LIKERT_LEGEND}):
-${quizSummary || '없음'}
+${quizSummary || '없음'}`;
+
+        const dbConfig = await getLlmConfig('chat');
+        const llmOpts = dbConfig ? { provider: dbConfig.provider, model: dbConfig.model } : undefined;
+
+        const system = dbConfig
+            ? injectUserContext(dbConfig.system_prompt, userContext)
+            : `당신은 공감 능력이 뛰어난 심리 상담사입니다. 사용자의 연애 애착 패턴을 깊이 탐색하는 대화를 진행합니다.
+
+${userContext}
 
 대화 지침:
 - 한국어로 대화합니다
@@ -70,10 +78,7 @@ ${quizSummary || '없음'}
         console.log(JSON.stringify(messages, null, 2));
         console.log('===========================================\n');
 
-        // TODO: 프롬프트 확인 중 — LLM 호출 중단
-        // return new Response('(로그 전용 모드)', { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
-
-        const stream = await callLLMStream(messages, system);
+        const stream = await callLLMStream(messages, system, llmOpts);
         return new Response(stream, {
             headers: {
                 'Content-Type': 'text/plain; charset=utf-8',
