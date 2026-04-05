@@ -29,7 +29,7 @@ export default function InvitePage({ params }: InvitePageProps) {
   const [checkingInvite, setCheckingInvite] = useState(true);
   const [linked, setLinked] = useState(false);
   const router = useRouter();
-  const { step, sessionId } = useAppStore();
+  const { step, sessionId, setStep } = useAppStore();
   const showChatBackground = step === 'chat-intro' || step === 'chat';
 
   useEffect(() => {
@@ -40,6 +40,7 @@ export default function InvitePage({ params }: InvitePageProps) {
           setInviteError(data.error);
         } else {
           setInviteInfo(data);
+          setStep('intro');
         }
       })
       .catch(() => setInviteError('초대 링크 확인에 실패했습니다.'))
