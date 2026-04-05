@@ -259,9 +259,13 @@ export function CoupleResultCard({ coupleId, session1, session2, analysis: initi
         <button
           type="button"
           onClick={handleShare}
-          className="rounded-2xl px-6 py-3 text-sm font-semibold transition-all active:scale-[0.98]"
+          className="w-full rounded-2xl py-3.5 text-sm font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
           style={{ backgroundColor: '#f2f4f6', color: '#43474e' }}
         >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
           {copied ? '링크 복사됨!' : '결과 공유하기'}
         </button>
         <p className="text-xs text-center" style={{ color: '#74777f' }}>

@@ -509,14 +509,6 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                     <p className="mb-6 text-xs leading-relaxed" style={{ color: '#43474e' }}>
                         {currentResult.tagline}
                     </p>
-                    <button
-                        type="button"
-                        onClick={handleShare}
-                        className="rounded-2xl px-5 py-2.5 text-sm transition-all active:scale-[0.98]"
-                        style={{ backgroundColor: '#f2f4f6', color: '#43474e' }}
-                    >
-                        결과 공유하기
-                    </button>
                 </div>
 
                 <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
@@ -798,6 +790,18 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                 )}
 
                 <div className="flex flex-col gap-3 pb-12">
+                    <button
+                        type="button"
+                        onClick={handleShare}
+                        className="w-full rounded-2xl py-3.5 text-sm font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        style={{ backgroundColor: '#f2f4f6', color: '#43474e' }}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                        </svg>
+                        {copied ? '링크 복사됨!' : '결과 공유하기'}
+                    </button>
                     {coupleId ? (
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
                             <p className="mb-1 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
@@ -850,6 +854,9 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                             <GoldButton onClick={handleCopy} className="w-full">
                                 {copied ? '복사됨!' : '링크 복사하기'}
                             </GoldButton>
+                            <p className="mt-4 text-xs leading-relaxed text-center" style={{ color: '#74777f' }}>
+                                상대방이 이 링크로 검사를 완료하면<br />두 사람의 연애 패턴을 함께 볼 수 있어요
+                            </p>
                         </div>
                     ) : (
                         <>
