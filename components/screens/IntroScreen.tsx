@@ -52,7 +52,7 @@ export function IntroScreen() {
         {/* Header */}
         <div className="mb-12">
           <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#0060ac' }}>
-            ECR 성인 애착 검사
+            나의 연애 패턴 알아보기
           </p>
           <h1
             className="text-3xl font-bold mb-4 leading-tight"
@@ -61,7 +61,7 @@ export function IntroScreen() {
             알고보면 보이는<br />나의 연애
           </h1>
           <p className="text-sm leading-relaxed" style={{ color: '#43474e' }}>
-            학술 연구 기반의 ECR 척도로 애착 유형을 측정하고,<br />AI 심층 대화로 나만의 패턴을 분석합니다.
+            몇 가지 질문에 답하고, AI와 짧은 대화를 나누면<br />나의 연애 패턴이 보이기 시작합니다.
           </p>
           <p className="text-xs mt-3" style={{ color: '#74777f' }}>⏱ 약 5분 소요</p>
         </div>
@@ -74,7 +74,7 @@ export function IntroScreen() {
               type="text"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
-              placeholder="검사에서 사용할 별명"
+              placeholder="여기서 불릴 이름"
               maxLength={20}
               className="w-full px-4 py-3 rounded-2xl outline-none transition-all"
               style={{
@@ -139,10 +139,10 @@ export function IntroScreen() {
         {/* Footer */}
         <div className="mt-10 flex flex-col items-center gap-2">
           <p className="text-center text-xs" style={{ color: '#74777f' }}>
-            입력하신 정보는 검사 완료 후 동의 없이 저장되지 않습니다.
+            입력하신 정보는 동의 없이 저장되지 않습니다.
           </p>
           <div className="relative flex items-center gap-1.5">
-            <span className="text-xs" style={{ color: '#74777f' }}>학술 논문 기반 검사</span>
+            <span className="text-xs" style={{ color: '#74777f' }}>학술 논문 기반</span>
             <button
               onClick={() => setShowRef((v) => !v)}
               className="w-4 h-4 rounded-full flex items-center justify-center text-xs leading-none transition-colors"
