@@ -51,7 +51,7 @@ export function ChatIntroScreen() {
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <p className="text-xs font-semibold" style={{ color: '#0060ac' }}>
-                                6번만 대답해주시면 돼요.
+                                여섯번만 대답해주시면 돼요.
                             </p>
                         </div>
                     </div>
@@ -75,7 +75,7 @@ export function ChatIntroScreen() {
                                 <p className="text-xs font-semibold" style={{ color: '#002045' }}>
                                     {item.title}
                                 </p>
-                                <p className="text-[0.75rem] mt-1 leading-relaxed" style={{ color: '#43474e' }}>
+                                <p className="text-[0.70rem] mt-1 leading-relaxed" style={{ color: '#43474e' }}>
                                     {item.desc}
                                 </p>
                             </div>
@@ -83,7 +83,7 @@ export function ChatIntroScreen() {
                     </div>
 
                     <div className="mt-7 flex justify-center">
-                        <GoldButton onClick={() => setStep('chat')} className="w-full">
+                        <GoldButton onClick={() => setStep('chat')} className="w-full animate-bounce">
                             대화 시작하기
                         </GoldButton>
                     </div>
