@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error;
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
     const inviteUrl = `${baseUrl}/invite/${data.invite_token}`;
 
     return Response.json({ inviteUrl });

@@ -45,7 +45,7 @@ export default async function CouplePage({ params }: PageProps) {
   let analysis = data.couple_analysis as CoupleAnalysis | null;
   if (!analysis) {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/couple/analyze`, {
+      const res = await fetch(`${process.env.BASE_URL || 'http://localhost:3000'}/api/couple/analyze`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ coupleId }),
