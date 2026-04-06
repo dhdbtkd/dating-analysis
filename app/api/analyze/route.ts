@@ -12,7 +12,7 @@ interface AnalyzeRequestBody {
     mode?: AnalyzeMode;
     resetDetail?: boolean;
     chatHistory?: ChatMessage[];
-    ecrScores?: { anxiety: number; avoidance: number; typeName: string };
+    ecrScores?: { anxiety: number; avoidance: number; trust?: number; selfDisclosure?: number; conflict?: number; relSelfEsteem?: number; typeName: string };
     userInfo?: { nickname: string; age: number; gender: string };
     warmupAnswers?: WarmupAnswer[];
     quizDetails?: QuizDetail[];
@@ -82,7 +82,7 @@ const DETAIL_RESULT_SCHEMA = {
 
 function buildAnalysisContext(
     chatHistory: ChatMessage[],
-    ecrScores: { anxiety: number; avoidance: number; typeName: string },
+    ecrScores: { anxiety: number; avoidance: number; trust?: number; selfDisclosure?: number; conflict?: number; relSelfEsteem?: number; typeName: string },
     userInfo: { nickname: string; age: number; gender: string },
     warmupAnswers: WarmupAnswer[],
     quizDetails: QuizDetail[],
@@ -102,11 +102,18 @@ function buildAnalysisContext(
         .map((message) => `${message.role === 'user' ? '사용자' : 'AI'}: ${message.content}`)
         .join('\n');
 
+    const extendedScores = [
+        ecrScores.trust !== undefined ? `- 신뢰: ${ecrScores.trust.toFixed(2)}` : null,
+        ecrScores.selfDisclosure !== undefined ? `- 자기개방성: ${ecrScores.selfDisclosure.toFixed(2)}` : null,
+        ecrScores.conflict !== undefined ? `- 갈등 건강도: ${ecrScores.conflict.toFixed(2)}` : null,
+        ecrScores.relSelfEsteem !== undefined ? `- 관계 자존감: ${ecrScores.relSelfEsteem.toFixed(2)}` : null,
+    ].filter(Boolean).join('\n');
+
     return `사용자 정보:
 - 이름: ${userInfo.nickname}, 나이: ${userInfo.age}세
 - ECR 불안 점수: ${ecrScores.anxiety.toFixed(2)} → ${interpretScore(ecrScores.anxiety, 'anxiety')}
 - ECR 회피 점수: ${ecrScores.avoidance.toFixed(2)} → ${interpretScore(ecrScores.avoidance, 'avoidance')}
-
+${extendedScores ? extendedScores + '\n' : ''}
 워밍업 응답:
 ${warmupSummary || '없음'}
 

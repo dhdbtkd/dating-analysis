@@ -10,6 +10,10 @@ export async function POST(request: NextRequest) {
       gender?: string;
       ecr_anxiety?: number;
       ecr_avoidance?: number;
+      score_trust?: number;
+      score_self_disclosure?: number;
+      score_conflict?: number;
+      score_rel_self_esteem?: number;
       attachment_type?: string;
       chat_history?: unknown[];
       warmup_answers?: WarmupAnswer[];
@@ -35,6 +39,10 @@ export async function POST(request: NextRequest) {
         gender: body.gender,
         ecr_anxiety: body.ecr_anxiety ?? 0,
         ecr_avoidance: body.ecr_avoidance ?? 0,
+        score_trust: body.score_trust ?? null,
+        score_self_disclosure: body.score_self_disclosure ?? null,
+        score_conflict: body.score_conflict ?? null,
+        score_rel_self_esteem: body.score_rel_self_esteem ?? null,
         attachment_type: body.attachment_type ?? '',
         chat_history: body.chat_history ?? [],
         warmup_answers: body.warmup_answers ?? [],

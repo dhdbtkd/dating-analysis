@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { GoldButton } from '@/components/ui/GoldButton';
 import type { ResultCoreJson, ResultDetailJson, ResultDetailStatus, SessionRow } from '@/types';
 
-const ScatterChart = dynamic(() => import('./ScatterChart').then((module) => module.ScatterChart), { ssr: false });
+const RadarChart = dynamic(() => import('./RadarChart').then((module) => module.RadarChart), { ssr: false });
 
 function splitIntoParagraphs(text: string): string[] {
     if (text.length <= 80) return [text];
@@ -29,6 +29,10 @@ interface ResultCardProps {
     sessionId: string;
     nickname: string;
     coupleId?: string;
+    scoreTrust?: number | null;
+    scoreSelfDisclosure?: number | null;
+    scoreConflict?: number | null;
+    scoreRelSelfEsteem?: number | null;
 }
 
 interface ConsentModalProps {
@@ -100,7 +104,7 @@ function DetailLoadingBlock({ message }: { message: string }) {
     );
 }
 
-export function ResultCard({ result, detailResult, detailStatus, detailError, sessionId, nickname, coupleId }: ResultCardProps) {
+export function ResultCard({ result, detailResult, detailStatus, detailError, sessionId, nickname, coupleId, scoreTrust, scoreSelfDisclosure, scoreConflict, scoreRelSelfEsteem }: ResultCardProps) {
     type RegenerateMode = 'both' | 'core' | 'detail';
 
     const router = useRouter();
@@ -512,50 +516,20 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                 </div>
 
                 <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                    <p className="mb-5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                        애착 지도
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                        관계 패턴 지도
                     </p>
-                    <ScatterChart
-                        anxietyScore={currentResult.anxietyScore}
-                        avoidanceScore={currentResult.avoidanceScore}
+                    <p className="mb-4 text-xs" style={{ color: '#74777f' }}>
+                        6가지 관계 지표를 종합한 나의 프로필
+                    </p>
+                    <RadarChart
+                        anxiety={currentResult.anxietyScore}
+                        avoidance={currentResult.avoidanceScore}
+                        trust={scoreTrust ?? null}
+                        selfDisclosure={scoreSelfDisclosure ?? null}
+                        conflict={scoreConflict ?? null}
+                        relSelfEsteem={scoreRelSelfEsteem ?? null}
                     />
-
-                    <div className="mt-5 flex flex-col gap-4">
-                        {(
-                            [
-                                {
-                                    label: '감정 반응 강도',
-                                    score: currentResult.anxietyScore,
-                                    intensity: currentResult.emotionalIntensity,
-                                },
-                                {
-                                    label: '거리 유지 성향',
-                                    score: currentResult.avoidanceScore,
-                                    intensity: currentResult.distanceTendency,
-                                },
-                            ] as const
-                        ).map(({ label, score, intensity }) => {
-                            const pct = ((score - 1) / 6) * 100;
-                            const color =
-                                intensity === '낮음' ? '#0060ac' : intensity === '중간' ? '#f97316' : '#ba1a1a';
-                            return (
-                                <div key={label}>
-                                    <div className="mb-2 flex justify-between text-xs font-semibold">
-                                        <span style={{ color: '#43474e' }}>{label}</span>
-                                        <span style={{ color }}>
-                                            {score.toFixed(1)} · {intensity}
-                                        </span>
-                                    </div>
-                                    <div className="h-1.5 w-full rounded-full" style={{ backgroundColor: '#eceef0' }}>
-                                        <div
-                                            className="h-1.5 rounded-full"
-                                            style={{ width: `${pct}%`, backgroundColor: color }}
-                                        />
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
                 </div>
 
                 <div className="px-6">

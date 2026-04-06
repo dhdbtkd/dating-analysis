@@ -60,9 +60,14 @@ export default async function CouplePage({ params }: PageProps) {
 
   const fallbackAnalysis: CoupleAnalysis = analysis ?? {
     summary: `${session1.nickname}님과 ${session2.nickname}님의 애착 조합입니다.`,
-    dynamics: '두 분의 관계 역학을 분석 중입니다.',
+    conflictPattern: '두 분의 갈등 패턴을 분석 중입니다.',
+    eachPersonsCore: [
+      { name: session1.nickname, core: '관계에서 안정감을 원합니다.' },
+      { name: session2.nickname, core: '관계에서 안정감을 원합니다.' },
+    ],
+    coupleStrengths: '두 분은 서로에게서 배울 점이 많은 조합입니다.',
     communicationTips: ['서로의 감정을 경청해주세요.', '취약함을 나눠보세요.', '갈등 시 잠시 쉬어가세요.'],
-    growthSuggestions: ['서로의 유형을 이해해보세요.', '안전한 대화 공간을 만들어보세요.', '함께 성장하는 활동을 해보세요.'],
+    crisisScript: '지금 나 좀 힘든데, 잠깐 얘기할 수 있어?',
     compatibilityNote: '두 분은 서로에게서 배울 점이 많은 조합입니다.',
   };
 

@@ -23,11 +23,23 @@ export interface QuizDetail {
   score: number;
 }
 
+export type QuestionDimension = 'anxiety' | 'avoidance' | 'trust' | 'self_disclosure' | 'conflict' | 'rel_self_esteem';
+
 export interface Question {
   id: string;
   text: string;
-  dimension: 'anxiety' | 'avoidance';
+  dimension: QuestionDimension;
   reverse: boolean;
+}
+
+export interface ExtendedScores {
+  anxiety: number;
+  avoidance: number;
+  trust: number;
+  selfDisclosure: number;
+  conflict: number;
+  relSelfEsteem: number;
+  typeName: string;
 }
 
 export interface ResultCoreJson {
@@ -67,6 +79,10 @@ export interface SessionRow {
   gender: string;
   ecr_anxiety: number;
   ecr_avoidance: number;
+  score_trust: number | null;
+  score_self_disclosure: number | null;
+  score_conflict: number | null;
+  score_rel_self_esteem: number | null;
   attachment_type: string;
   chat_history: ChatMessage[];
   warmup_answers: WarmupAnswer[];

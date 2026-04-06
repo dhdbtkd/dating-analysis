@@ -6,7 +6,8 @@ import { useAppStore } from '@/store/useAppStore';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { TimerBar } from '@/components/ui/TimerBar';
 import { useCountdown } from '@/hooks/useCountdown';
-import { getAttachmentType } from '@/lib/questions';
+import { getAttachmentType, calcDimensionScore } from '@/lib/questions';
+import type { ExtendedScores } from '@/types';
 
 const TIMER_DURATION = 10;
 
@@ -35,24 +36,18 @@ export function QuizScreen() {
     const globalCurrent = warmupAnswers.length + quizAnsweredCount + 1;
 
     const finishQuiz = useCallback(() => {
-        const scores = scoresMapRef.current;
-        let aSum = 0,
-            aCount = 0,
-            vSum = 0,
-            vCount = 0;
-        selectedQuestions.forEach((q, i) => {
-            const s = scores[i] ?? 4;
-            if (q.dimension === 'anxiety') {
-                aSum += s;
-                aCount++;
-            } else {
-                vSum += s;
-                vCount++;
-            }
-        });
-        const anxiety = aSum / aCount;
-        const avoidance = vSum / vCount;
-        setEcrScores({ anxiety, avoidance, typeName: getAttachmentType(anxiety, avoidance) });
+        const answers = selectedQuestions.map((_, i) => scoresMapRef.current[i] ?? 4);
+        const anxiety = calcDimensionScore(selectedQuestions, answers, 'anxiety');
+        const avoidance = calcDimensionScore(selectedQuestions, answers, 'avoidance');
+        const trust = calcDimensionScore(selectedQuestions, answers, 'trust');
+        const selfDisclosure = calcDimensionScore(selectedQuestions, answers, 'self_disclosure');
+        const conflict = calcDimensionScore(selectedQuestions, answers, 'conflict');
+        const relSelfEsteem = calcDimensionScore(selectedQuestions, answers, 'rel_self_esteem');
+        const scores: ExtendedScores = {
+            anxiety, avoidance, trust, selfDisclosure, conflict, relSelfEsteem,
+            typeName: getAttachmentType(anxiety, avoidance),
+        };
+        setEcrScores(scores);
         setStep('chat-intro');
     }, [selectedQuestions, setEcrScores, setStep]);
 

@@ -54,6 +54,10 @@ export default async function ResultPage({ params, searchParams }: PageProps) {
           sessionId={sessionId}
           nickname={session.nickname}
           coupleId={coupleId}
+          scoreTrust={session.score_trust}
+          scoreSelfDisclosure={session.score_self_disclosure}
+          scoreConflict={session.score_conflict}
+          scoreRelSelfEsteem={session.score_rel_self_esteem}
         />
       </div>
     </div>
