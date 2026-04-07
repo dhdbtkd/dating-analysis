@@ -78,7 +78,10 @@ ${userContext}
         console.log(JSON.stringify(messages, null, 2));
         console.log('===========================================\n');
 
-        const stream = await callLLMStream(messages, system, llmOpts);
+        const effectiveMessages: ChatMessage[] =
+            messages.length > 0 ? messages : [{ role: 'user', content: '안녕. 시작해줘.' }];
+
+        const stream = await callLLMStream(effectiveMessages, system, llmOpts);
         return new Response(stream, {
             headers: {
                 'Content-Type': 'text/plain; charset=utf-8',
