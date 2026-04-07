@@ -124,7 +124,7 @@ ${quizSummary || '없음'}
 ${conversationText || '없음'}`;
 }
 
-function buildCorePrompt(context: string, ecrScores: { anxiety: number; avoidance: number }, staticInstructions?: string) {
+function buildCorePrompt(context: string, ecrScores: { anxiety: number; avoidance: number; trust?: number; selfDisclosure?: number; conflict?: number; relSelfEsteem?: number }, staticInstructions?: string) {
     if (staticInstructions) {
         return `${context}\n\n${staticInstructions}\n- anxietyScore: ${ecrScores.anxiety.toFixed(1)}\n- avoidanceScore: ${ecrScores.avoidance.toFixed(1)}`;
     }
@@ -155,6 +155,8 @@ JSON 객체 하나만 반환
 7. 어려운 심리학 용어, 논문 말투, 상담사 말투 금지
 8. 점수가 경계값(3.5~4.5)이면 한쪽으로 단정하지 말고, 끌리면서도 물러나는 혼합 패턴으로 표현할 것
 9. 동일 유형이어도 점수 강도와 대화 내용에 따라 결과 톤과 강도를 완전히 다르게 만들 것
+10. 6개 지표(불안·회피·신뢰·자기개방성·갈등 건강도·관계 자존감)를 종합해서 분석할 것. 불안·회피만 보지 말고 나머지 지표가 서로 어떻게 맞물리는지 반영할 것
+11. 예: 불안이 높아도 자기개방성이 낮으면 "불안하지만 말을 못 하는" 패턴, 신뢰가 낮고 불안이 높으면 "믿고 싶지만 못 믿는" 패턴처럼 조합을 읽어낼 것
 
 필드별 세부 규칙:
 

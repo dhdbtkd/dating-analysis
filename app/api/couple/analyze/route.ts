@@ -99,9 +99,16 @@ export async function POST(request: NextRequest) {
 
       const typeName = (s.result as { typeName?: string } | null)?.typeName ?? s.attachment_type;
 
+      const extScores = [
+        s.score_trust !== null && s.score_trust !== undefined ? `신뢰: ${s.score_trust.toFixed(2)}` : null,
+        s.score_self_disclosure !== null && s.score_self_disclosure !== undefined ? `자기개방성: ${s.score_self_disclosure.toFixed(2)}` : null,
+        s.score_conflict !== null && s.score_conflict !== undefined ? `갈등 건강도: ${s.score_conflict.toFixed(2)}` : null,
+        s.score_rel_self_esteem !== null && s.score_rel_self_esteem !== undefined ? `관계 자존감: ${s.score_rel_self_esteem.toFixed(2)}` : null,
+      ].filter(Boolean).join(' / ');
+
       return `[${s.nickname}님 — ${s.age}세, ${s.gender === 'female' ? '여성' : '남성'}]
 유형: ${typeName}
-ECR 불안: ${s.ecr_anxiety.toFixed(2)} / 회피: ${s.ecr_avoidance.toFixed(2)}
+ECR 불안: ${s.ecr_anxiety.toFixed(2)} / 회피: ${s.ecr_avoidance.toFixed(2)}${extScores ? ` / ${extScores}` : ''}
 
 워밍업 응답:
 ${warmup}
@@ -127,6 +134,9 @@ ${buildPersonContext(s2)}
 - 두 사람을 지칭할 때는 반드시 "${s1.nickname}님", "${s2.nickname}님"으로 이름을 사용하세요
 - 두 사람의 나이대와 성별을 고려해 현실적인 언어로 분석하세요
 - 일반론이 아닌, 위 대화와 응답에서 실제로 보이는 패턴만 근거로 삼으세요
+- 불안·회피뿐 아니라 신뢰·자기개방성·갈등 건강도·관계 자존감 점수도 반드시 반영하세요
+- 예: 한 사람의 신뢰 점수가 낮고 상대의 자기개방성도 낮다면, 서로 속을 못 털어놓는 조합임을 분석에 반영할 것
+- ECR 문항 인용 시 Q번호 표기 금지, 행동 패턴을 자연어로 풀어쓸 것
 
 ${staticInstructions}`;
 
