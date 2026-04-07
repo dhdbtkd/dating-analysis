@@ -25,27 +25,15 @@ export default function Home() {
   const { step, seedDevState } = useAppStore();
   const appliedDevStepRef = useRef<string | null>(null);
   const [devLoading, setDevLoading] = useState(false);
+  const [devPasswordPrompt, setDevPasswordPrompt] = useState(false);
+  const [devPasswordInput, setDevPasswordInput] = useState('');
+  const [devPasswordError, setDevPasswordError] = useState<string | false>(false);
   const router = useRouter();
   const showChatBackground = step === 'chat-intro' || step === 'chat';
 
-  useEffect(() => {
-    if (process.env.NODE_ENV !== 'development') return;
-
-    const params = new URLSearchParams(window.location.search);
-
-    // ?devStep= — 기존 기능 유지
-    const devStep = params.get('devStep');
-    if (devStep && appliedDevStepRef.current !== devStep) {
-      const supportedSteps = new Set(['splash', 'intro', 'warmup', 'quiz', 'chat-intro', 'chat']);
-      if (supportedSteps.has(devStep)) {
-        appliedDevStepRef.current = devStep;
-        seedDevState(devStep as Parameters<typeof seedDevState>[0]);
-      }
-    }
-
-    // ?dev=1 — 랜덤 응답으로 세션 생성 + LLM 분석 → 결과 페이지 이동
-    if (params.get('dev') === '1') {
-      setDevLoading(true);
+  function runDevShortcut() {
+    setDevLoading(true);
+    setDevPasswordPrompt(false);
       const questions = buildFullQuestionSet();
       const answers = questions.map(() => randomInt(1, 7));
       const anxiety = calcDimensionScore(questions, answers, 'anxiety');
@@ -104,8 +92,87 @@ export default function Home() {
           setDevLoading(false);
         }
       })();
+  }
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    // ?devStep= — 로컬 개발 전용
+    if (process.env.NODE_ENV === 'development') {
+      const devStep = params.get('devStep');
+      if (devStep && appliedDevStepRef.current !== devStep) {
+        const supportedSteps = new Set(['splash', 'intro', 'warmup', 'quiz', 'chat-intro', 'chat']);
+        if (supportedSteps.has(devStep)) {
+          appliedDevStepRef.current = devStep;
+          seedDevState(devStep as Parameters<typeof seedDevState>[0]);
+        }
+      }
+    }
+
+    // ?dev=1 — 어드민 인증 후 랜덤 결과 생성 (운영 포함)
+    if (params.get('dev') === '1') {
+      if (process.env.NODE_ENV === 'development') {
+        runDevShortcut();
+      } else {
+        setDevPasswordPrompt(true);
+      }
     }
   }, [seedDevState, router]);
+
+  if (devPasswordPrompt) {
+    return (
+      <main className="flex-1 flex items-center justify-center px-6">
+        <div className="w-full max-w-xs rounded-2xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+          <p className="text-sm font-semibold mb-4" style={{ color: '#002045' }}>어드민 비밀번호 입력</p>
+          <input
+            type="password"
+            autoFocus
+            value={devPasswordInput}
+            onChange={(e) => { setDevPasswordInput(e.target.value); if (devPasswordError) setDevPasswordError(false); }}
+            onKeyDown={async (e) => {
+              if (e.key === 'Enter') {
+                const res = await fetch('/api/admin/login', {
+                  method: 'POST',
+                  headers: { 'content-type': 'application/json' },
+                  body: JSON.stringify({ password: devPasswordInput }),
+                });
+                if (res.ok) {
+                  runDevShortcut();
+                } else {
+                  const { error } = await res.json() as { error?: string };
+                  setDevPasswordError(error ?? '비밀번호가 틀렸습니다.');
+                }
+              }
+            }}
+            placeholder="비밀번호"
+            className="w-full rounded-xl px-4 py-3 text-sm outline-none border"
+            style={{ borderColor: devPasswordError ? '#ba1a1a' : '#e6e8ea', color: '#191c1e' }}
+          />
+          {devPasswordError && <p className="text-xs mt-2" style={{ color: '#ba1a1a' }}>{devPasswordError}</p>}
+          <button
+            type="button"
+            className="w-full mt-4 rounded-xl py-3 text-sm font-semibold"
+            style={{ backgroundColor: '#002045', color: '#ffffff' }}
+            onClick={async () => {
+              const res = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ password: devPasswordInput }),
+              });
+              if (res.ok) {
+                runDevShortcut();
+              } else {
+                const { error } = await res.json() as { error?: string };
+                setDevPasswordError(error ?? '비밀번호가 틀렸습니다.');
+              }
+            }}
+          >
+            확인
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   if (devLoading) {
     return (

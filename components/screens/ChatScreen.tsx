@@ -148,7 +148,7 @@ export function ChatScreen() {
             className="flex flex-col min-h-[100dvh]"
         >
             {/* Header */}
-            <div className="bg-none px-6 py-4 sticky top-0 z-10 rounded-b-2xl">
+            <div className="px-6 py-4 sticky top-0 z-10" style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', background: 'rgba(0,0,0,0.18)' }}>
                 <div className="max-w-lg mx-auto flex items-center justify-end">
                     <div className="text-right">
                         <p className="text-[0.7rem] font-semibold text-zinc-300">
