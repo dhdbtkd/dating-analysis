@@ -282,13 +282,12 @@ export function CoupleResultCard({ coupleId, session1, session2, analysis: initi
           type="button"
           onClick={handleShare}
           className="w-full rounded-2xl py-3.5 text-sm font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-          style={{ backgroundColor: '#f2f4f6', color: '#43474e' }}
+          style={{ backgroundColor: '#FEE500', color: '#191919' }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#191919" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.69 1.7 5.06 4.26 6.41L6.3 20.1a.5.5 0 0 0 .7.63l4.08-2.72c.3.03.61.05.92.05 4.97 0 9-3.36 9-7.5S16.97 3 12 3z"/>
           </svg>
-          {copied ? '링크 복사됨!' : '결과 공유하기'}
+          {copied ? '링크 복사됨!' : '카카오톡으로 공유하기'}
         </button>
         <p className="text-xs text-center" style={{ color: '#74777f' }}>
           상대방에게 이 링크를 공유하면 함께 볼 수 있어요
