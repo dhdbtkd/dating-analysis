@@ -281,6 +281,16 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
         const url = window.location.href;
         const base = process.env.NEXT_PUBLIC_BASE_URL ?? window.location.origin;
 
+        console.log('[Share] Kakao 존재:', !!window.Kakao);
+        console.log('[Share] Kakao 초기화:', window.Kakao?.isInitialized());
+        console.log('[Share] APP_KEY:', process.env.NEXT_PUBLIC_KAKAO_APP_KEY ? '있음' : '없음(빈값)');
+
+        // SDK 로드됐지만 초기화 안 된 경우 재시도
+        if (window.Kakao && !window.Kakao.isInitialized()) {
+            const key = process.env.NEXT_PUBLIC_KAKAO_APP_KEY;
+            if (key) window.Kakao.init(key);
+        }
+
         if (window.Kakao?.isInitialized()) {
             window.Kakao.Share.sendDefault({
                 objectType: 'feed',
