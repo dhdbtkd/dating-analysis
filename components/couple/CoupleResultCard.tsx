@@ -41,7 +41,7 @@ export function CoupleResultCard({ coupleId, session1, session2, analysis: initi
 
   const handleShare = useCallback(() => {
     const url = window.location.href;
-    const base = process.env.NEXT_PUBLIC_BASE_URL ?? window.location.origin;
+    const base = window.location.origin;
     const title = `${session1.nickname}님 × ${session2.nickname}님의 커플 연애 패턴`;
     const desc = analysis.summary;
 

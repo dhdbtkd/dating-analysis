@@ -261,7 +261,7 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
     }
 
     function buildOgImageUrl(): string {
-        const base = process.env.NEXT_PUBLIC_BASE_URL ?? window.location.origin;
+        const base = window.location.origin;
         const toPercent = (s: number) => Math.round(((s - 1) / 6) * 100);
         const params = new URLSearchParams({
             nickname,
@@ -279,7 +279,7 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
 
     function handleShare() {
         const url = window.location.href;
-        const base = process.env.NEXT_PUBLIC_BASE_URL ?? window.location.origin;
+        const base = window.location.origin;
 
         console.log('[Share] Kakao 존재:', !!window.Kakao);
         console.log('[Share] Kakao 초기화:', window.Kakao?.isInitialized());
@@ -580,46 +580,50 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                     />
                 </div>
 
-                <div className="px-6">
-                    <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                        연애에서의 당신
-                    </p>
-                    {splitIntoParagraphs(currentResult.lovePattern).map((paragraph, index) => (
-                        <p
-                            key={paragraph}
-                            className={`text-xs leading-relaxed ${index > 0 ? 'mt-4' : ''}`}
-                            style={{ color: '#191c1e' }}
-                        >
-                            {paragraph}
-                        </p>
-                    ))}
-                </div>
-
+                {/* 나의 패턴 — 연애 모습 + 예민한 지점 묶음 */}
                 <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                    <p className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                        마음이 예민해지는 지점
+                    <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                        나의 패턴
                     </p>
-                    <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
-                        {currentResult.coreWound}
-                    </p>
+                    <div className="flex flex-col gap-5">
+                        <div>
+                            <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>연애에서의 당신</p>
+                            {splitIntoParagraphs(currentResult.lovePattern).map((paragraph, index) => (
+                                <p
+                                    key={paragraph}
+                                    className={`text-xs leading-relaxed ${index > 0 ? 'mt-3' : ''}`}
+                                    style={{ color: '#191c1e' }}
+                                >
+                                    {paragraph}
+                                </p>
+                            ))}
+                        </div>
+                        <div style={{ borderTop: '1px solid #f2f4f6', paddingTop: '16px' }}>
+                            <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>마음이 예민해지는 지점</p>
+                            <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                {currentResult.coreWound}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="rounded-3xl p-7" style={{ backgroundColor: '#ffdad5' }}>
-                    <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#c8724a' }}>
-                        연인과의 관계를 다르게 보는 연습
+                {/* 마인드셋 + 실천 팁 묶음 */}
+                <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                    <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                        변화를 위한 제안
                     </p>
-                    <p
-                        className="text-xs font-medium leading-relaxed"
-                        style={{ fontFamily: 'Paperozi', color: '#002045' }}
+                    <div
+                        className="mb-5 rounded-2xl p-4"
+                        style={{ backgroundColor: '#ffdad5' }}
                     >
-                        {currentResult.mindset}
-                    </p>
-                </div>
-
-                <div className="px-6">
-                    <p className="mb-5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                        앞으로 이렇게 해보세요.
-                    </p>
+                        <p className="mb-1 text-xs font-semibold" style={{ color: '#c8724a' }}>관계를 다르게 보는 연습</p>
+                        <p
+                            className="text-xs font-medium leading-relaxed"
+                            style={{ fontFamily: 'Paperozi', color: '#002045' }}
+                        >
+                            {currentResult.mindset}
+                        </p>
+                    </div>
                     <div className="flex flex-col gap-4">
                         {currentResult.actionTip.map((tip, index) => (
                             <div key={tip} className="flex items-start gap-4">
@@ -647,19 +651,28 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                                 연애할 때 내 마음은 이렇게 흘러가요
                             </p>
                             <div className="flex flex-col gap-3">
-                                {currentDetail.patternFlow.map((step, index) => (
-                                    <div key={step} className="flex items-start gap-3">
-                                        <div
-                                            className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                                            style={{ backgroundColor: '#002045', color: '#ffffff' }}
-                                        >
-                                            {index + 1}
+                                {currentDetail.patternFlow.map((caseText) => {
+                                    const steps = caseText.split(/\s*->\s*/);
+                                    return (
+                                        <div key={caseText} className="rounded-2xl px-4 py-3" style={{ backgroundColor: '#f7f9fb' }}>
+                                            <div className="flex flex-wrap items-center gap-1">
+                                                {steps.map((s, si) => (
+                                                    <span key={si} className="flex items-center gap-1">
+                                                        <span className="text-xs leading-relaxed" style={{ color: si === 0 ? '#002045' : '#191c1e', fontWeight: si === 0 ? 600 : 400 }}>
+                                                            {s}
+                                                        </span>
+                                                        {si < steps.length - 1 && (
+                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                <line x1="5" y1="12" x2="19" y2="12" />
+                                                                <polyline points="12 5 19 12 12 19" />
+                                                            </svg>
+                                                        )}
+                                                    </span>
+                                                ))}
+                                            </div>
                                         </div>
-                                        <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
-                                            {step}
-                                        </p>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -683,69 +696,50 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                             </div>
                         </div>
 
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                                <p
-                                    className="mb-3 text-xs font-semibold uppercase tracking-wider"
-                                    style={{ color: '#0060ac' }}
-                                >
-                                    겉으로는 이렇게 보여요
-                                </p>
-                                <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
-                                    {currentDetail.visibleReaction}
-                                </p>
-                            </div>
-                            <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                                <p
-                                    className="mb-3 text-xs font-semibold uppercase tracking-wider"
-                                    style={{ color: '#0060ac' }}
-                                >
-                                    속으로는 이런 마음이 들어요
-                                </p>
-                                <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
-                                    {currentDetail.realFeeling}
-                                </p>
-                            </div>
-                        </div>
-
+                        {/* 반응 방식 — 겉/속 + 편할때/불안할때 묶음 */}
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                            <p
-                                className="mb-4 text-xs font-semibold uppercase tracking-wider"
-                                style={{ color: '#0060ac' }}
-                            >
-                                상대는 나를 이렇게 느끼기 쉬워요
+                            <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                                반응 방식
                             </p>
-                            <div className="flex flex-col gap-3">
-                                {currentDetail.partnerFeels.map((item) => (
-                                    <p key={item} className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
-                                        • {item}
-                                    </p>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                                <p
-                                    className="mb-3 text-xs font-semibold uppercase tracking-wider"
-                                    style={{ color: '#0060ac' }}
-                                >
-                                    내가 편할 때는 이런 모습이 나와요
-                                </p>
-                                <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
-                                    {currentDetail.whenSafe}
-                                </p>
-                            </div>
-                            <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                                <p
-                                    className="mb-3 text-xs font-semibold uppercase tracking-wider"
-                                    style={{ color: '#0060ac' }}
-                                >
-                                    내가 불안해지면 이렇게 반응해요
-                                </p>
-                                <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
-                                    {currentDetail.whenShaken}
-                                </p>
+                            <div className="flex flex-col gap-4">
+                                <div className="grid gap-3 grid-cols-2">
+                                    <div className="rounded-2xl p-3" style={{ backgroundColor: '#f7f9fb' }}>
+                                        <p className="mb-1.5 text-xs font-semibold" style={{ color: '#43474e' }}>겉으로는</p>
+                                        <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                            {currentDetail.visibleReaction}
+                                        </p>
+                                    </div>
+                                    <div className="rounded-2xl p-3" style={{ backgroundColor: '#f7f9fb' }}>
+                                        <p className="mb-1.5 text-xs font-semibold" style={{ color: '#43474e' }}>속으로는</p>
+                                        <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                            {currentDetail.realFeeling}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div style={{ borderTop: '1px solid #f2f4f6', paddingTop: '12px' }}>
+                                    <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>상대는 나를 이렇게 느끼기 쉬워요</p>
+                                    <div className="flex flex-col gap-2">
+                                        {currentDetail.partnerFeels.map((item) => (
+                                            <p key={item} className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                                • {item}
+                                            </p>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="grid gap-3 grid-cols-2" style={{ borderTop: '1px solid #f2f4f6', paddingTop: '12px' }}>
+                                    <div className="rounded-2xl p-3" style={{ backgroundColor: '#f0fdf4' }}>
+                                        <p className="mb-1.5 text-xs font-semibold" style={{ color: '#15803d' }}>편안할 때</p>
+                                        <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                            {currentDetail.whenSafe}
+                                        </p>
+                                    </div>
+                                    <div className="rounded-2xl p-3" style={{ backgroundColor: '#fff7ed' }}>
+                                        <p className="mb-1.5 text-xs font-semibold" style={{ color: '#c2410c' }}>불안할 때</p>
+                                        <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                            {currentDetail.whenShaken}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

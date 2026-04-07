@@ -48,7 +48,19 @@ export function RadarChart({ anxiety, avoidance, trust, selfDisclosure, conflict
                     <PolarGrid stroke="#e6e8ea" />
                     <PolarAngleAxis
                         dataKey="axis"
-                        tick={{ fontSize: 11, fill: '#43474e', fontWeight: 600 }}
+                        tick={({ x, y, payload, index }) => {
+                            const score = data[index]?.value ?? 0;
+                            return (
+                                <g transform={`translate(${x},${y})`}>
+                                    <text textAnchor="middle" dominantBaseline="middle" fontSize={11} fontWeight={600} fill="#43474e" dy={-7}>
+                                        {payload.value}
+                                    </text>
+                                    <text textAnchor="middle" dominantBaseline="middle" fontSize={10} fill="#0060ac" fontWeight={700} dy={7}>
+                                        {score}
+                                    </text>
+                                </g>
+                            );
+                        }}
                     />
                     <Radar
                         dataKey="value"
