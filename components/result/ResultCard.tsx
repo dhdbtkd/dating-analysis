@@ -260,17 +260,55 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
         }
     }
 
-    async function handleShare() {
-        const text = `[${currentResult.typeName}] — 나의 연애 패턴 테스트 결과`;
-        const url = window.location.href;
+    function buildOgImageUrl(): string {
+        const base = process.env.NEXT_PUBLIC_BASE_URL ?? window.location.origin;
+        const toPercent = (s: number) => Math.round(((s - 1) / 6) * 100);
+        const params = new URLSearchParams({
+            nickname,
+            type: currentResult.typeName,
+            tagline: currentResult.tagline,
+            s0: String(toPercent(8 - currentResult.anxietyScore)),
+            s1: String(toPercent(scoreTrust ?? 4)),
+            s2: String(toPercent(scoreSelfDisclosure ?? 4)),
+            s3: String(toPercent(scoreConflict ?? 4)),
+            s4: String(toPercent(scoreRelSelfEsteem ?? 4)),
+            s5: String(toPercent(8 - currentResult.avoidanceScore)),
+        });
+        return `${base}/api/og?${params.toString()}`;
+    }
 
-        if (navigator.share) {
-            await navigator.share({ title: text, url });
+    function handleShare() {
+        const url = window.location.href;
+        const base = process.env.NEXT_PUBLIC_BASE_URL ?? window.location.origin;
+
+        if (window.Kakao?.isInitialized()) {
+            window.Kakao.Share.sendDefault({
+                objectType: 'feed',
+                content: {
+                    title: `${nickname}님의 연애 유형: ${currentResult.typeName}`,
+                    description: currentResult.tagline,
+                    imageUrl: buildOgImageUrl(),
+                    link: { mobileWebUrl: url, webUrl: url },
+                },
+                buttons: [
+                    {
+                        title: '내 결과 보기',
+                        link: { mobileWebUrl: url, webUrl: url },
+                    },
+                    {
+                        title: '나도 해보기',
+                        link: { mobileWebUrl: base, webUrl: base },
+                    },
+                ],
+            });
             return;
         }
 
-        await navigator.clipboard.writeText(`${text} | ${url}`);
-        alert('링크가 복사되었습니다!');
+        // 카카오 SDK 없으면 링크 복사 fallback
+        navigator.clipboard.writeText(url).then(() => {
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 2000);
+        });
     }
 
     function handleAdminTriggerClick() {

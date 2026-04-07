@@ -39,17 +39,39 @@ export function CoupleResultCard({ coupleId, session1, session2, analysis: initi
   const [regenMessage, setRegenMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const handleShare = useCallback(async () => {
+  const handleShare = useCallback(() => {
     const url = window.location.href;
-    const text = `${session1.nickname}님과 ${session2.nickname}님의 커플 연애 패턴 분석 결과`;
-    if (navigator.share) {
-      await navigator.share({ title: text, url }).catch(() => {});
+    const base = process.env.NEXT_PUBLIC_BASE_URL ?? window.location.origin;
+    const title = `${session1.nickname}님 × ${session2.nickname}님의 커플 연애 패턴`;
+    const desc = analysis.summary;
+
+    if (window.Kakao?.isInitialized()) {
+      window.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title,
+          description: desc,
+          imageUrl: `${base}/api/og?nickname=${encodeURIComponent(session1.nickname + '×' + session2.nickname)}&type=${encodeURIComponent('커플 연애 패턴')}&tagline=${encodeURIComponent(analysis.compatibilityNote ?? '')}`,
+          link: { mobileWebUrl: url, webUrl: url },
+        },
+        buttons: [
+          {
+            title: '커플 결과 보기',
+            link: { mobileWebUrl: url, webUrl: url },
+          },
+          {
+            title: '나도 해보기',
+            link: { mobileWebUrl: base, webUrl: base },
+          },
+        ],
+      });
       return;
     }
-    await navigator.clipboard.writeText(url).catch(() => {});
+
+    navigator.clipboard.writeText(url).catch(() => {});
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
-  }, [session1.nickname, session2.nickname]);
+  }, [session1.nickname, session2.nickname, analysis]);
 
   function handleAdminTriggerClick() {
     const now = Date.now();
