@@ -51,8 +51,6 @@ export interface ResultCoreJson {
   mindset: string;
   anxietyScore: number;
   avoidanceScore: number;
-  emotionalIntensity: '낮음' | '중간' | '높음';
-  distanceTendency: '낮음' | '중간' | '높음';
 }
 
 export interface ResultDetailJson {

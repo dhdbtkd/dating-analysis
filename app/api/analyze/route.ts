@@ -37,8 +37,6 @@ const CORE_RESULT_SCHEMA = {
         coreWound: { type: 'string' },
         actionTip: { type: 'array', items: { type: 'string' } },
         mindset: { type: 'string' },
-        emotionalIntensity: { type: 'string', enum: ['낮음', '중간', '높음'] },
-        distanceTendency: { type: 'string', enum: ['낮음', '중간', '높음'] },
     },
     required: [
         'typeName',
@@ -47,8 +45,6 @@ const CORE_RESULT_SCHEMA = {
         'coreWound',
         'actionTip',
         'mindset',
-        'emotionalIntensity',
-        'distanceTendency',
     ],
     additionalProperties: false,
 };
@@ -142,8 +138,6 @@ JSON 객체 하나만 반환
 - mindset: 마인드셋 전환 문장 (150자 이내)
 - anxietyScore: ${ecrScores.anxiety.toFixed(1)}
 - avoidanceScore: ${ecrScores.avoidance.toFixed(1)}
-- emotionalIntensity: 불안 점수 기반 — 3.5 미만=낮음 / 3.5~4.5=중간 / 4.5 초과=높음
-- distanceTendency: 회피 점수 기반 — 3.5 미만=낮음 / 3.5~4.5=중간 / 4.5 초과=높음
 
 중요 원칙:
 1. 결과는 "이 사람이 어떤 사람인지" 규정하지 말고, "관계에서 어떤 반응과 행동을 반복하는지"를 설명할 것
