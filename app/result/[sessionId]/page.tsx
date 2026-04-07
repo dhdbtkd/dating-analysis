@@ -4,12 +4,13 @@ import type { SessionRow, ResultCoreJson, ResultDetailJson, ResultDetailStatus }
 
 interface PageProps {
   params: Promise<{ sessionId: string }>;
-  searchParams: Promise<{ coupleId?: string }>;
+  searchParams: Promise<{ coupleId?: string; shared?: string }>;
 }
 
 export default async function ResultPage({ params, searchParams }: PageProps) {
   const { sessionId } = await params;
-  const { coupleId } = await searchParams;
+  const { coupleId, shared } = await searchParams;
+  const isShared = shared === '1';
   const supabase = createServerClient();
 
   const { data, error } = await supabase
@@ -54,6 +55,7 @@ export default async function ResultPage({ params, searchParams }: PageProps) {
           sessionId={sessionId}
           nickname={session.nickname}
           coupleId={coupleId}
+          isShared={isShared}
           scoreTrust={session.score_trust}
           scoreSelfDisclosure={session.score_self_disclosure}
           scoreConflict={session.score_conflict}

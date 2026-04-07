@@ -4,10 +4,13 @@ import type { SessionRow, CoupleAnalysis } from '@/types';
 
 interface PageProps {
   params: Promise<{ coupleId: string }>;
+  searchParams: Promise<{ shared?: string }>;
 }
 
-export default async function CouplePage({ params }: PageProps) {
+export default async function CouplePage({ params, searchParams }: PageProps) {
   const { coupleId } = await params;
+  const { shared } = await searchParams;
+  const isShared = shared === '1';
   const supabase = createServerClient();
 
   const { data, error } = await supabase
@@ -74,7 +77,7 @@ export default async function CouplePage({ params }: PageProps) {
   return (
     <div className="min-h-[100dvh] px-4 py-12" style={{ backgroundColor: '#f7f9fb' }}>
       <div className="max-w-lg mx-auto">
-        <CoupleResultCard coupleId={coupleId} session1={session1} session2={session2} analysis={fallbackAnalysis} />
+        <CoupleResultCard coupleId={coupleId} session1={session1} session2={session2} analysis={fallbackAnalysis} isShared={isShared} />
       </div>
     </div>
   );

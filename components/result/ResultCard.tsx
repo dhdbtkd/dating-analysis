@@ -29,6 +29,7 @@ interface ResultCardProps {
     sessionId: string;
     nickname: string;
     coupleId?: string;
+    isShared?: boolean;
     scoreTrust?: number | null;
     scoreSelfDisclosure?: number | null;
     scoreConflict?: number | null;
@@ -104,7 +105,7 @@ function DetailLoadingBlock({ message }: { message: string }) {
     );
 }
 
-export function ResultCard({ result, detailResult, detailStatus, detailError, sessionId, nickname, coupleId, scoreTrust, scoreSelfDisclosure, scoreConflict, scoreRelSelfEsteem }: ResultCardProps) {
+export function ResultCard({ result, detailResult, detailStatus, detailError, sessionId, nickname, coupleId, isShared, scoreTrust, scoreSelfDisclosure, scoreConflict, scoreRelSelfEsteem }: ResultCardProps) {
     type RegenerateMode = 'both' | 'core' | 'detail';
 
     const router = useRouter();
@@ -275,18 +276,19 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
         }
 
         if (window.Kakao?.isInitialized()) {
+            const sharedUrl = url.includes('?') ? `${url}&shared=1` : `${url}?shared=1`;
             window.Kakao.Share.sendDefault({
                 objectType: 'feed',
                 content: {
                     title: `${nickname}님의 연애 유형: ${currentResult.typeName}`,
                     description: currentResult.tagline,
                     imageUrl: `${window.location.origin}/solo_ogimage.png`,
-                    link: { mobileWebUrl: url, webUrl: url },
+                    link: { mobileWebUrl: sharedUrl, webUrl: sharedUrl },
                 },
                 buttons: [
                     {
-                        title: '내 결과 보기',
-                        link: { mobileWebUrl: url, webUrl: url },
+                        title: '결과 보기',
+                        link: { mobileWebUrl: sharedUrl, webUrl: sharedUrl },
                     },
                     {
                         title: '나도 해보기',
@@ -789,6 +791,16 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                 )}
 
                 <div className="flex flex-col gap-3 pb-12">
+                    {isShared ? (
+                        <a
+                            href="/"
+                            className="w-full rounded-2xl py-3.5 text-sm font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            style={{ backgroundColor: '#002045', color: '#ffffff' }}
+                        >
+                            나도 해보기
+                        </a>
+                    ) : (
+                        <>
                     <button
                         type="button"
                         onClick={handleShare}
@@ -865,6 +877,8 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                                 연인도 검사를 완료하면, 두 사람의 애착 패턴이 어떻게 맞물리는지 함께 더 잘 연애하는
                                 방법을 분석해 드립니다.
                             </p>
+                        </>
+                    )}
                         </>
                     )}
                 </div>
