@@ -6,8 +6,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { GoldButton } from '@/components/ui/GoldButton';
 import type { ChatMessage } from '@/types';
 
-const MAX_TURNS = 6;
-const TURN_STEPS = [1, 2, 3, 4, 5, 6] as const;
+const DEFAULT_MAX_TURNS = 6;
 const ENERGY_EVENT_NAME = 'chat-bg-energy';
 
 function emitChatBgEnergy(detail: { energy?: number; pulse?: number }) {
@@ -21,6 +20,7 @@ export function ChatScreen() {
         () => selectedQuestions.map((q, i) => ({ questionText: q.text, score: quizAnswers[i] ?? 0 })),
         [quizAnswers, selectedQuestions],
     );
+    const [maxTurns, setMaxTurns] = useState(DEFAULT_MAX_TURNS);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -35,6 +35,15 @@ export function ChatScreen() {
     const lastMessageContent = lastMessage?.content ?? '';
     // 첫 토큰 수신 전(빈 assistant 메시지)일 때만 ... 말풍선 표시
     const showTypingIndicator = loading && lastMessage?.role === 'assistant' && lastMessageContent.length === 0;
+
+    useEffect(() => {
+        fetch('/api/config')
+            .then((r) => r.json())
+            .then((d: { chatMaxTurns?: number }) => {
+                if (d.chatMaxTurns) setMaxTurns(d.chatMaxTurns);
+            })
+            .catch(() => {});
+    }, []);
 
     useEffect(() => {
         emitChatBgEnergy({ energy: 0.26, pulse: 0.06 });
@@ -125,7 +134,7 @@ export function ChatScreen() {
         setChatHistory(updatedHistory);
         setInput('');
         const newUserTurns = updatedHistory.filter((m) => m.role === 'user').length;
-        if (newUserTurns >= MAX_TURNS) {
+        if (newUserTurns >= maxTurns) {
             setStep('loading');
             return;
         }
@@ -152,10 +161,10 @@ export function ChatScreen() {
                 <div className="max-w-lg mx-auto flex items-center justify-end">
                     <div className="text-right">
                         <p className="text-[0.7rem] font-semibold text-zinc-300">
-                            {userTurns} / {MAX_TURNS}
+                            {userTurns} / {maxTurns}
                         </p>
                         <div className="flex gap-1 mt-1">
-                            {TURN_STEPS.map((turn) => (
+                            {Array.from({ length: maxTurns }, (_, i) => i + 1).map((turn) => (
                                 <div
                                     key={turn}
                                     className="w-3 h-1 rounded-full transition-all"
@@ -230,7 +239,7 @@ export function ChatScreen() {
                             {error}
                         </p>
                     )}
-                    {userTurns < MAX_TURNS ? (
+                    {userTurns < maxTurns ? (
                         <div
                             className="flex items-center gap-2 rounded-3xl px-4 py-3 transition-all soft-lift justify-center"
                             style={{ backgroundColor: '#ffffff' }}

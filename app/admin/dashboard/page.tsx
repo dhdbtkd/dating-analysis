@@ -19,6 +19,13 @@ interface LlmConfig {
   updated_at: string;
 }
 
+interface AppSetting {
+  key: string;
+  value: unknown;
+  description: string;
+  updated_at: string;
+}
+
 interface ExpandModal {
   label: string;
   value: string;
@@ -140,7 +147,10 @@ function ExpandedModal({ modal, onClose }: { modal: ExpandModal; onClose: () => 
   );
 }
 
+type NavTab = 'prompts' | 'settings';
+
 export default function AdminDashboardPage() {
+  const [tab, setTab] = useState<NavTab>('prompts');
   const [configs, setConfigs] = useState<LlmConfig[]>([]);
   const [selected, setSelected] = useState<LlmConfig | null>(null);
   const [saving, setSaving] = useState(false);
@@ -151,6 +161,12 @@ export default function AdminDashboardPage() {
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const countdownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // App settings
+  const [settings, setSettings] = useState<AppSetting[]>([]);
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
+  const [settingsError, setSettingsError] = useState('');
+
   useEffect(() => {
     fetch('/api/admin/config')
       .then((r) => r.json())
@@ -159,7 +175,36 @@ export default function AdminDashboardPage() {
         if (data.length > 0) setSelected(structuredClone(data[0]));
       })
       .catch(() => setError('설정을 불러오지 못했습니다.'));
+    fetch('/api/admin/settings')
+      .then((r) => r.json())
+      .then((data: AppSetting[]) => setSettings(data))
+      .catch(() => {});
   }, []);
+
+  async function saveSettings(key: string, value: unknown) {
+    setSettingsSaving(true);
+    setSettingsError('');
+    setSettingsSaved(false);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, value }),
+      });
+      const data = await res.json() as AppSetting & { error?: string };
+      if (!res.ok) { setSettingsError(data.error ?? '저장에 실패했습니다.'); return; }
+      setSettings((prev) => prev.map((s) => s.key === key ? data : s));
+      setSettingsSaved(true);
+    } catch {
+      setSettingsError('네트워크 오류가 발생했습니다.');
+    } finally {
+      setSettingsSaving(false);
+    }
+  }
+
+  function getSettingValue(key: string): unknown {
+    return settings.find((s) => s.key === key)?.value;
+  }
 
   const save = useCallback(async (config: LlmConfig) => {
     setSaving(true);
@@ -239,28 +284,85 @@ export default function AdminDashboardPage() {
         {/* Nav — horizontal tabs on mobile, vertical sidebar on desktop */}
         <nav className="md:w-52 md:shrink-0 md:border-r md:border-gray-800 md:p-4 md:flex md:flex-col md:gap-1
                         border-b border-gray-800 overflow-x-auto">
-          <p className="hidden md:block text-xs text-gray-500 font-medium uppercase tracking-widest mb-3">Prompts</p>
-          <div className="flex md:flex-col gap-1 p-3 md:p-0">
-            {configs.map((c) => (
+          {/* Top-level tabs */}
+          <div className="flex md:flex-col gap-1 p-3 md:p-0 md:mb-4">
+            {(['prompts', 'settings'] as NavTab[]).map((t) => (
               <button
-                key={c.id}
-                onClick={() => selectConfig(c)}
-                className={`shrink-0 text-left px-3 py-2 rounded-lg text-sm transition-colors whitespace-nowrap ${
-                  selected?.id === c.id
-                    ? 'bg-gray-800 text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                key={t}
+                onClick={() => setTab(t)}
+                className={`shrink-0 text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  tab === t ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-white hover:bg-gray-800/50'
                 }`}
               >
-                {CONFIG_LABELS[c.key] ?? c.key}
-                {!c.is_active && <span className="ml-1 text-xs text-gray-600">(off)</span>}
+                {t === 'prompts' ? 'Prompts' : '앱 설정'}
               </button>
             ))}
           </div>
+
+          {tab === 'prompts' && (
+            <>
+              <p className="hidden md:block text-xs text-gray-500 font-medium uppercase tracking-widest mb-2 px-3 md:px-0">모델 설정</p>
+              <div className="flex md:flex-col gap-1 px-3 pb-3 md:p-0">
+                {configs.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => selectConfig(c)}
+                    className={`shrink-0 text-left px-3 py-2 rounded-lg text-sm transition-colors whitespace-nowrap ${
+                      selected?.id === c.id
+                        ? 'bg-gray-800 text-white'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                    }`}
+                  >
+                    {CONFIG_LABELS[c.key] ?? c.key}
+                    {!c.is_active && <span className="ml-1 text-xs text-gray-600">(off)</span>}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </nav>
 
         {/* Main */}
         <main className="flex-1 overflow-y-auto">
-          {selected ? (
+          {tab === 'settings' ? (
+            <div className="flex flex-col gap-6 p-4 md:p-8 max-w-lg">
+              <div className="flex items-center justify-between">
+                <h1 className="text-base md:text-lg font-semibold">앱 설정</h1>
+                <div className="flex items-center gap-2">
+                  {settingsSaving && <span className="text-gray-500 text-xs">저장 중...</span>}
+                  {!settingsSaving && settingsSaved && <span className="text-green-400 text-xs">저장됨</span>}
+                  {settingsError && <span className="text-red-400 text-xs">{settingsError}</span>}
+                </div>
+              </div>
+
+              {/* chat_max_turns */}
+              <div className="flex flex-col gap-2 p-4 rounded-xl bg-gray-900">
+                <label className="text-sm font-medium text-gray-200">채팅 최대 턴 수</label>
+                <p className="text-xs text-gray-500">사용자가 대화할 수 있는 최대 횟수 (현재: {String(getSettingValue('chat_max_turns') ?? 6)}턴)</p>
+                <div className="flex items-center gap-3 mt-1">
+                  <input
+                    type="number"
+                    min={1}
+                    max={20}
+                    defaultValue={Number(getSettingValue('chat_max_turns') ?? 6)}
+                    key={String(getSettingValue('chat_max_turns'))}
+                    className="w-24 px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-sm focus:outline-none focus:border-gray-500 text-white"
+                    onBlur={(e) => {
+                      const v = parseInt(e.target.value, 10);
+                      if (!isNaN(v) && v >= 1 && v <= 20) saveSettings('chat_max_turns', v);
+                    }}
+                  />
+                  <span className="text-xs text-gray-500">1–20 범위</span>
+                </div>
+              </div>
+
+              {settings.length > 0 && (
+                <p className="text-xs text-gray-600 pb-6">
+                  마지막 수정: {new Date(settings.find(s => s.key === 'chat_max_turns')?.updated_at ?? '').toLocaleString('ko-KR')}
+                </p>
+              )}
+            </div>
+          ) : selected ? (
             <div className="flex flex-col gap-5 p-4 md:p-8 max-w-3xl">
               {/* Header — sticky on mobile */}
               <div className="sticky top-0 z-10 bg-gray-950 py-3 -mx-4 px-4 md:static md:p-0 md:bg-transparent
@@ -374,6 +476,7 @@ export default function AdminDashboardPage() {
           ) : (
             <p className="p-6 text-gray-500 text-sm">설정을 불러오는 중...</p>
           )}
+
         </main>
       </div>
     </>
