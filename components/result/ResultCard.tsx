@@ -105,7 +105,20 @@ function DetailLoadingBlock({ message }: { message: string }) {
     );
 }
 
-export function ResultCard({ result, detailResult, detailStatus, detailError, sessionId, nickname, coupleId, isShared, scoreTrust, scoreSelfDisclosure, scoreConflict, scoreRelSelfEsteem }: ResultCardProps) {
+export function ResultCard({
+    result,
+    detailResult,
+    detailStatus,
+    detailError,
+    sessionId,
+    nickname,
+    coupleId,
+    isShared,
+    scoreTrust,
+    scoreSelfDisclosure,
+    scoreConflict,
+    scoreRelSelfEsteem,
+}: ResultCardProps) {
     type RegenerateMode = 'both' | 'core' | 'detail';
 
     const router = useRouter();
@@ -277,6 +290,7 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
 
         if (window.Kakao?.isInitialized()) {
             const sharedUrl = url.includes('?') ? `${url}&shared=1` : `${url}?shared=1`;
+            console.log('🚀 ~ handleShare ~ sharedUrl:', sharedUrl);
             window.Kakao.Share.sendDefault({
                 objectType: 'feed',
                 content: {
@@ -572,7 +586,9 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                     </p>
                     <div className="flex flex-col gap-5">
                         <div>
-                            <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>연애에서의 당신</p>
+                            <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>
+                                연애에서의 당신
+                            </p>
                             {splitIntoParagraphs(currentResult.lovePattern).map((paragraph, index) => (
                                 <p
                                     key={paragraph}
@@ -584,7 +600,9 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                             ))}
                         </div>
                         <div style={{ borderTop: '1px solid #f2f4f6', paddingTop: '16px' }}>
-                            <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>마음이 예민해지는 지점</p>
+                            <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>
+                                마음이 예민해지는 지점
+                            </p>
                             <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
                                 {currentResult.coreWound}
                             </p>
@@ -597,11 +615,10 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                     <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
                         변화를 위한 제안
                     </p>
-                    <div
-                        className="mb-5 rounded-2xl p-4"
-                        style={{ backgroundColor: '#ffdad5' }}
-                    >
-                        <p className="mb-1 text-xs font-semibold" style={{ color: '#c8724a' }}>관계를 다르게 보는 연습</p>
+                    <div className="mb-5 rounded-2xl p-4" style={{ backgroundColor: '#ffdad5' }}>
+                        <p className="mb-1 text-xs font-semibold" style={{ color: '#c8724a' }}>
+                            관계를 다르게 보는 연습
+                        </p>
                         <p
                             className="text-xs font-medium leading-relaxed"
                             style={{ fontFamily: 'Paperozi', color: '#002045' }}
@@ -639,15 +656,34 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                                 {currentDetail.patternFlow.map((caseText) => {
                                     const steps = caseText.split(/\s*->\s*/);
                                     return (
-                                        <div key={caseText} className="rounded-2xl px-4 py-3" style={{ backgroundColor: '#f7f9fb' }}>
+                                        <div
+                                            key={caseText}
+                                            className="rounded-2xl px-4 py-3"
+                                            style={{ backgroundColor: '#f7f9fb' }}
+                                        >
                                             <div className="flex flex-wrap items-center gap-1">
                                                 {steps.map((s, si) => (
                                                     <span key={si} className="flex items-center gap-1">
-                                                        <span className="text-xs leading-relaxed" style={{ color: si === 0 ? '#002045' : '#191c1e', fontWeight: si === 0 ? 600 : 400 }}>
+                                                        <span
+                                                            className="text-xs leading-relaxed"
+                                                            style={{
+                                                                color: si === 0 ? '#002045' : '#191c1e',
+                                                                fontWeight: si === 0 ? 600 : 400,
+                                                            }}
+                                                        >
                                                             {s}
                                                         </span>
                                                         {si < steps.length - 1 && (
-                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <svg
+                                                                width="12"
+                                                                height="12"
+                                                                viewBox="0 0 24 24"
+                                                                fill="none"
+                                                                stroke="#9ca3af"
+                                                                strokeWidth="2.5"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                            >
                                                                 <line x1="5" y1="12" x2="19" y2="12" />
                                                                 <polyline points="12 5 19 12 12 19" />
                                                             </svg>
@@ -683,43 +719,63 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
 
                         {/* 반응 방식 — 겉/속 + 편할때/불안할때 묶음 */}
                         <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                            <p className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
+                            <p
+                                className="mb-4 text-xs font-semibold uppercase tracking-wider"
+                                style={{ color: '#0060ac' }}
+                            >
                                 반응 방식
                             </p>
                             <div className="flex flex-col gap-4">
                                 <div className="grid gap-3 grid-cols-2">
                                     <div className="rounded-2xl p-3" style={{ backgroundColor: '#f7f9fb' }}>
-                                        <p className="mb-1.5 text-xs font-semibold" style={{ color: '#43474e' }}>겉으로는</p>
+                                        <p className="mb-1.5 text-xs font-semibold" style={{ color: '#43474e' }}>
+                                            겉으로는
+                                        </p>
                                         <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
                                             {currentDetail.visibleReaction}
                                         </p>
                                     </div>
                                     <div className="rounded-2xl p-3" style={{ backgroundColor: '#f7f9fb' }}>
-                                        <p className="mb-1.5 text-xs font-semibold" style={{ color: '#43474e' }}>속으로는</p>
+                                        <p className="mb-1.5 text-xs font-semibold" style={{ color: '#43474e' }}>
+                                            속으로는
+                                        </p>
                                         <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
                                             {currentDetail.realFeeling}
                                         </p>
                                     </div>
                                 </div>
                                 <div style={{ borderTop: '1px solid #f2f4f6', paddingTop: '12px' }}>
-                                    <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>상대는 나를 이렇게 느끼기 쉬워요</p>
+                                    <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>
+                                        상대는 나를 이렇게 느끼기 쉬워요
+                                    </p>
                                     <div className="flex flex-col gap-2">
                                         {currentDetail.partnerFeels.map((item) => (
-                                            <p key={item} className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
+                                            <p
+                                                key={item}
+                                                className="text-xs leading-relaxed"
+                                                style={{ color: '#191c1e' }}
+                                            >
                                                 • {item}
                                             </p>
                                         ))}
                                     </div>
                                 </div>
-                                <div className="grid gap-3 grid-cols-2" style={{ borderTop: '1px solid #f2f4f6', paddingTop: '12px' }}>
+                                <div
+                                    className="grid gap-3 grid-cols-2"
+                                    style={{ borderTop: '1px solid #f2f4f6', paddingTop: '12px' }}
+                                >
                                     <div className="rounded-2xl p-3" style={{ backgroundColor: '#f0fdf4' }}>
-                                        <p className="mb-1.5 text-xs font-semibold" style={{ color: '#15803d' }}>편안할 때</p>
+                                        <p className="mb-1.5 text-xs font-semibold" style={{ color: '#15803d' }}>
+                                            편안할 때
+                                        </p>
                                         <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
                                             {currentDetail.whenSafe}
                                         </p>
                                     </div>
                                     <div className="rounded-2xl p-3" style={{ backgroundColor: '#fff7ed' }}>
-                                        <p className="mb-1.5 text-xs font-semibold" style={{ color: '#c2410c' }}>불안할 때</p>
+                                        <p className="mb-1.5 text-xs font-semibold" style={{ color: '#c2410c' }}>
+                                            불안할 때
+                                        </p>
                                         <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
                                             {currentDetail.whenShaken}
                                         </p>
@@ -801,84 +857,103 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                         </a>
                     ) : (
                         <>
-                    <button
-                        type="button"
-                        onClick={handleShare}
-                        className="w-full rounded-2xl py-3.5 text-sm font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                        style={{ backgroundColor: '#FEE500', color: '#191919' }}
-                    >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="#191919" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.69 1.7 5.06 4.26 6.41L6.3 20.1a.5.5 0 0 0 .7.63l4.08-2.72c.3.03.61.05.92.05 4.97 0 9-3.36 9-7.5S16.97 3 12 3z"/>
-                        </svg>
-                        {copied ? '링크 복사됨!' : '카카오톡으로 공유하기'}
-                    </button>
-                    {coupleId ? (
-                        <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                            <p className="mb-1 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0060ac' }}>
-                                커플 분석
-                            </p>
-                            <p className="mb-4 text-sm font-bold leading-tight" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
-                                두 사람의 연애 패턴
-                            </p>
-                            <p className="mb-5 text-xs leading-relaxed" style={{ color: '#43474e' }}>
-                                {coupleAnalysisState === 'loading'
-                                    ? '상대방의 데이터와 대화를 함께 분석하고 있어요. 잠시만 기다려주세요.'
-                                    : coupleAnalysisState === 'error'
-                                      ? '커플 분석 중 문제가 생겼어요. 아래 버튼을 눌러 직접 확인해보세요.'
-                                      : '두 사람의 애착 패턴이 어떻게 맞물리는지 분석이 완료됐어요.'}
-                            </p>
-                            {coupleAnalysisState === 'loading' ? (
-                                <div
-                                    className="w-full rounded-2xl py-3 text-center text-sm font-semibold"
-                                    style={{ backgroundColor: '#eceef0', color: '#74777f' }}
+                            <button
+                                type="button"
+                                onClick={handleShare}
+                                className="w-full rounded-2xl py-3.5 text-sm font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                                style={{ backgroundColor: '#FEE500', color: '#191919' }}
+                            >
+                                <svg
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 24 24"
+                                    fill="#191919"
+                                    xmlns="http://www.w3.org/2000/svg"
                                 >
-                                    <span className="inline-flex items-center gap-2">
-                                        <span
-                                            className="inline-block w-3 h-3 rounded-full"
-                                            style={{
-                                                backgroundColor: '#74777f',
-                                                animation: 'pulse 1.2s ease-in-out infinite',
-                                            }}
-                                        />
-                                        분석 중...
-                                    </span>
+                                    <path d="M12 3C7.03 3 3 6.36 3 10.5c0 2.69 1.7 5.06 4.26 6.41L6.3 20.1a.5.5 0 0 0 .7.63l4.08-2.72c.3.03.61.05.92.05 4.97 0 9-3.36 9-7.5S16.97 3 12 3z" />
+                                </svg>
+                                {copied ? '링크 복사됨!' : '카카오톡으로 공유하기'}
+                            </button>
+                            {coupleId ? (
+                                <div className="rounded-3xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                                    <p
+                                        className="mb-1 text-xs font-semibold uppercase tracking-wider"
+                                        style={{ color: '#0060ac' }}
+                                    >
+                                        커플 분석
+                                    </p>
+                                    <p
+                                        className="mb-4 text-sm font-bold leading-tight"
+                                        style={{ fontFamily: 'Paperozi', color: '#002045' }}
+                                    >
+                                        두 사람의 연애 패턴
+                                    </p>
+                                    <p className="mb-5 text-xs leading-relaxed" style={{ color: '#43474e' }}>
+                                        {coupleAnalysisState === 'loading'
+                                            ? '상대방의 데이터와 대화를 함께 분석하고 있어요. 잠시만 기다려주세요.'
+                                            : coupleAnalysisState === 'error'
+                                              ? '커플 분석 중 문제가 생겼어요. 아래 버튼을 눌러 직접 확인해보세요.'
+                                              : '두 사람의 애착 패턴이 어떻게 맞물리는지 분석이 완료됐어요.'}
+                                    </p>
+                                    {coupleAnalysisState === 'loading' ? (
+                                        <div
+                                            className="w-full rounded-2xl py-3 text-center text-sm font-semibold"
+                                            style={{ backgroundColor: '#eceef0', color: '#74777f' }}
+                                        >
+                                            <span className="inline-flex items-center gap-2">
+                                                <span
+                                                    className="inline-block w-3 h-3 rounded-full"
+                                                    style={{
+                                                        backgroundColor: '#74777f',
+                                                        animation: 'pulse 1.2s ease-in-out infinite',
+                                                    }}
+                                                />
+                                                분석 중...
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <a
+                                            href={`/couple/${coupleId}`}
+                                            className="block w-full rounded-2xl py-3 text-center text-sm font-semibold transition-all active:scale-[0.98]"
+                                            style={{ backgroundColor: '#002045', color: '#ffffff' }}
+                                        >
+                                            커플 분석 결과 보기 💑
+                                        </a>
+                                    )}
+                                </div>
+                            ) : inviteUrl ? (
+                                <div className="rounded-3xl p-5 soft-lift" style={{ backgroundColor: '#ffffff' }}>
+                                    <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>
+                                        초대 링크가 생성되었습니다
+                                    </p>
+                                    <p className="mb-4 break-all text-xs" style={{ color: '#0060ac' }}>
+                                        {inviteUrl}
+                                    </p>
+                                    <GoldButton onClick={handleCopy} className="w-full">
+                                        {copied ? '복사됨!' : '링크 복사하기'}
+                                    </GoldButton>
+                                    <p
+                                        className="mt-4 text-xs leading-relaxed text-center"
+                                        style={{ color: '#74777f' }}
+                                    >
+                                        상대방이 이 링크로 검사를 완료하면
+                                        <br />두 사람의 연애 패턴을 함께 볼 수 있어요
+                                    </p>
                                 </div>
                             ) : (
-                                <a
-                                    href={`/couple/${coupleId}`}
-                                    className="block w-full rounded-2xl py-3 text-center text-sm font-semibold transition-all active:scale-[0.98]"
-                                    style={{ backgroundColor: '#002045', color: '#ffffff' }}
-                                >
-                                    커플 분석 결과 보기 💑
-                                </a>
+                                <>
+                                    <GoldButton onClick={() => setShowConsent(true)} className="w-full">
+                                        연인에게 보내기 💑
+                                    </GoldButton>
+                                    <p
+                                        className="mt-3 text-center text-xs leading-relaxed"
+                                        style={{ color: '#74777f' }}
+                                    >
+                                        연인도 검사를 완료하면, 두 사람의 애착 패턴이 어떻게 맞물리는지 함께 더 잘
+                                        연애하는 방법을 분석해 드립니다.
+                                    </p>
+                                </>
                             )}
-                        </div>
-                    ) : inviteUrl ? (
-                        <div className="rounded-3xl p-5 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-                            <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>
-                                초대 링크가 생성되었습니다
-                            </p>
-                            <p className="mb-4 break-all text-xs" style={{ color: '#0060ac' }}>
-                                {inviteUrl}
-                            </p>
-                            <GoldButton onClick={handleCopy} className="w-full">
-                                {copied ? '복사됨!' : '링크 복사하기'}
-                            </GoldButton>
-                            <p className="mt-4 text-xs leading-relaxed text-center" style={{ color: '#74777f' }}>
-                                상대방이 이 링크로 검사를 완료하면<br />두 사람의 연애 패턴을 함께 볼 수 있어요
-                            </p>
-                        </div>
-                    ) : (
-                        <>
-                            <GoldButton onClick={() => setShowConsent(true)} className="w-full">
-                                연인에게 보내기 💑
-                            </GoldButton>
-                            <p className="mt-3 text-center text-xs leading-relaxed" style={{ color: '#74777f' }}>
-                                연인도 검사를 완료하면, 두 사람의 애착 패턴이 어떻게 맞물리는지 함께 더 잘 연애하는
-                                방법을 분석해 드립니다.
-                            </p>
-                        </>
-                    )}
                         </>
                     )}
                 </div>
