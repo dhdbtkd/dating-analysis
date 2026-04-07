@@ -1,7 +1,14 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import type { CoupleAnalysis, SessionRow } from '@/types';
+import { getCoupleType, calcAxisGaps } from '@/lib/coupleType';
+
+const CoupleRadarChart = dynamic(
+  () => import('./CoupleRadarChart').then((m) => m.CoupleRadarChart),
+  { ssr: false },
+);
 
 function GenderIcon({ gender }: { gender: string }) {
   if (gender === 'female') {
@@ -51,7 +58,7 @@ export function CoupleResultCard({ coupleId, session1, session2, analysis: initi
         content: {
           title,
           description: desc,
-          imageUrl: `${base}/api/og?nickname=${encodeURIComponent(session1.nickname + '×' + session2.nickname)}&type=${encodeURIComponent('커플 연애 패턴')}&tagline=${encodeURIComponent(analysis.compatibilityNote ?? '')}`,
+          imageUrl: `${base}/couple_ogimage.png`,
           link: { mobileWebUrl: url, webUrl: url },
         },
         buttons: [
@@ -148,132 +155,221 @@ export function CoupleResultCard({ coupleId, session1, session2, analysis: initi
         </h1>
       </div>
 
-      {/* Two profiles */}
-      <div className="grid grid-cols-2 gap-3">
-        {[session1, session2].map((s) => (
-          <div
-            key={s.id}
-            className="rounded-2xl p-4 soft-lift text-center"
-            style={{ backgroundColor: '#ffffff' }}
-          >
-            <div
-              className="flex items-center justify-center w-8 h-8 rounded-full mx-auto mb-2"
-              style={{ backgroundColor: s.gender === 'female' ? '#fce4ec' : '#e3f2fd' }}
-            >
-              <GenderIcon gender={s.gender} />
-            </div>
-            <p className="font-bold text-sm" style={{ color: '#002045' }}>{s.nickname}</p>
-            <p
-              className="text-xs font-semibold mt-1 px-2 py-0.5 rounded-full inline-block"
-              style={{ backgroundColor: '#dbeafe', color: '#0060ac' }}
-            >
-              {s.result?.typeName ?? s.attachment_type}
+      {/* Couple type — rule-based */}
+      {(() => {
+        const ct = getCoupleType(session1.ecr_anxiety, session1.ecr_avoidance, session2.ecr_anxiety, session2.ecr_avoidance);
+        return (
+          <div className="rounded-2xl p-5" style={{ backgroundColor: '#002045' }}>
+            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: '#64a8fe' }}>
+              두 사람의 조합 유형
             </p>
-            <div className="text-xs mt-2" style={{ color: '#74777f' }}>
-              <span>불안 {s.ecr_anxiety.toFixed(1)}</span>
-              <span className="mx-1">·</span>
-              <span>회피 {s.ecr_avoidance.toFixed(1)}</span>
-            </div>
+            <p className="text-xl font-bold mb-2" style={{ fontFamily: 'Paperozi', color: '#ffffff' }}>{ct.name}</p>
+            <p className="text-xs leading-relaxed mb-3" style={{ color: '#b0c4de' }}>{ct.description}</p>
+            <span className="inline-block rounded-full px-3 py-1 text-xs font-semibold" style={{ backgroundColor: '#1a365d', color: '#64a8fe' }}>
+              {ct.dynamic}
+            </span>
           </div>
-        ))}
-      </div>
+        );
+      })()}
 
-      {/* Summary */}
-      <div className="rounded-2xl p-5 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#0060ac' }}>
-          두 사람의 조합
-        </p>
-        <p className="text-sm leading-relaxed" style={{ color: '#191c1e' }}>{analysis.summary}</p>
-      </div>
+      {/* ── 섹션 1: 두 사람의 프로필 ── */}
+      <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: '#9ca3af' }}>두 사람의 프로필</p>
 
-      {/* Conflict Pattern */}
-      <div className="rounded-2xl p-5 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#0060ac' }}>
-          반복되는 갈등 패턴
-        </p>
-        <p className="text-sm leading-relaxed" style={{ color: '#191c1e' }}>{analysis.conflictPattern ?? '—'}</p>
-      </div>
-
-      {/* Each Person's Core */}
-      <div className="rounded-2xl p-5 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-        <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: '#0060ac' }}>
-          각자가 진짜 원하는 것
-        </p>
-        <div className="flex flex-col gap-4">
-          {(Array.isArray(analysis.eachPersonsCore) ? analysis.eachPersonsCore : []).map((item) => {
-            // item.name이 "23님" 또는 "23" 두 형태 모두 대응
-            const baseName = item.name.replace(/님$/, '');
-            const session = [session1, session2].find((s) => s.nickname === baseName);
+      <div className="rounded-2xl soft-lift overflow-hidden" style={{ backgroundColor: '#ffffff' }}>
+        {/* Profile cards */}
+        <div className="grid grid-cols-2 gap-px" style={{ backgroundColor: '#f2f4f6' }}>
+          {[session1, session2].map((s) => {
+            const toP = (v: number) => Math.round(((v - 1) / 6) * 100);
+            const scores = [
+              { label: '안정감',  value: toP(8 - s.ecr_anxiety) },
+              { label: '친밀감',  value: toP(8 - s.ecr_avoidance) },
+              { label: '신뢰',    value: s.score_trust != null ? toP(s.score_trust) : null },
+              { label: '속마음',  value: s.score_self_disclosure != null ? toP(s.score_self_disclosure) : null },
+              { label: '갈등',    value: s.score_conflict != null ? toP(s.score_conflict) : null },
+              { label: '자존감',  value: s.score_rel_self_esteem != null ? toP(s.score_rel_self_esteem) : null },
+            ];
             return (
-              <div key={item.name} className="flex gap-3 items-start">
-                <div
-                  className="flex items-center justify-center w-7 h-7 rounded-full flex-shrink-0 mt-0.5"
-                  style={{ backgroundColor: session?.gender === 'female' ? '#fce4ec' : '#e3f2fd' }}
-                >
-                  <GenderIcon gender={session?.gender ?? 'male'} />
+              <div key={s.id} className="p-4 text-center" style={{ backgroundColor: '#ffffff' }}>
+                <div className="flex items-center justify-center w-8 h-8 rounded-full mx-auto mb-2"
+                  style={{ backgroundColor: s.gender === 'female' ? '#fce4ec' : '#e3f2fd' }}>
+                  <GenderIcon gender={s.gender} />
                 </div>
-                <div>
-                  <p className="text-xs font-semibold mb-1" style={{ color: '#002045' }}>{baseName}님</p>
-                  <p className="text-sm leading-relaxed" style={{ color: '#191c1e' }}>{item.core}</p>
+                <p className="font-bold text-sm" style={{ color: '#002045' }}>{s.nickname}</p>
+                <p className="text-xs font-semibold mt-1 px-2 py-0.5 rounded-full inline-block"
+                  style={{ backgroundColor: '#f2f4f6', color: '#43474e' }}>
+                  {s.result?.typeName ?? s.attachment_type}
+                </p>
+                <div className="mt-3 grid grid-cols-3 gap-1">
+                  {scores.map(({ label, value }) => value != null && (
+                    <div key={label} className="rounded-lg px-1 py-1.5" style={{ backgroundColor: '#f7f9fb' }}>
+                      <p className="text-[9px] font-semibold" style={{ color: '#74777f' }}>{label}</p>
+                      <p className="text-xs font-bold" style={{ color: '#0060ac' }}>{value}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             );
           })}
         </div>
-      </div>
 
-      {/* Couple Strengths */}
-      <div className="rounded-2xl p-5" style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#15803d' }}>
-          이 조합의 강점
-        </p>
-        <p className="text-sm leading-relaxed" style={{ color: '#191c1e' }}>{analysis.coupleStrengths ?? '—'}</p>
-      </div>
+        {/* Radar + Gap table */}
+        <div className="p-5" style={{ borderTop: '1px solid #f2f4f6' }}>
+          <p className="text-xs font-semibold mb-1" style={{ color: '#43474e' }}>지표 비교</p>
+          <p className="text-xs mb-3" style={{ color: '#9ca3af' }}>두 사람의 6가지 지표를 겹쳐 비교해요</p>
+          <CoupleRadarChart session1={session1} session2={session2} />
 
-      {/* Communication Tips */}
-      <div className="rounded-2xl p-5 soft-lift" style={{ backgroundColor: '#ffffff' }}>
-        <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: '#0060ac' }}>
-          이렇게 대화해봐요
-        </p>
-        <div className="flex flex-col gap-3">
-          {analysis.communicationTips.map((tip, i) => (
-            <div key={i} className="flex gap-3 items-start">
-              <span
-                className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
-                style={{ backgroundColor: '#dbeafe', color: '#0060ac' }}
-              >
-                {i + 1}
-              </span>
-              <p className="text-sm leading-relaxed" style={{ color: '#191c1e' }}>{tip}</p>
+          <div style={{ borderTop: '1px solid #f2f4f6', marginTop: '16px', paddingTop: '16px' }}>
+            <div className="grid gap-2 text-xs font-semibold mb-2" style={{ gridTemplateColumns: '1fr 2fr 1fr', color: '#9ca3af' }}>
+              <span>{session1.nickname}</span>
+              <span className="text-center">지표</span>
+              <span className="text-right">{session2.nickname}</span>
             </div>
-          ))}
+            <div className="flex flex-col gap-2">
+              {calcAxisGaps(session1, session2).map(({ label, score1, score2, gap }) => (
+                <div key={label} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 2fr 1fr' }}>
+                  <span className="text-xs font-bold" style={{ color: gap >= 20 ? '#c2410c' : '#191c1e' }}>{score1}</span>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-xs" style={{ color: '#43474e' }}>{label}</span>
+                    {gap >= 20 && (
+                      <span className="text-[9px] font-semibold rounded-full px-1.5 py-0.5" style={{ backgroundColor: '#f7f9fb', color: '#c2410c' }}>
+                        차이 {gap}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs font-bold text-right" style={{ color: gap >= 20 ? '#c2410c' : '#191c1e' }}>{score2}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {analysis.axisGaps && analysis.axisGaps.length > 0 && (
+            <div className="flex flex-col gap-3 mt-4 pt-4" style={{ borderTop: '1px solid #f2f4f6' }}>
+              {analysis.axisGaps.map((item) => (
+                <div key={item.axis} className="flex gap-3 items-start">
+                  <span className="text-xs font-semibold flex-shrink-0" style={{ width: '7rem', minWidth: '7rem', color: '#43474e', backgroundColor: '#f2f4f6', borderRadius: '999px', padding: '2px 8px', textAlign: 'center', lineHeight: '1.6' }}>
+                    {item.axis}
+                  </span>
+                  <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>{item.gap}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Crisis Script */}
-      <div className="rounded-2xl p-5" style={{ backgroundColor: '#fff7ed', border: '1px solid #fed7aa' }}>
-        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#c2410c' }}>
-          싸웠을 때 꺼내볼 말
-        </p>
-        <p
-          className="text-sm leading-relaxed"
-          style={{ fontFamily: 'Paperozi', color: '#431407' }}
-        >
-          "{analysis.crisisScript ?? '—'}"
-        </p>
+      {/* ── 섹션 2: 우리의 패턴 ── */}
+      <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: '#9ca3af' }}>우리의 패턴</p>
+
+      <div className="rounded-2xl soft-lift" style={{ backgroundColor: '#ffffff' }}>
+        {/* Summary */}
+        <div className="p-5">
+          <p className="text-xs font-semibold mb-2" style={{ color: '#43474e' }}>두 사람의 조합</p>
+          <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>{analysis.summary}</p>
+        </div>
+
+        {/* Conflict + Core Fears */}
+        <div className="p-5" style={{ borderTop: '1px solid #f2f4f6' }}>
+          <p className="text-xs font-semibold mb-2" style={{ color: '#43474e' }}>반복되는 갈등 패턴</p>
+          <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>{analysis.conflictPattern ?? '—'}</p>
+          {analysis.coreFearsCollision && (
+            <div className="mt-3 rounded-xl p-3" style={{ backgroundColor: '#f7f9fb' }}>
+              <p className="text-xs font-semibold mb-1" style={{ color: '#74777f' }}>서로의 불안이 맞닿는 지점</p>
+              <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>{analysis.coreFearsCollision}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Each person's core */}
+        <div className="p-5" style={{ borderTop: '1px solid #f2f4f6' }}>
+          <p className="text-xs font-semibold mb-3" style={{ color: '#43474e' }}>각자가 진짜 원하는 것</p>
+          <div className="flex flex-col gap-4">
+            {(Array.isArray(analysis.eachPersonsCore) ? analysis.eachPersonsCore : []).map((item) => {
+              const baseName = item.name.replace(/님$/, '');
+              const session = [session1, session2].find((s) => s.nickname === baseName);
+              return (
+                <div key={item.name} className="flex gap-3 items-start">
+                  <div className="flex items-center justify-center w-7 h-7 rounded-full flex-shrink-0 mt-0.5"
+                    style={{ backgroundColor: session?.gender === 'female' ? '#fce4ec' : '#e3f2fd' }}>
+                    <GenderIcon gender={session?.gender ?? 'male'} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold mb-1" style={{ color: '#002045' }}>{baseName}님</p>
+                    <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>{item.core}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
-      {/* Compatibility Note */}
-      <div
-        className="rounded-2xl p-5"
-        style={{ backgroundColor: '#dbeafe', border: '1px solid #bfdbfe' }}
-      >
-        <p
-          className="text-sm text-center leading-relaxed"
-          style={{ fontFamily: 'Paperozi', color: '#002045' }}
-        >
-          {analysis.compatibilityNote}
-        </p>
+      {/* ── 섹션 3: 강점과 제안 ── */}
+      <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: '#9ca3af' }}>강점과 제안</p>
+
+      <div className="rounded-2xl soft-lift" style={{ backgroundColor: '#ffffff' }}>
+        {/* Strengths */}
+        <div className="p-5">
+          <p className="text-xs font-semibold mb-2" style={{ color: '#43474e' }}>두 사람이 함께라서 좋은 점</p>
+          <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>{analysis.coupleStrengths ?? '—'}</p>
+        </div>
+
+        {/* Communication Tips */}
+        <div className="p-5" style={{ borderTop: '1px solid #f2f4f6' }}>
+          <p className="text-xs font-semibold mb-3" style={{ color: '#43474e' }}>이렇게 대화해봐요</p>
+          <div className="flex flex-col gap-3">
+            {analysis.communicationTips.map((tip, i) => (
+              <div key={i} className="flex gap-3 items-start">
+                <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
+                  style={{ backgroundColor: '#f2f4f6', color: '#43474e' }}>
+                  {i + 1}
+                </span>
+                <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>{tip}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Growth Edge */}
+        {analysis.growthEdge && (
+          <div className="p-5" style={{ borderTop: '1px solid #f2f4f6' }}>
+            <p className="text-xs font-semibold mb-2" style={{ color: '#43474e' }}>지금 당장 해볼 수 있는 것</p>
+            <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>{analysis.growthEdge}</p>
+          </div>
+        )}
+      </div>
+
+      {/* ── 섹션 4: 주의할 점 ── */}
+      {analysis.redFlags && analysis.redFlags.length > 0 && (
+        <>
+          <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: '#9ca3af' }}>주의할 점</p>
+          <div className="rounded-2xl soft-lift" style={{ backgroundColor: '#ffffff' }}>
+            <div className="p-5">
+              <p className="text-xs font-semibold mb-3" style={{ color: '#43474e' }}>이런 신호가 보이면 주의하세요</p>
+              <div className="flex flex-col gap-3">
+                {analysis.redFlags.map((flag, i) => (
+                  <div key={i} className="flex gap-3 items-start rounded-xl p-3" style={{ backgroundColor: '#f7f9fb', borderLeft: '3px solid #fca5a5' }}>
+                    <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>{flag}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── 마무리 ── */}
+      <div className="rounded-2xl soft-lift" style={{ backgroundColor: '#ffffff' }}>
+        <div className="p-5">
+          <p className="text-xs font-semibold mb-2" style={{ color: '#43474e' }}>싸웠을 때 꺼내볼 말</p>
+          <p className="text-xs leading-relaxed" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
+            "{analysis.crisisScript ?? '—'}"
+          </p>
+        </div>
+        <div className="p-5" style={{ borderTop: '1px solid #f2f4f6' }}>
+          <p className="text-xs text-center leading-relaxed" style={{ fontFamily: 'Paperozi', color: '#002045' }}>
+            {analysis.compatibilityNote}
+          </p>
+        </div>
       </div>
 
       {/* Share */}

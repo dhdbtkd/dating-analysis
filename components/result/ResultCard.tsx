@@ -260,23 +260,6 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
         }
     }
 
-    function buildOgImageUrl(): string {
-        const base = window.location.origin;
-        const toPercent = (s: number) => Math.round(((s - 1) / 6) * 100);
-        const params = new URLSearchParams({
-            nickname,
-            type: currentResult.typeName,
-            tagline: currentResult.tagline,
-            s0: String(toPercent(8 - currentResult.anxietyScore)),
-            s1: String(toPercent(scoreTrust ?? 4)),
-            s2: String(toPercent(scoreSelfDisclosure ?? 4)),
-            s3: String(toPercent(scoreConflict ?? 4)),
-            s4: String(toPercent(scoreRelSelfEsteem ?? 4)),
-            s5: String(toPercent(8 - currentResult.avoidanceScore)),
-        });
-        return `${base}/api/og?${params.toString()}`;
-    }
-
     function handleShare() {
         const url = window.location.href;
         const base = window.location.origin;
@@ -297,7 +280,7 @@ export function ResultCard({ result, detailResult, detailStatus, detailError, se
                 content: {
                     title: `${nickname}님의 연애 유형: ${currentResult.typeName}`,
                     description: currentResult.tagline,
-                    imageUrl: buildOgImageUrl(),
+                    imageUrl: `${window.location.origin}/solo_ogimage.png`,
                     link: { mobileWebUrl: url, webUrl: url },
                 },
                 buttons: [

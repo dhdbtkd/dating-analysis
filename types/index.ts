@@ -114,6 +114,11 @@ export interface CoupleAnalysis {
   communicationTips: string[];
   crisisScript: string;
   compatibilityNote: string;
+  // 6지표 확장 필드
+  axisGaps?: { axis: string; gap: string }[];
+  growthEdge?: string;
+  coreFearsCollision?: string;
+  redFlags?: string[];
 }
 
 export type AttachmentType = 'secure' | 'anxious' | 'avoidant' | 'fearful';

@@ -78,7 +78,18 @@ export async function POST(request: NextRequest) {
     "두 사람 함께: 구체적이고 실천 가능한 조언"
   ],
   "crisisScript": "싸웠을 때 실제로 쓸 수 있는 말 한 마디. 자연스러운 구어체로 (70자 이내)",
-  "compatibilityNote": "이 조합의 핵심을 꿰뚫는 한 줄 (100자 이내)"
+  "compatibilityNote": "이 조합의 핵심을 꿰뚫는 한 줄 (100자 이내)",
+  "axisGaps": [
+    { "axis": "차이가 큰 지표명 (안정감·친밀감·신뢰·속마음표현력·갈등해결력·관계자존감 중)", "gap": "두 사람 점수 차이가 관계에서 어떻게 드러나는지 구체적으로 (100자 이내)" },
+    { "axis": "두 번째로 차이가 큰 지표명", "gap": "설명 (100자 이내)" }
+  ],
+  "growthEdge": "두 사람이 함께 성장하기 위해 지금 당장 시도해볼 수 있는 한 가지 행동 (150자 이내)",
+  "coreFearsCollision": "각자의 핵심 두려움이 관계 안에서 어떻게 부딪히는지 — 예: '${s1.nickname}의 버려짐 두려움이 ${s2.nickname}의 통제받는 것에 대한 두려움을 자극한다' 처럼 충돌 구조를 한 문장으로 (150자 이내)",
+  "redFlags": [
+    "이 조합에서 주의해야 할 위험 신호 1 — 구체적인 행동이나 상황으로 (80자 이내)",
+    "위험 신호 2",
+    "위험 신호 3"
+  ]
 }`;
     const llmOpts = dbConfig ? { provider: dbConfig.provider, model: dbConfig.model } : undefined;
 
@@ -170,6 +181,10 @@ ${staticInstructions}`;
             communicationTips: Array.isArray(parsed.communicationTips) ? parsed.communicationTips as string[] : DEFAULT_ANALYSIS.communicationTips,
             crisisScript: typeof parsed.crisisScript === 'string' ? parsed.crisisScript : DEFAULT_ANALYSIS.crisisScript,
             compatibilityNote: typeof parsed.compatibilityNote === 'string' ? parsed.compatibilityNote : DEFAULT_ANALYSIS.compatibilityNote,
+            axisGaps: Array.isArray(parsed.axisGaps) ? parsed.axisGaps as { axis: string; gap: string }[] : undefined,
+            growthEdge: typeof parsed.growthEdge === 'string' ? parsed.growthEdge : undefined,
+            coreFearsCollision: typeof parsed.coreFearsCollision === 'string' ? parsed.coreFearsCollision : undefined,
+            redFlags: Array.isArray(parsed.redFlags) ? parsed.redFlags as string[] : undefined,
           };
         } catch (parseError) {
           console.error('[/api/couple/analyze] JSON.parse 실패:', parseError);
