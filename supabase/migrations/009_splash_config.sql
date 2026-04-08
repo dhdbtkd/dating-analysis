@@ -9,7 +9,8 @@ INSERT INTO app_settings (key, value, description) VALUES (
     "colorE": "#8830d0",
     "speed": 1.0,
     "warpStrength": 1.0,
-    "glowIntensity": 1.0
+    "glowIntensity": 1.0,
+    "pattern": "mesh"
   }',
   '스플래시 화면 셰이더 설정'
 ) ON CONFLICT (key) DO NOTHING;

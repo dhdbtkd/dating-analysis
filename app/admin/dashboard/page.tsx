@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { DEFAULT_SPLASH_CONFIG, SplashPreviewCanvas } from '@/components/screens/SplashScreen';
-import type { SplashConfig } from '@/components/screens/SplashScreen';
+import { DEFAULT_SPLASH_CONFIG, SplashPreviewCanvas, PATTERN_LABELS } from '@/components/screens/SplashScreen';
+import type { SplashConfig, SplashPattern } from '@/components/screens/SplashScreen';
 
 interface PromptPart {
   key: string;
@@ -419,6 +419,27 @@ export default function AdminDashboardPage() {
                 <SplashPreviewCanvas config={splash} />
                 <div className="absolute inset-0 flex items-end justify-end p-3 pointer-events-none">
                   <span className="text-[10px] font-semibold tracking-widest uppercase px-2 py-1 rounded" style={{ color: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(0,0,0,0.3)' }}>live preview</span>
+                </div>
+              </div>
+
+              {/* 패턴 선택 */}
+              <div className="flex flex-col gap-3 p-5 rounded-xl" style={{ backgroundColor: '#111', border: '1px solid #1e1e1e' }}>
+                <p className="text-[11px] font-semibold tracking-widest uppercase" style={{ color: '#555' }}>Pattern</p>
+                <div className="grid grid-cols-5 gap-2">
+                  {(Object.entries(PATTERN_LABELS) as [SplashPattern, string][]).map(([key, label]) => (
+                    <button
+                      key={key}
+                      onClick={() => updateSplash({ pattern: key })}
+                      className="py-2 rounded-lg text-xs font-medium transition-all"
+                      style={{
+                        backgroundColor: splash.pattern === key ? splash.colorC + '33' : '#1a1a1a',
+                        color: splash.pattern === key ? '#fff' : '#555',
+                        border: `1px solid ${splash.pattern === key ? splash.colorC + '88' : '#2a2a2a'}`,
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
               </div>
 

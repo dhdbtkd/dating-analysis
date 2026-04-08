@@ -7,15 +7,18 @@ import { useReducedMotion } from 'framer-motion';
 import * as THREE from 'three';
 import { useAppStore } from '@/store/useAppStore';
 
+export type SplashPattern = 'mesh' | 'swirl' | 'wave' | 'aurora' | 'ripple';
+
 export interface SplashConfig {
-    colorA: string;       // void black
-    colorB: string;       // base blue
-    colorC: string;       // cyan glow
-    colorD: string;       // violet
-    colorE: string;       // lavender
-    speed: number;        // 0.1 – 2.0  (전체 속도)
-    warpStrength: number; // 0.1 – 1.5  (왜곡 강도)
-    glowIntensity: number;// 0.2 – 2.5  (글로우 밝기)
+    colorA: string;
+    colorB: string;
+    colorC: string;
+    colorD: string;
+    colorE: string;
+    speed: number;
+    warpStrength: number;
+    glowIntensity: number;
+    pattern: SplashPattern;
 }
 
 export const DEFAULT_SPLASH_CONFIG: SplashConfig = {
@@ -27,6 +30,19 @@ export const DEFAULT_SPLASH_CONFIG: SplashConfig = {
     speed: 1.0,
     warpStrength: 1.0,
     glowIntensity: 1.0,
+    pattern: 'mesh',
+};
+
+export const PATTERN_LABELS: Record<SplashPattern, string> = {
+    mesh:   'Mesh',
+    swirl:  'Swirl',
+    wave:   'Wave',
+    aurora: 'Aurora',
+    ripple: 'Ripple',
+};
+
+const PATTERN_INDEX: Record<SplashPattern, number> = {
+    mesh: 0, swirl: 1, wave: 2, aurora: 3, ripple: 4,
 };
 
 /* ─────────────────────────────────────────
@@ -49,6 +65,7 @@ const fragmentShader = `
   uniform float uSpeed;
   uniform float uWarp;
   uniform float uGlow;
+  uniform int   uPattern;
   uniform vec2  uResolution;
   uniform vec3  uA;
   uniform vec3  uB;
@@ -87,15 +104,61 @@ const fragmentShader = `
     float ws=uWarp;
     float gi=uGlow;
 
-    /* 삼중 FBM 워프 */
+    /* ── 패턴별 워프 ── */
     float n1=fbm(p*1.30+vec2( ts*0.95,-ts*0.80),5);
     float n2=fbm(p*2.50+vec2(-ts*1.30, ts*1.10),5);
-    vec2 w1=vec2(n2-0.5,n1-0.5)*(ws*(0.22+0.26*e));
-    vec2 p2=p+w1;
-    float n3=fbm(p2*2.20+vec2(ts*0.70,-ts*0.60),4);
-    vec2 w2=vec2(n3-0.5,n2-0.5)*(ws*(0.10+0.14*e));
-    vec2 p3=p2+w2;
-    float n4=fbm(p3*4.50+vec2(ts*1.80,-ts*1.55),4);
+    vec2 p3; float n3; float n4;
+
+    if(uPattern==1){
+      /* SWIRL — 거리에 비례한 회전 */
+      float r=length(p);
+      float ang=r*4.5*ws-ts*1.8+n1*1.5*ws;
+      float ca=cos(ang),sa=sin(ang);
+      vec2 sp=vec2(ca*p.x-sa*p.y, sa*p.x+ca*p.y);
+      n3=fbm(sp*2.5+vec2(ts*0.6,-ts*0.5),4);
+      vec2 w1=vec2(n2-0.5,n1-0.5)*(ws*0.18);
+      p3=sp+w1;
+      n4=fbm(p3*5.0+vec2(ts*2.0,-ts*1.7),4);
+    } else if(uPattern==2){
+      /* WAVE — 레이어드 사인파 간섭 */
+      float wx= sin(p.y*5.0+ts*2.2)*0.18*ws
+               +sin(p.y*11.0-ts*3.8+n1*2.0)*0.08*ws
+               +sin(p.x*3.5+p.y*2.0+ts*1.4)*0.10*ws;
+      float wy= sin(p.x*6.0-ts*1.8)*0.18*ws
+               +sin(p.x*9.0+ts*2.9+n2*2.0)*0.08*ws
+               +cos(p.x*2.8-p.y*4.0-ts*2.1)*0.10*ws;
+      p3=p+vec2(wx,wy);
+      n3=fbm(p3*3.5+vec2(ts*1.2,-ts*1.0),4);
+      n4=fbm(p3*5.5+vec2(-ts*1.8,ts*1.5),3);
+    } else if(uPattern==3){
+      /* AURORA — 수직 리본 */
+      float bx=sin(p.y*2.2+ts*0.9)*0.35*ws
+              +fbm(vec2(p.y*1.8+ts*0.3, ts*0.25),3)*0.45*ws
+              +sin(p.y*5.5-ts*1.6)*0.12*ws;
+      float by=fbm(vec2(p.x*1.2,p.y+ts*0.5),3)*0.15*ws;
+      p3=p+vec2(bx,by);
+      n3=fbm(p3*2.8+vec2(ts*0.5,-ts*0.3),4);
+      n4=fbm(p3*6.0+vec2(ts*1.5,-ts*1.2),3);
+    } else if(uPattern==4){
+      /* RIPPLE — 동심원 파문 */
+      float r=length(p);
+      float ripple=sin(r*10.0*ws-ts*3.5)*0.18
+                  +sin(r*17.0*ws-ts*5.5+n1*2.0)*0.08
+                  +sin(r*6.0 *ws-ts*2.0)*0.12;
+      float ang2=atan(p.y,p.x)+ripple*ws*0.8;
+      float rmod=r*(1.0+ripple*ws*0.4);
+      p3=vec2(cos(ang2),sin(ang2))*rmod;
+      n3=fbm(p3*3.0+vec2(ts*0.8,-ts*0.6),4);
+      n4=fbm(p3*5.5+vec2(-ts*1.4,ts*1.2),3);
+    } else {
+      /* MESH — 삼중 FBM (기본) */
+      vec2 w1=vec2(n2-0.5,n1-0.5)*(ws*(0.22+0.26*e));
+      vec2 p2=p+w1;
+      n3=fbm(p2*2.20+vec2(ts*0.70,-ts*0.60),4);
+      vec2 w2=vec2(n3-0.5,n2-0.5)*(ws*(0.10+0.14*e));
+      p3=p2+w2;
+      n4=fbm(p3*4.50+vec2(ts*1.80,-ts*1.55),4);
+    }
 
     /* 베이스 컬러 */
     float hm=smoothstep(-0.35,1.35,uv.x+0.20*(n1-0.5)+0.11*sin(uv.y*3.2+ts*3.0));
@@ -159,6 +222,7 @@ function SplashShaderPlane({ configRef }: { configRef: React.MutableRefObject<Sp
             uSpeed:      { value: cfg.speed },
             uWarp:       { value: cfg.warpStrength },
             uGlow:       { value: cfg.glowIntensity },
+            uPattern:    { value: PATTERN_INDEX[cfg.pattern ?? 'mesh'] },
             uResolution: { value: new THREE.Vector2(1, 1) },
             uA:          { value: new THREE.Color(cfg.colorA) },
             uB:          { value: new THREE.Color(cfg.colorB) },
@@ -174,9 +238,10 @@ function SplashShaderPlane({ configRef }: { configRef: React.MutableRefObject<Sp
         const cfg = configRef.current;
         uniforms.uTime.value = t;
         uniforms.uResolution.value.set(size.width, size.height);
-        uniforms.uSpeed.value  = cfg.speed;
-        uniforms.uWarp.value   = cfg.warpStrength;
-        uniforms.uGlow.value   = cfg.glowIntensity;
+        uniforms.uSpeed.value   = cfg.speed;
+        uniforms.uWarp.value    = cfg.warpStrength;
+        uniforms.uGlow.value    = cfg.glowIntensity;
+        uniforms.uPattern.value = PATTERN_INDEX[cfg.pattern ?? 'mesh'];
         uniforms.uA.value.set(cfg.colorA);
         uniforms.uB.value.set(cfg.colorB);
         uniforms.uC.value.set(cfg.colorC);
