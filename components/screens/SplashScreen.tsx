@@ -26,96 +26,122 @@ const fragmentShader = `
   uniform float uTime;
   uniform float uEnergy;
   uniform vec2  uResolution;
-  uniform vec3  uA;   /* deep navy */
-  uniform vec3  uB;   /* sky blue  */
-  uniform vec3  uC;   /* cyan      */
-  uniform vec3  uD;   /* violet    */
-  uniform vec3  uE;   /* lavender  */
+  uniform vec3  uA;
+  uniform vec3  uB;
+  uniform vec3  uC;
+  uniform vec3  uD;
+  uniform vec3  uE;
 
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
   }
   float noise(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
-    float a = hash(i);
-    float b = hash(i + vec2(1.0, 0.0));
-    float c = hash(i + vec2(0.0, 1.0));
-    float d = hash(i + vec2(1.0, 1.0));
-    vec2 u = f * f * (3.0 - 2.0 * f);
-    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+    vec2 i = floor(p); vec2 f = fract(p);
+    float a = hash(i), b = hash(i+vec2(1,0)), c = hash(i+vec2(0,1)), d = hash(i+vec2(1,1));
+    vec2 u = f*f*(3.0-2.0*f);
+    return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
   }
-  float fbm(vec2 p) {
-    float v = 0.0; float a = 0.5;
-    mat2 m = mat2(1.6, 1.2, -1.2, 1.6);
-    for (int i = 0; i < 5; i++) { v += a * noise(p); p = m * p; a *= 0.5; }
+  float fbm(vec2 p, int oct) {
+    float v=0.0, a=0.5;
+    mat2 m = mat2(1.7,1.3,-1.3,1.7);
+    for(int i=0;i<6;i++){
+      if(i>=oct) break;
+      v+=a*noise(p); p=m*p; a*=0.48;
+    }
     return v;
   }
-  vec3 tonemap(vec3 c) {
-    c = max(vec3(0.0), c);
-    c = c / (vec3(0.9) + c);
-    return pow(c, vec3(0.84));
+
+  /* 부드러운 최대값 — 선명한 경계 없이 두 글로우 합산 */
+  float smax(float a, float b, float k){
+    float h = clamp(0.5+0.5*(b-a)/k,0.0,1.0);
+    return mix(a,b,h)+k*h*(1.0-h);
   }
 
-  void main() {
-    vec2 uv = vUv;
-    float aspect = uResolution.x / max(1.0, uResolution.y);
-    vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
+  vec3 tonemap(vec3 c){
+    c = max(vec3(0.0),c);
+    float lum = dot(c,vec3(0.2126,0.7152,0.0722));
+    c = mix(c, vec3(lum), -0.12);       /* 채도 살짝 부스트 */
+    c = c/(vec3(0.88)+c);
+    return pow(c, vec3(0.82));
+  }
 
-    float e = uEnergy;
-    float t = uTime * (0.22 + 0.14 * e);
+  void main(){
+    vec2 uv  = vUv;
+    float ar = uResolution.x/max(1.0,uResolution.y);
+    vec2 p   = (uv-0.5)*vec2(ar,1.0);
 
-    /* 두 겹의 FBM 워프 */
-    float n1 = fbm(p * 1.4  + vec2( t * 0.90, -t * 0.75));
-    float n2 = fbm(p * 2.60 + vec2(-t * 1.20,  t * 1.05));
-    vec2  warp = vec2(n2 - 0.5, n1 - 0.5) * (0.18 + 0.22 * e);
-    vec2  p2 = p + warp;
-    float n3 = fbm(p2 * 3.8 + vec2(t * 1.6, -t * 1.4));
+    float e  = uEnergy;
+    float t  = uTime;
+    float ts = t*(0.28+0.16*e);
 
-    /* 블루 → 다크 (좌→우) */
-    float hMix = smoothstep(-0.30, 1.30,
-      uv.x + 0.18 * (n1 - 0.5) + 0.10 * sin(uv.y * 3.0 + t * 2.5));
-    /* 바이올렛 리프트 (아래 → 위) */
-    float vMix = smoothstep(-0.15, 1.15,
-      uv.y + 0.12 * (n2 - 0.5) + 0.07 * sin(uv.x * 2.6 - t * 3.0));
+    /* ── 삼중 FBM 워프 ── */
+    float n1 = fbm(p*1.30 + vec2( ts*0.95,-ts*0.80), 5);
+    float n2 = fbm(p*2.50 + vec2(-ts*1.30, ts*1.10), 5);
+    vec2 w1  = vec2(n2-0.5, n1-0.5)*(0.22+0.26*e);
+    vec2 p2  = p + w1;
 
-    vec3 col = mix(uB, uA, hMix);          /* 블루 ↔ 다크 네이비 */
-    col = mix(col, uD, vMix * (0.68 + 0.12 * e)); /* 바이올렛 오버레이 */
+    float n3 = fbm(p2*2.20 + vec2(ts*0.70,-ts*0.60), 4);
+    vec2 w2  = vec2(n3-0.5, n2-0.5)*(0.10+0.14*e);
+    vec2 p3  = p2 + w2;                         /* 삼중 워프 완성 */
 
-    /* 시안 글로우 — 좌상단 떠다니는 핫스팟 */
-    vec2 focal1 = vec2(-0.28 + 0.20 * sin(t * 0.85), -0.22 + 0.16 * cos(t * 0.70));
-    float d1 = length(p2 - focal1);
-    float glow1 = exp(-d1 * d1 * (5.0 + 3.0 * e));
-    float halo1 = exp(-d1 * (3.8 + 1.8 * e));
-    col += uC * (0.70 * halo1 + 1.10 * glow1) * (0.75 + 0.60 * e);
+    float n4 = fbm(p3*4.50 + vec2(ts*1.80,-ts*1.55), 4);
 
-    /* 라벤더 글로우 — 하단 이동 */
-    vec2 focal2 = vec2(0.10 * cos(t * 1.10), 0.28 + 0.18 * sin(t * 0.95));
-    float d2 = length(p2 - focal2);
-    float glow2 = exp(-d2 * d2 * (7.0 + 4.0 * e));
-    col += uE * (0.90 * glow2) * (0.60 + 0.50 * e);
+    /* ── 베이스 컬러 ── */
+    float hm = smoothstep(-0.35,1.35, uv.x+0.20*(n1-0.5)+0.11*sin(uv.y*3.2+ts*3.0));
+    float vm = smoothstep(-0.18,1.18, uv.y+0.14*(n2-0.5)+0.08*sin(uv.x*2.8-ts*3.5));
+    float dm = smoothstep( 0.10,0.90, fbm(p*0.80+vec2(ts*0.35,ts*0.25),3));
 
-    /* 리지 & 코스틱 */
-    float ridge = smoothstep(0.52, 0.90, n3);
-    ridge *= 0.6 + 0.4 * sin(t * (4.0 + 2.0 * e) + n2 * 6.2);
-    col += (uC * 0.18 + uD * 0.12) * max(0.0, ridge) * (0.30 + 0.55 * e);
+    vec3 col = mix(uB, uA, hm);
+    col = mix(col, uD, vm*(0.72+0.14*e));
+    col = mix(col, uA*0.4+uD*0.6, dm*0.28);
 
-    float caustic = sin((p2.x * 3.2 - p2.y * 2.5) * (2.4 + 0.4 * e)
-                      + t * (8.0 + 6.0 * e) + n3 * 5.5);
-    caustic = pow(max(0.0, caustic), 3.0);
-    col += (uC * 0.10 + uD * 0.07) * caustic * (0.45 + 0.55 * e);
+    /* ── 핫스팟 3개 ── */
+    /* 1: 시안 — 좌상 궤도 */
+    vec2 f1 = vec2(-0.30+0.26*sin(ts*0.78+0.5), -0.24+0.20*cos(ts*0.65));
+    float d1 = length(p3-f1);
+    col += uC*(0.80*exp(-d1*(4.2+2.0*e)) + 1.30*exp(-d1*d1*(6.0+3.5*e)))*(0.80+0.65*e);
 
-    /* 비네트 */
-    float vign = smoothstep(1.10, 0.28, length(p));
-    col *= 0.82 + 0.18 * vign;
+    /* 2: 마젠타-바이올렛 — 우측 이동 */
+    vec2 f2 = vec2(0.32+0.18*cos(ts*0.92+1.2), 0.06+0.22*sin(ts*0.80+0.8));
+    float d2 = length(p3-f2);
+    vec3 mg  = mix(uD, uE, 0.5+0.5*sin(ts*0.55));
+    col += mg*(0.65*exp(-d2*(3.8+1.8*e)) + 1.10*exp(-d2*d2*(5.5+3.0*e)))*(0.70+0.55*e);
 
-    col = tonemap(col * (1.45 + 0.20 * e));
+    /* 3: 라벤더 — 하단 넓은 필 */
+    vec2 f3 = vec2(0.08*sin(ts*1.05+2.1), 0.32+0.16*cos(ts*0.88));
+    float d3 = length(p3-f3);
+    col += uE*(1.10*exp(-d3*d3*(4.5+2.5*e)))*(0.55+0.45*e);
+
+    /* ── 라이트 스트릭 (대각 흐름) ── */
+    float streak = p3.x*0.72 - p3.y*0.68 + ts*0.18;
+    float sRaw   = sin(streak*7.5 + n3*4.5)*0.5+0.5;
+    float sMask  = exp(-abs(p3.y+0.08*sin(ts*1.1))*6.0);
+    col += (uC*0.10+uE*0.08) * pow(sRaw,4.0) * sMask * (0.25+0.45*e);
+
+    /* ── 리지 & 코스틱 ── */
+    float ridge = smoothstep(0.50,0.88,n4)*max(0.0,0.6+0.4*sin(ts*(4.5+2.5*e)+n3*6.5));
+    col += (uC*0.20+uD*0.14)*ridge*(0.28+0.60*e);
+
+    float caus  = pow(max(0.0,sin((p3.x*3.5-p3.y*2.8)*(2.6+0.5*e)+ts*(9.0+7.0*e)+n4*6.0)),3.2);
+    col += (uC*0.12+uD*0.09)*caus*(0.40+0.60*e);
+
+    /* ── 엣지 크로매틱 림 ── */
+    float rim = 1.0-smoothstep(0.55,1.0,length(p));
+    col += uC*0.06*rim*(0.5+0.5*sin(ts*2.2+n2*4.0));
+
+    /* ── 비네트 + 센터 브라이트 ── */
+    float vign   = smoothstep(1.15,0.22,length(p));
+    float center = exp(-length(p)*3.0);
+    col *= 0.78+0.22*vign;
+    col += (uC*0.04+uE*0.03)*center*(0.6+0.4*e);
+
+    col = tonemap(col*(1.55+0.25*e));
 
     /* 필름 그레인 */
-    float g = hash(uv * uResolution + vec2(uTime * 80.0, uTime * 23.0));
-    col += (g - 0.5) * 0.018;
+    float g = hash(uv*uResolution+vec2(t*97.0,t*31.0));
+    col += (g-0.5)*0.016;
 
-    gl_FragColor = vec4(col, 1.0);
+    gl_FragColor = vec4(clamp(col,0.0,1.0), 1.0);
   }
 `;
 
@@ -128,19 +154,23 @@ function SplashShaderPlane() {
         uTime:       { value: 0 },
         uEnergy:     { value: 0.5 },
         uResolution: { value: new THREE.Vector2(1, 1) },
-        uA:          { value: new THREE.Color('#030314') }, /* deep navy */
-        uB:          { value: new THREE.Color('#1460c8') }, /* sky blue  */
-        uC:          { value: new THREE.Color('#3ad4f0') }, /* cyan      */
-        uD:          { value: new THREE.Color('#6018c0') }, /* violet    */
-        uE:          { value: new THREE.Color('#9060e0') }, /* lavender  */
+        uA:          { value: new THREE.Color('#02020f') }, /* void black  */
+        uB:          { value: new THREE.Color('#0f50d8') }, /* electric blue */
+        uC:          { value: new THREE.Color('#18e0f8') }, /* bright cyan  */
+        uD:          { value: new THREE.Color('#7010d0') }, /* deep violet  */
+        uE:          { value: new THREE.Color('#c060ff') }, /* neon lavender */
     }), []);
 
-    useFrame((state, delta) => {
+    useFrame((state) => {
         const t = state.clock.getElapsedTime();
         uniforms.uTime.value = t;
         uniforms.uResolution.value.set(size.width, size.height);
-        /* 부드럽게 맥박치는 에너지 0.4 ~ 0.75 */
-        uniforms.uEnergy.value = 0.55 + 0.20 * Math.sin(t * 0.55);
+        /* 불규칙 맥박 — 세 주파수 합산으로 유기적 변화 */
+        uniforms.uEnergy.value =
+            0.55
+            + 0.18 * Math.sin(t * 0.62)
+            + 0.10 * Math.sin(t * 1.85 + 1.3)
+            + 0.06 * Math.sin(t * 3.40 + 2.7);
     });
 
     return (
