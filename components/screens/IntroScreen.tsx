@@ -41,10 +41,10 @@ export function IntroScreen() {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4 }}
+            initial={{ clipPath: 'circle(0% at 50% 50%)', opacity: 1 }}
+            animate={{ clipPath: 'circle(160% at 50% 50%)', opacity: 1 }}
+            exit={{ opacity: 0, y: -20, clipPath: 'circle(160% at 50% 50%)' }}
+            transition={{ duration: 0.85, ease: [0.4, 0, 0.15, 1] }}
             className="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-16"
             style={{ backgroundColor: '#f7f9fb' }}
         >
