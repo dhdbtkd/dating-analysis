@@ -18,6 +18,26 @@ const PAPERS = [
         short: 'Wei et al. 2007',
         full: 'Wei, M., Russell, D. W., Mallinckrodt, B., & Vogel, D. L. (2007). The Experiences in Close Relationship Scale (ECR)-Short Form.',
     },
+    {
+        short: 'Lafontaine et al. 2016',
+        full: 'Lafontaine, M.-F., Brassard, A., Lussier, Y., Valois, P., Shaver, P. R., & Johnson, S. M. (2016). Selecting the best items for a short-form of the Experiences in Close Relationships questionnaire (ECR-12).',
+    },
+    {
+        short: 'Rempel, Holmes & Zanna 1985',
+        full: 'Rempel, J. K., Holmes, J. G., & Zanna, M. P. (1985). Trust in close relationships. Journal of Personality and Social Psychology, 49(1), 95–112.',
+    },
+    {
+        short: 'Miller et al. 1983',
+        full: 'Miller, L. C., Berg, J. H., & Archer, R. L. (1983). Openers: Individuals who elicit intimate self-disclosure. Journal of Personality and Social Psychology, 44(6), 1234–1244.',
+    },
+    {
+        short: 'Rahim 1983',
+        full: 'Rahim, M. A. (1983). A measure of styles of handling interpersonal conflict. Academy of Management Journal, 26(2), 368–376.',
+    },
+    {
+        short: 'Murray et al. 2000',
+        full: 'Murray, S. L., Holmes, J. G., & Griffin, D. W. (2000). Self-esteem and the quest for felt security: How perceived regard regulates attachment processes. Journal of Personality and Social Psychology, 78(3), 478–498.',
+    },
 ];
 
 export function IntroScreen() {
@@ -63,12 +83,12 @@ export function IntroScreen() {
                         나의 연애
                     </h1>
                     <p className="text-sm leading-relaxed" style={{ color: '#43474e' }}>
-                        몇 가지 질문에 답하고, 짧은 대화를 나누면
+                        질문에 답하고, 짧은 대화를 나누면
                         <br />
-                        나의 연애 패턴이 보이기 시작합니다.
+                        나의 연애 패턴이 보이기 시작해요.
                     </p>
                     <p className="text-xs mt-3" style={{ color: '#74777f' }}>
-                        ⏱ 약 5분 소요
+                        ⏱ 약 7분 소요
                     </p>
                 </div>
 
@@ -155,11 +175,11 @@ export function IntroScreen() {
                 {/* Footer */}
                 <div className="mt-10 flex flex-col items-center gap-2">
                     <p className="text-center text-xs" style={{ color: '#74777f' }}>
-                        입력하신 정보는 동의 없이 저장되지 않습니다.
+                        입력하신 정보는 동의 없이 저장되지 않아요.
                     </p>
                     <div className="relative flex items-center gap-1.5">
                         <span className="text-xs" style={{ color: '#74777f' }}>
-                            학술 논문 기반
+                            학술 연구 기반
                         </span>
                         <button
                             onClick={() => setShowRef((v) => !v)}
