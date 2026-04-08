@@ -201,13 +201,14 @@ export function IntroScreen() {
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: 6, scale: 0.97 }}
                                         transition={{ duration: 0.18 }}
-                                        className="absolute bottom-7 left-1/2 -translate-x-1/2 z-50 w-72 rounded-2xl p-5 soft-lift"
+                                        className="absolute bottom-7 left-1/2 -translate-x-1/2 z-50 w-72 rounded-2xl soft-lift overflow-hidden"
                                         style={{ backgroundColor: '#ffffff' }}
                                     >
-                                        <p className="text-xs font-semibold mb-3" style={{ color: '#002045' }}>
-                                            참고 논문
-                                        </p>
-                                        <div className="flex flex-col gap-3">
+                                        <div className="px-5 pt-5 pb-1">
+                                            <p className="text-xs font-semibold" style={{ color: '#002045' }}>참고 논문</p>
+                                        </div>
+                                        <div className="overflow-y-auto px-5 pb-5" style={{ maxHeight: '260px' }}>
+                                        <div className="flex flex-col gap-3 mt-3">
                                             {PAPERS.map((p) => (
                                                 <div key={p.short}>
                                                     <p
@@ -221,6 +222,7 @@ export function IntroScreen() {
                                                     </p>
                                                 </div>
                                             ))}
+                                        </div>
                                         </div>
                                     </motion.div>
                                 </>
