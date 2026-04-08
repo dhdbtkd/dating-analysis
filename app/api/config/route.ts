@@ -1,4 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server';
+import { DEFAULT_SPLASH_CONFIG } from '@/components/screens/SplashScreen';
 
 export async function GET() {
   const supabase = createServerClient();
@@ -11,5 +12,6 @@ export async function GET() {
 
   return Response.json({
     chatMaxTurns: typeof map['chat_max_turns'] === 'number' ? map['chat_max_turns'] : 6,
+    splashConfig: map['splash_config'] ?? DEFAULT_SPLASH_CONFIG,
   });
 }

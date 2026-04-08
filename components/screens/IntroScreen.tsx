@@ -29,7 +29,7 @@ export function IntroScreen() {
     const [showRef, setShowRef] = useState(false);
 
     function handleStart() {
-        if (!nickname.trim()) return setError('별명을 입력해주세요.');
+        if (!nickname.trim()) return setError('닉네임을 입력해주세요.');
         const ageNum = parseInt(age, 10);
         if (!age || isNaN(ageNum) || ageNum < 16 || ageNum > 99) return setError('올바른 나이를 입력해주세요 (16~99).');
         if (!gender) return setError('성별을 선택해주세요.');
@@ -76,7 +76,7 @@ export function IntroScreen() {
                 <div className="flex flex-col gap-4">
                     <div>
                         <label className="block text-xs font-semibold mb-2" style={{ color: '#43474e' }}>
-                            별명
+                            닉네임
                         </label>
                         <input
                             type="text"

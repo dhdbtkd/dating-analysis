@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { DEFAULT_SPLASH_CONFIG } from '@/components/screens/SplashScreen';
+import type { SplashConfig } from '@/components/screens/SplashScreen';
 
 interface PromptPart {
   key: string;
@@ -54,7 +56,7 @@ const CONFIG_LABELS: Record<string, string> = {
   couple: '커플 분석',
 };
 
-type NavTab = 'prompts' | 'settings';
+type NavTab = 'prompts' | 'settings' | 'splash';
 
 /* ── 확대 모달 ── */
 function ExpandedModal({ modal, onClose }: { modal: ExpandModal; onClose: () => void }) {
@@ -149,6 +151,11 @@ export default function AdminDashboardPage() {
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [settingsError, setSettingsError] = useState('');
 
+  const [splash, setSplash] = useState<SplashConfig>({ ...DEFAULT_SPLASH_CONFIG });
+  const [splashSaving, setSplashSaving] = useState(false);
+  const [splashSaved, setSplashSaved] = useState(false);
+  const [splashError, setSplashError] = useState('');
+
   useEffect(() => {
     fetch('/api/admin/config')
       .then((r) => r.json())
@@ -156,9 +163,33 @@ export default function AdminDashboardPage() {
       .catch(() => setError('설정을 불러오지 못했습니다.'));
     fetch('/api/admin/settings')
       .then((r) => r.json())
-      .then((data: AppSetting[]) => setSettings(data))
+      .then((data: AppSetting[]) => {
+        setSettings(data);
+        const sc = data.find(s => s.key === 'splash_config')?.value;
+        if (sc && typeof sc === 'object') setSplash({ ...DEFAULT_SPLASH_CONFIG, ...(sc as SplashConfig) });
+      })
       .catch(() => {});
   }, []);
+
+  async function saveSplash(cfg: SplashConfig) {
+    setSplashSaving(true); setSplashError(''); setSplashSaved(false);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'splash_config', value: cfg }),
+      });
+      const data = await res.json() as AppSetting & { error?: string };
+      if (!res.ok) { setSplashError(data.error ?? '저장 실패'); return; }
+      setSplashSaved(true);
+      setTimeout(() => setSplashSaved(false), 2000);
+    } catch { setSplashError('네트워크 오류'); }
+    finally { setSplashSaving(false); }
+  }
+
+  function updateSplash(patch: Partial<SplashConfig>) {
+    setSplash(prev => ({ ...prev, ...patch }));
+  }
 
   async function saveSettings(key: string, value: unknown) {
     setSettingsSaving(true); setSettingsError(''); setSettingsSaved(false);
@@ -262,8 +293,9 @@ export default function AdminDashboardPage() {
           {/* 탭 */}
           <div className="flex md:flex-col gap-0 overflow-x-auto md:overflow-visible p-3 md:p-3 md:pt-4">
             {([
-              { id: 'prompts', label: 'Prompts' },
+              { id: 'prompts',  label: 'Prompts' },
               { id: 'settings', label: '앱 설정' },
+              { id: 'splash',   label: 'Splash' },
             ] as { id: NavTab; label: string }[]).map(({ id, label }) => (
               <button
                 key={id}
@@ -352,6 +384,100 @@ export default function AdminDashboardPage() {
                     수정: {new Date(settings.find(s => s.key === 'chat_max_turns')!.updated_at).toLocaleString('ko-KR')}
                   </p>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Splash 탭 */}
+          {tab === 'splash' && (
+            <div className="max-w-xl p-6 md:p-10 flex flex-col gap-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-base font-semibold text-white">Splash 셰이더</h1>
+                  <p className="text-xs mt-1" style={{ color: '#555' }}>변경 즉시 미리보기 — 저장 눌러야 반영</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  {splashSaving && <span className="text-xs" style={{ color: '#555' }}>저장 중…</span>}
+                  {!splashSaving && splashSaved && <span className="text-xs text-green-500">저장됨</span>}
+                  {splashError && <span className="text-xs text-red-400">{splashError}</span>}
+                  <button
+                    onClick={() => saveSplash(splash)}
+                    disabled={splashSaving}
+                    className="px-4 py-1.5 rounded-lg text-sm font-medium transition-all disabled:opacity-30"
+                    style={{ backgroundColor: '#fff', color: '#000' }}
+                  >저장</button>
+                  <button
+                    onClick={() => { setSplash({ ...DEFAULT_SPLASH_CONFIG }); }}
+                    className="px-3 py-1.5 rounded-lg text-sm transition-all"
+                    style={{ backgroundColor: '#1e1e1e', color: '#888' }}
+                  >초기화</button>
+                </div>
+              </div>
+
+              {/* 미리보기 */}
+              <div className="relative rounded-2xl overflow-hidden" style={{ height: 200, border: '1px solid #1e1e1e' }}>
+                <div className="absolute inset-0 flex items-center justify-center z-10">
+                  <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.5)' }}>Preview</span>
+                </div>
+                <div className="absolute inset-0 rounded-xl overflow-hidden"
+                  style={{ background: `radial-gradient(ellipse at 20% 30%, ${splash.colorC}66 0%, transparent 55%), radial-gradient(ellipse at 75% 20%, ${splash.colorD}88 0%, transparent 50%), radial-gradient(ellipse at 50% 85%, ${splash.colorE}77 0%, transparent 55%), ${splash.colorA}` }}
+                />
+              </div>
+
+              {/* 색상 */}
+              <div className="flex flex-col gap-3 p-5 rounded-xl" style={{ backgroundColor: '#111', border: '1px solid #1e1e1e' }}>
+                <p className="text-[11px] font-semibold tracking-widest uppercase" style={{ color: '#555' }}>Colors</p>
+                {([
+                  { key: 'colorA', label: 'Void (배경)' },
+                  { key: 'colorB', label: 'Base Blue' },
+                  { key: 'colorC', label: 'Cyan Glow' },
+                  { key: 'colorD', label: 'Violet' },
+                  { key: 'colorE', label: 'Lavender' },
+                ] as { key: keyof SplashConfig; label: string }[]).map(({ key, label }) => (
+                  <div key={key} className="flex items-center gap-4">
+                    <input
+                      type="color"
+                      value={splash[key] as string}
+                      onChange={(e) => updateSplash({ [key]: e.target.value })}
+                      className="w-9 h-9 rounded-lg cursor-pointer border-0 bg-transparent p-0.5"
+                      style={{ backgroundColor: '#1a1a1a' }}
+                    />
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-white">{label}</p>
+                      <p className="text-[11px] font-mono" style={{ color: '#555' }}>{splash[key] as string}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 파라미터 슬라이더 */}
+              <div className="flex flex-col gap-5 p-5 rounded-xl" style={{ backgroundColor: '#111', border: '1px solid #1e1e1e' }}>
+                <p className="text-[11px] font-semibold tracking-widest uppercase" style={{ color: '#555' }}>Parameters</p>
+                {([
+                  { key: 'speed',        label: '속도',       min: 0.1, max: 2.0, step: 0.05 },
+                  { key: 'warpStrength', label: '왜곡 강도',  min: 0.1, max: 2.0, step: 0.05 },
+                  { key: 'glowIntensity',label: '글로우 밝기', min: 0.1, max: 2.5, step: 0.05 },
+                ] as { key: keyof SplashConfig; label: string; min: number; max: number; step: number }[]).map(({ key, label, min, max, step }) => (
+                  <div key={key} className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-white">{label}</span>
+                      <span className="text-xs font-mono tabular-nums" style={{ color: '#888' }}>
+                        {Number(splash[key]).toFixed(2)}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={min} max={max} step={step}
+                      value={splash[key] as number}
+                      onChange={(e) => updateSplash({ [key]: parseFloat(e.target.value) })}
+                      className="w-full h-1 rounded-full appearance-none cursor-pointer"
+                      style={{ accentColor: splash.colorC, backgroundColor: '#2a2a2a' }}
+                    />
+                    <div className="flex justify-between text-[10px]" style={{ color: '#333' }}>
+                      <span>{min}</span><span>{max}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
