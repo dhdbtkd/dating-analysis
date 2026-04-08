@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { DEFAULT_SPLASH_CONFIG } from '@/components/screens/SplashScreen';
+import { DEFAULT_SPLASH_CONFIG, SplashPreviewCanvas } from '@/components/screens/SplashScreen';
 import type { SplashConfig } from '@/components/screens/SplashScreen';
 
 interface PromptPart {
@@ -414,14 +414,12 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* 미리보기 */}
-              <div className="relative rounded-2xl overflow-hidden" style={{ height: 200, border: '1px solid #1e1e1e' }}>
-                <div className="absolute inset-0 flex items-center justify-center z-10">
-                  <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.5)' }}>Preview</span>
+              {/* 미리보기 — 실제 셰이더 */}
+              <div className="relative rounded-2xl overflow-hidden" style={{ height: 220, border: '1px solid #1e1e1e' }}>
+                <SplashPreviewCanvas config={splash} />
+                <div className="absolute inset-0 flex items-end justify-end p-3 pointer-events-none">
+                  <span className="text-[10px] font-semibold tracking-widest uppercase px-2 py-1 rounded" style={{ color: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(0,0,0,0.3)' }}>live preview</span>
                 </div>
-                <div className="absolute inset-0 rounded-xl overflow-hidden"
-                  style={{ background: `radial-gradient(ellipse at 20% 30%, ${splash.colorC}66 0%, transparent 55%), radial-gradient(ellipse at 75% 20%, ${splash.colorD}88 0%, transparent 50%), radial-gradient(ellipse at 50% 85%, ${splash.colorE}77 0%, transparent 55%), ${splash.colorA}` }}
-                />
               </div>
 
               {/* 색상 */}

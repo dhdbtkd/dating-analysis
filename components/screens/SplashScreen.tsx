@@ -203,6 +203,25 @@ function SplashShaderPlane({ configRef }: { configRef: React.MutableRefObject<Sp
     );
 }
 
+/* 어드민 프리뷰용 — config props를 매 프레임 configRef에 반영 */
+export function SplashPreviewCanvas({ config }: { config: SplashConfig }) {
+    const reducedMotion = useReducedMotion();
+    const configRef = useRef<SplashConfig>(config);
+    useEffect(() => { configRef.current = config; }, [config]);
+    return (
+        <Canvas
+            orthographic
+            frameloop={reducedMotion ? 'never' : 'always'}
+            camera={{ position: [0, 0, 1], zoom: 1 }}
+            dpr={[1, 1.5]}
+            gl={{ antialias: false, alpha: false, powerPreference: 'low-power' }}
+            style={{ position: 'absolute', inset: 0 }}
+        >
+            <SplashShaderPlane configRef={configRef} />
+        </Canvas>
+    );
+}
+
 function SplashBackground({ configRef }: { configRef: React.MutableRefObject<SplashConfig> }) {
     const reducedMotion = useReducedMotion();
     return (
