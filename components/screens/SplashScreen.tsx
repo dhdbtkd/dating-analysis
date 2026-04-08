@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useReducedMotion } from 'framer-motion';
@@ -311,6 +311,7 @@ function SplashBackground({ configRef }: { configRef: React.MutableRefObject<Spl
 export function SplashScreen() {
     const { setStep } = useAppStore();
     const configRef = useRef<SplashConfig>({ ...DEFAULT_SPLASH_CONFIG });
+    const [exiting, setExiting] = useState(false);
 
     useEffect(() => {
         fetch('/api/config')
@@ -322,18 +323,19 @@ export function SplashScreen() {
     }, []);
 
     useEffect(() => {
-        const timer = setTimeout(() => setStep('intro'), 3200);
+        const timer = setTimeout(() => setExiting(true), 3200);
         return () => clearTimeout(timer);
-    }, [setStep]);
+    }, []);
 
     return (
         <div className="fixed inset-0 overflow-hidden" suppressHydrationWarning>
             <SplashBackground configRef={configRef} />
+
+            {/* 콘텐츠 — exiting 시 fade out */}
             <motion.div
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.6 }}
+                animate={{ opacity: exiting ? 0 : 1 }}
+                transition={{ duration: exiting ? 0.3 : 0.6 }}
                 className="relative z-10 flex flex-col items-center justify-center h-full text-center px-8"
             >
                 <motion.div
@@ -379,6 +381,18 @@ export function SplashScreen() {
                     ))}
                 </motion.div>
             </motion.div>
+
+            {/* 원 팽창 전환 오버레이 */}
+            {exiting && (
+                <motion.div
+                    className="fixed inset-0 z-50 pointer-events-none"
+                    initial={{ clipPath: 'circle(0% at 50% 50%)' }}
+                    animate={{ clipPath: 'circle(160% at 50% 50%)' }}
+                    transition={{ duration: 0.9, ease: [0.4, 0, 0.15, 1] }}
+                    style={{ backgroundColor: '#f7f9fb' }}
+                    onAnimationComplete={() => setStep('intro')}
+                />
+            )}
         </div>
     );
 }
