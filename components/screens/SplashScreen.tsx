@@ -77,7 +77,7 @@ const fragmentShader = `
   float noise(vec2 p){
     vec2 i=floor(p),f=fract(p);
     float a=hash(i),b=hash(i+vec2(1,0)),c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));
-    vec2 u=f*f*(3.0-2.0*f);
+    vec2 u=f*f*f*(f*(f*6.0-15.0)+10.0);
     return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
   }
   float fbm(vec2 p,int oct){

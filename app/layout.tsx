@@ -6,6 +6,12 @@ import { KakaoInit } from '@/components/KakaoInit';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope' });
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  interactiveWidget: 'resizes-content',
+};
+
 export const metadata: Metadata = {
   title: "알고보면 보이는 나의 연애",
   description: "ECR 척도 기반 성인 애착 유형 측정 + LLM 심층 대화로 나의 연애 패턴을 탐색해보세요.",

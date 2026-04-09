@@ -81,6 +81,32 @@ ${userContext}
         const effectiveMessages: ChatMessage[] =
             messages.length > 0 ? messages : [{ role: 'user', content: '안녕. 시작해줘.' }];
 
+        if (process.env.NODE_ENV === 'development' && request.nextUrl.searchParams.get('mock') === '1') {
+            const turn = messages.filter((m) => m.role === 'user').length;
+            const mockReplies = [
+                '안녕! 오늘 대화 나눠줘서 고마워. 지금까지 연애하면서 가장 힘들었던 순간이 언제였어?',
+                '그랬구나. 그 상황에서 네가 느낀 감정을 좀 더 얘기해줄 수 있어?',
+                '비슷한 상황이 다른 연애에서도 반복됐던 것 같아? 패턴이 보이는지 궁금해.',
+                '그 패턴이 처음 생긴 게 언제부터인 것 같아? 혹시 어릴 때 경험이랑 연결되는 게 있어?',
+                '그런 경험들이 지금의 너한테 어떤 영향을 미치고 있는 것 같아?',
+                '그럼에도 불구하고, 네가 진짜 원하는 관계는 어떤 모습이야?',
+            ];
+            const reply = mockReplies[Math.min(turn, mockReplies.length - 1)];
+            const encoder = new TextEncoder();
+            const mockStream = new ReadableStream({
+                async start(controller) {
+                    for (const char of reply) {
+                        controller.enqueue(encoder.encode(char));
+                        await new Promise((r) => setTimeout(r, 18));
+                    }
+                    controller.close();
+                },
+            });
+            return new Response(mockStream, {
+                headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Content-Type-Options': 'nosniff' },
+            });
+        }
+
         const stream = await callLLMStream(effectiveMessages, system, llmOpts);
         return new Response(stream, {
             headers: {

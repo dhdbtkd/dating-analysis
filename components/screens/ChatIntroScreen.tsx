@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
 import { GoldButton } from '@/components/ui/GoldButton';
@@ -11,8 +11,27 @@ function emitChatBgEnergy(detail: { energy?: number; pulse?: number }) {
     globalThis.dispatchEvent(new CustomEvent(ENERGY_EVENT_NAME, { detail }));
 }
 
+const KO_NUMBERS: Record<number, string> = {
+    1: '한', 2: '두', 3: '세', 4: '네', 5: '다섯',
+    6: '여섯', 7: '일곱', 8: '여덟', 9: '아홉', 10: '열',
+};
+
+function toKoreanTurns(n: number): string {
+    return KO_NUMBERS[n] ? `${KO_NUMBERS[n]}번` : `${n}번`;
+}
+
 export function ChatIntroScreen() {
     const { userInfo, ecrScores, setStep } = useAppStore();
+    const [maxTurns, setMaxTurns] = useState(6);
+
+    useEffect(() => {
+        fetch('/api/config')
+            .then((r) => r.json())
+            .then((d: { chatMaxTurns?: number }) => {
+                if (d.chatMaxTurns) setMaxTurns(d.chatMaxTurns);
+            })
+            .catch(() => {});
+    }, []);
 
     useEffect(() => {
         emitChatBgEnergy({ energy: 0.25, pulse: 0.08 });
@@ -51,7 +70,7 @@ export function ChatIntroScreen() {
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <p className="text-xs font-semibold" style={{ color: '#0060ac' }}>
-                                여섯번만 대답해주시면 돼요.
+                                {toKoreanTurns(maxTurns)}만 대답해주시면 돼요.
                             </p>
                         </div>
                     </div>

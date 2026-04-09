@@ -3,6 +3,8 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { DEFAULT_SPLASH_CONFIG, SplashPreviewCanvas, PATTERN_LABELS } from '@/components/screens/SplashScreen';
 import type { SplashConfig, SplashPattern } from '@/components/screens/SplashScreen';
+import { ChatBgPreviewCanvas, DEFAULT_CHAT_BG_CONFIG, CHAT_BG_PATTERN_LABELS } from '@/components/ui/ChatGradientBackground';
+import type { ChatBgConfig, ChatBgPattern } from '@/components/ui/ChatGradientBackground';
 
 interface PromptPart {
   key: string;
@@ -156,6 +158,11 @@ export default function AdminDashboardPage() {
   const [splashSaved, setSplashSaved] = useState(false);
   const [splashError, setSplashError] = useState('');
 
+  const [chatBg, setChatBg] = useState<ChatBgConfig>({ ...DEFAULT_CHAT_BG_CONFIG });
+  const [chatBgSaving, setChatBgSaving] = useState(false);
+  const [chatBgSaved, setChatBgSaved] = useState(false);
+  const [chatBgError, setChatBgError] = useState('');
+
   useEffect(() => {
     fetch('/api/admin/config')
       .then((r) => r.json())
@@ -167,6 +174,8 @@ export default function AdminDashboardPage() {
         setSettings(data);
         const sc = data.find(s => s.key === 'splash_config')?.value;
         if (sc && typeof sc === 'object') setSplash({ ...DEFAULT_SPLASH_CONFIG, ...(sc as SplashConfig) });
+        const bc = data.find(s => s.key === 'chat_bg_config')?.value;
+        if (bc && typeof bc === 'object') setChatBg({ ...DEFAULT_CHAT_BG_CONFIG, ...(bc as ChatBgConfig) });
       })
       .catch(() => {});
   }, []);
@@ -189,6 +198,26 @@ export default function AdminDashboardPage() {
 
   function updateSplash(patch: Partial<SplashConfig>) {
     setSplash(prev => ({ ...prev, ...patch }));
+  }
+
+  async function saveChatBg(cfg: ChatBgConfig) {
+    setChatBgSaving(true); setChatBgError(''); setChatBgSaved(false);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'chat_bg_config', value: cfg }),
+      });
+      const data = await res.json() as { error?: string };
+      if (!res.ok) { setChatBgError((data as { error?: string }).error ?? '저장 실패'); return; }
+      setChatBgSaved(true);
+      setTimeout(() => setChatBgSaved(false), 2000);
+    } catch { setChatBgError('네트워크 오류'); }
+    finally { setChatBgSaving(false); }
+  }
+
+  function updateChatBg(patch: Partial<ChatBgConfig>) {
+    setChatBg(prev => ({ ...prev, ...patch }));
   }
 
   async function saveSettings(key: string, value: unknown) {
@@ -384,6 +413,115 @@ export default function AdminDashboardPage() {
                     수정: {new Date(settings.find(s => s.key === 'chat_max_turns')!.updated_at).toLocaleString('ko-KR')}
                   </p>
                 )}
+              </div>
+
+              {/* Chat 배경 색상 */}
+              <div className="flex flex-col gap-4 p-5 rounded-xl" style={{ backgroundColor: '#111', border: '1px solid #1e1e1e' }}>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-white">Chat 배경 색상</p>
+                    <p className="text-xs mt-0.5" style={{ color: '#555' }}>채팅 화면 및 어드민 로그인 배경 셰이더</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {chatBgSaving && <span className="text-xs" style={{ color: '#555' }}>저장 중</span>}
+                    {!chatBgSaving && chatBgSaved && <span className="text-xs text-green-500">저장됨</span>}
+                    {chatBgError && <span className="text-xs text-red-400">{chatBgError}</span>}
+                    <button
+                      onClick={() => saveChatBg(chatBg)}
+                      disabled={chatBgSaving}
+                      className="px-3 py-1 rounded-lg text-xs font-medium transition-all disabled:opacity-30"
+                      style={{ backgroundColor: '#fff', color: '#000' }}
+                    >저장</button>
+                    <button
+                      onClick={() => setChatBg({ ...DEFAULT_CHAT_BG_CONFIG })}
+                      className="px-3 py-1 rounded-lg text-xs transition-all"
+                      style={{ backgroundColor: '#1e1e1e', color: '#888' }}
+                    >초기화</button>
+                  </div>
+                </div>
+
+                {/* 미리보기 */}
+                <div className="relative rounded-xl overflow-hidden" style={{ height: 160, border: '1px solid #1e1e1e' }}>
+                  <ChatBgPreviewCanvas config={chatBg} />
+                </div>
+
+                {/* 패턴 선택 */}
+                <div className="flex flex-col gap-2">
+                  <p className="text-[11px] font-semibold tracking-widest uppercase" style={{ color: '#555' }}>Pattern</p>
+                  <div className="grid grid-cols-5 gap-2">
+                    {(Object.entries(CHAT_BG_PATTERN_LABELS) as [ChatBgPattern, string][]).map(([key, label]) => (
+                      <button
+                        key={key}
+                        onClick={() => updateChatBg({ pattern: key })}
+                        className="py-2 rounded-lg text-xs font-medium transition-all"
+                        style={{
+                          backgroundColor: chatBg.pattern === key ? chatBg.colorC + '33' : '#1a1a1a',
+                          color: chatBg.pattern === key ? '#fff' : '#555',
+                          border: `1px solid ${chatBg.pattern === key ? chatBg.colorC + '88' : '#2a2a2a'}`,
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 색상 피커 */}
+                <div className="flex flex-col gap-3">
+                  <p className="text-[11px] font-semibold tracking-widest uppercase" style={{ color: '#555' }}>Colors</p>
+                  {([
+                    { key: 'colorA', label: 'Base Dark' },
+                    { key: 'colorB', label: 'Base Blue' },
+                    { key: 'colorC', label: 'Highlight' },
+                    { key: 'colorD', label: 'Glow Accent' },
+                    { key: 'colorE', label: 'Secondary' },
+                  ] as { key: keyof ChatBgConfig; label: string }[]).map(({ key, label }) => (
+                    <div key={key} className="flex items-center gap-4">
+                      <input
+                        type="color"
+                        value={chatBg[key] as string}
+                        onChange={(e) => updateChatBg({ [key]: e.target.value })}
+                        className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent p-0.5"
+                        style={{ backgroundColor: '#1a1a1a' }}
+                      />
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-white">{label}</p>
+                        <p className="text-[11px] font-mono" style={{ color: '#555' }}>{chatBg[key] as string}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 파라미터 슬라이더 */}
+                <div className="flex flex-col gap-4">
+                  <p className="text-[11px] font-semibold tracking-widest uppercase" style={{ color: '#555' }}>Parameters</p>
+                  {([
+                    { key: 'speed',         label: '속도',        min: 0.1, max: 2.0, step: 0.05 },
+                    { key: 'warpStrength',  label: '왜곡 강도',   min: 0.1, max: 2.0, step: 0.05 },
+                    { key: 'glowIntensity', label: '글로우 밝기', min: 0.1, max: 2.5, step: 0.05 },
+                    { key: 'reactivity',    label: '채팅 반응 강도', min: 0.0, max: 1.0, step: 0.05 },
+                  ] as { key: keyof ChatBgConfig; label: string; min: number; max: number; step: number }[]).map(({ key, label, min, max, step }) => (
+                    <div key={key} className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-white">{label}</span>
+                        <span className="text-xs font-mono tabular-nums" style={{ color: '#888' }}>
+                          {Number(chatBg[key]).toFixed(2)}
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={min} max={max} step={step}
+                        value={chatBg[key] as number}
+                        onChange={(e) => updateChatBg({ [key]: parseFloat(e.target.value) })}
+                        className="w-full h-1 rounded-full appearance-none cursor-pointer"
+                        style={{ accentColor: chatBg.colorC, backgroundColor: '#2a2a2a' }}
+                      />
+                      <div className="flex justify-between text-[10px]" style={{ color: '#333' }}>
+                        <span>{min}</span><span>{max}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}

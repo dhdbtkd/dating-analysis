@@ -12,6 +12,7 @@ import { ChatIntroScreen } from '@/components/screens/ChatIntroScreen';
 import { ChatScreen } from '@/components/screens/ChatScreen';
 import { LoadingScreen } from '@/components/screens/LoadingScreen';
 import { ChatGradientBackground } from '@/components/ui/ChatGradientBackground';
+import type { ChatBgConfig } from '@/components/ui/ChatGradientBackground';
 import { buildFullQuestionSet, calcDimensionScore, getAttachmentType } from '@/lib/questions';
 import type { ExtendedScores } from '@/types';
 import type { SplashConfig } from '@/components/screens/SplashScreen';
@@ -22,7 +23,7 @@ function randomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function HomeClient({ initialSplashConfig }: { initialSplashConfig?: SplashConfig }) {
+export function HomeClient({ initialSplashConfig, initialChatBgConfig }: { initialSplashConfig?: SplashConfig; initialChatBgConfig?: ChatBgConfig }) {
   const { step, seedDevState } = useAppStore();
   const appliedDevStepRef = useRef<string | null>(null);
   const [devLoading, setDevLoading] = useState(false);
@@ -184,8 +185,9 @@ export function HomeClient({ initialSplashConfig }: { initialSplashConfig?: Spla
   }
 
   return (
-    <main className="flex-1 relative overflow-hidden">
-      {showChatBackground && <ChatGradientBackground />}
+    <>
+      {showChatBackground && <ChatGradientBackground config={initialChatBgConfig} />}
+      <main className="flex-1 relative overflow-hidden">
       <div className="relative z-10">
         <AnimatePresence mode="sync">
           {step === 'splash' && <SplashScreen key="splash" initialConfig={initialSplashConfig} />}
@@ -197,6 +199,7 @@ export function HomeClient({ initialSplashConfig }: { initialSplashConfig?: Spla
           {(step === 'loading' || step === 'done') && <LoadingScreen key="loading" />}
         </AnimatePresence>
       </div>
-    </main>
+      </main>
+    </>
   );
 }

@@ -24,7 +24,9 @@ export function ChatScreen() {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [viewportHeight, setViewportHeight] = useState<number | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const messagesContainerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const autoStartedRef = useRef(false);
     const messageKeysRef = useRef<string[]>([]);
@@ -35,6 +37,18 @@ export function ChatScreen() {
     const lastMessageContent = lastMessage?.content ?? '';
     // 첫 토큰 수신 전(빈 assistant 메시지)일 때만 ... 말풍선 표시
     const showTypingIndicator = loading && lastMessage?.role === 'assistant' && lastMessageContent.length === 0;
+
+
+    useEffect(() => {
+        const vv = globalThis.visualViewport;
+        if (!vv) return;
+        const onResize = () => {
+            setViewportHeight(vv.height);
+        };
+        setViewportHeight(vv.height);
+        vv.addEventListener('resize', onResize);
+        return () => vv.removeEventListener('resize', onResize);
+    }, []);
 
     useEffect(() => {
         fetch('/api/config')
@@ -72,7 +86,8 @@ export function ChatScreen() {
             setError('');
             setChatHistory([...history, { role: 'assistant', content: '' }]);
             try {
-                const res = await fetch('/api/chat', {
+                const mockParam = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mock') === '1' ? '?mock=1' : '';
+                const res = await fetch(`/api/chat${mockParam}`, {
                     method: 'POST',
                     headers: { 'content-type': 'application/json' },
                     body: JSON.stringify({ messages: history, ecrScores, userInfo, warmupAnswers, quizDetails }),
@@ -118,13 +133,19 @@ export function ChatScreen() {
 
     useEffect(() => {
         if (chatHistory.length === 0) return;
-        const behavior = lastMessageContent.length > 0 ? 'smooth' : 'auto';
+        const behavior = loading || lastMessageContent.length === 0 ? 'auto' : 'smooth';
         messagesEndRef.current?.scrollIntoView({ behavior });
-    }, [chatHistory.length, lastMessageContent]);
+    }, [chatHistory.length, lastMessageContent, loading]);
 
     useEffect(() => {
         if (!loading) inputRef.current?.focus();
     }, [loading]);
+
+    useEffect(() => {
+        if (viewportHeight === null) return;
+        const el = messagesContainerRef.current;
+        if (el) el.scrollTop = el.scrollHeight;
+    }, [viewportHeight]);
 
     async function handleSend() {
         if (!input.trim() || loading) return;
@@ -154,10 +175,18 @@ export function ChatScreen() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.4 }}
-            className="flex flex-col min-h-[100dvh]"
+            className="relative flex flex-col overflow-hidden"
+            style={{ height: viewportHeight ? `${viewportHeight}px` : '100dvh' }}
         >
             {/* Header */}
-            <div className="px-6 py-4 sticky top-0 z-10" style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', background: 'rgba(0,0,0,0.18)' }}>
+            <div
+                className="absolute top-0 left-0 right-0 px-6 py-4 z-10"
+                style={{
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    background: 'rgba(0,0,0,0.08)',
+                }}
+            >
                 <div className="max-w-lg mx-auto flex items-center justify-end">
                     <div className="text-right">
                         <p className="text-[0.7rem] font-semibold text-zinc-300">
@@ -177,34 +206,36 @@ export function ChatScreen() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-6 py-8">
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-6 pb-8" style={{ paddingTop: '88px' }}>
                 <div className="max-w-lg mx-auto flex flex-col gap-4">
-                    {chatHistory.map((msg, i) => msg.role === 'assistant' && msg.content.length === 0 ? null : (
-                        <div
-                            key={messageKeysRef.current[i]}
-                            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                        >
+                    {chatHistory.map((msg, i) =>
+                        msg.role === 'assistant' && msg.content.length === 0 ? null : (
                             <div
-                                className="max-w-[80%] rounded-3xl px-5 py-3.5 text-sm leading-relaxed break-words text-xs"
-                                style={
-                                    msg.role === 'user'
-                                        ? {
-                                              background: 'linear-gradient(135deg, #002045 0%, #1a365d 100%)',
-                                              color: '#ffffff',
-                                              borderBottomRightRadius: '6px',
-                                          }
-                                        : {
-                                              backgroundColor: '#ffffff',
-                                              color: '#191c1e',
-                                              borderBottomLeftRadius: '6px',
-                                              boxShadow: '0px 4px 12px rgba(25,28,30,0.06)',
-                                          }
-                                }
+                                key={messageKeysRef.current[i]}
+                                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
-                                {msg.content}
+                                <div
+                                    className="max-w-[80%] rounded-3xl px-5 py-3.5 text-sm leading-relaxed break-words text-xs"
+                                    style={
+                                        msg.role === 'user'
+                                            ? {
+                                                  background: 'linear-gradient(135deg, #002045 0%, #1a365d 100%)',
+                                                  color: '#ffffff',
+                                                  borderBottomRightRadius: '6px',
+                                              }
+                                            : {
+                                                  backgroundColor: '#ffffff',
+                                                  color: '#191c1e',
+                                                  borderBottomLeftRadius: '6px',
+                                                  boxShadow: '0px 4px 12px rgba(25,28,30,0.06)',
+                                              }
+                                    }
+                                >
+                                    {msg.content}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ),
+                    )}
                     {showTypingIndicator && (
                         <div className="flex justify-start">
                             <div
@@ -232,7 +263,10 @@ export function ChatScreen() {
             </div>
 
             {/* Input */}
-            <div className="px-6 py-4 bg-none" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 22px)' }}>
+            <div
+                className="flex-shrink-0 px-6 py-4 bg-none"
+                style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 22px)' }}
+            >
                 <div className="max-w-lg mx-auto">
                     {error && (
                         <p className="text-xs mb-2" style={{ color: '#ba1a1a' }}>
@@ -241,8 +275,8 @@ export function ChatScreen() {
                     )}
                     {userTurns < maxTurns ? (
                         <div
-                            className="flex items-center gap-2 rounded-3xl px-4 py-3 transition-all soft-lift justify-center"
-                            style={{ backgroundColor: '#ffffff' }}
+                            className="flex items-center gap-2 rounded-3xl px-4 py-3 transition-all soft-lift justify-center bg-zinc-700"
+                            style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
                         >
                             <textarea
                                 ref={inputRef}
@@ -268,10 +302,10 @@ export function ChatScreen() {
                                 placeholder="솔직하게 답해주세요"
                                 rows={1}
                                 disabled={loading}
-                                className="flex-1 bg-transparent outline-none resize-none leading-relaxed text-sm"
+                                className="flex-1 bg-transparent outline-none resize-none leading-relaxed text-sm placeholder:text-white/50"
                                 style={{
-                                    color: '#191c1e',
-                                    caretColor: '#0060ac',
+                                    color: '#ffffff',
+                                    caretColor: '#ffffff',
                                     paddingTop: '2px',
                                     paddingBottom: '2px',
                                 }}
@@ -286,8 +320,8 @@ export function ChatScreen() {
                                     background:
                                         input.trim() && !loading
                                             ? 'linear-gradient(135deg, #002045 0%, #1a365d 100%)'
-                                            : '#f2f4f6',
-                                    color: input.trim() && !loading ? '#ffffff' : '#74777f',
+                                            : 'rgba(255,255,255,0.2)',
+                                    color: input.trim() && !loading ? '#ffffff' : 'rgba(255,255,255,0.5)',
                                 }}
                             >
                                 <svg
