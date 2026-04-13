@@ -16,7 +16,10 @@ const activeAnalysisKeys = new Set<string>();
 
 export function LoadingScreen() {
   const { ecrScores, userInfo, chatHistory, sessionId, setSessionId, setStep, selectedQuestions, quizAnswers, warmupAnswers } = useAppStore();
-  const quizDetails = selectedQuestions.map((q, i) => ({ questionText: q.text, score: quizAnswers[i] ?? 0 }));
+  const quizDetails = useMemo(
+    () => selectedQuestions.map((q, i) => ({ questionText: q.text, score: quizAnswers[i] ?? 0 })),
+    [selectedQuestions, quizAnswers],
+  );
   const [msgIndex, setMsgIndex] = useState(0);
   const [error, setError] = useState('');
   const router = useRouter();

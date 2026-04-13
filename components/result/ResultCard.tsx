@@ -587,7 +587,7 @@ export function ResultCard({
                     <div className="flex flex-col gap-5">
                         <div>
                             <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>
-                                연애에서의 당신
+                                연애에서의 나
                             </p>
                             {splitIntoParagraphs(currentResult.lovePattern).map((paragraph, index) => (
                                 <p
@@ -601,7 +601,7 @@ export function ResultCard({
                         </div>
                         <div style={{ borderTop: '1px solid #f2f4f6', paddingTop: '16px' }}>
                             <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>
-                                마음이 예민해지는 지점
+                                이럴 때 마음이 불안해져
                             </p>
                             <p className="text-xs leading-relaxed" style={{ color: '#191c1e' }}>
                                 {currentResult.coreWound}
@@ -650,7 +650,7 @@ export function ResultCard({
                                 className="mb-5 text-xs font-semibold uppercase tracking-wider"
                                 style={{ color: '#0060ac' }}
                             >
-                                연애할 때 내 마음은 이렇게 흘러가요
+                                연애할 때 이런적 있지 않아?
                             </p>
                             <div className="flex flex-col gap-3">
                                 {currentDetail.patternFlow.map((caseText) => {
@@ -702,7 +702,7 @@ export function ResultCard({
                                 className="mb-4 text-xs font-semibold uppercase tracking-wider"
                                 style={{ color: '#0060ac' }}
                             >
-                                나는 이럴 때 특히 흔들려요
+                                나는 이럴 때 특히 흔들려
                             </p>
                             <div className="flex flex-wrap gap-2">
                                 {currentDetail.shakyMoments.map((trigger) => (
@@ -746,7 +746,7 @@ export function ResultCard({
                                 </div>
                                 <div style={{ borderTop: '1px solid #f2f4f6', paddingTop: '12px' }}>
                                     <p className="mb-2 text-xs font-semibold" style={{ color: '#43474e' }}>
-                                        상대는 나를 이렇게 느끼기 쉬워요
+                                        상대는 나를 이렇게 느끼기 쉬워
                                     </p>
                                     <div className="flex flex-col gap-2">
                                         {currentDetail.partnerFeels.map((item) => (
@@ -789,7 +789,7 @@ export function ResultCard({
                                 className="mb-5 text-xs font-semibold uppercase tracking-wider"
                                 style={{ color: '#0060ac' }}
                             >
-                                이제 나는 이렇게 해보면 좋아요
+                                이제 나는 이렇게 해보면 좋아
                             </p>
                             <div className="flex flex-col gap-4">
                                 {currentDetail.nextSteps.map((item, index) => (
@@ -813,7 +813,7 @@ export function ResultCard({
                                 className="mb-4 text-xs font-semibold uppercase tracking-wider"
                                 style={{ color: '#0060ac' }}
                             >
-                                이번 결과를 만든 단서예요
+                                이 분석 결과를 만든 단서들이야
                             </p>
                             <div className="flex flex-col gap-3">
                                 {currentDetail.keyClues.map((signal) => (

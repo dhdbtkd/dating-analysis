@@ -122,11 +122,9 @@ ${conversationText || '없음'}`;
 
 function buildCorePrompt(context: string, ecrScores: { anxiety: number; avoidance: number; trust?: number; selfDisclosure?: number; conflict?: number; relSelfEsteem?: number }, staticInstructions?: string) {
     if (staticInstructions) {
-        return `${context}\n\n${staticInstructions}\n- anxietyScore: ${ecrScores.anxiety.toFixed(1)}\n- avoidanceScore: ${ecrScores.avoidance.toFixed(1)}`;
+        return `${staticInstructions}\n- anxietyScore: ${ecrScores.anxiety.toFixed(1)}\n- avoidanceScore: ${ecrScores.avoidance.toFixed(1)}\n\n${context}`;
     }
-    return `${context}
-
-출력 형식:
+    return `출력 형식:
 JSON 객체 하나만 반환
 
 각 필드 작성 지침:
@@ -177,16 +175,19 @@ JSON 객체 하나만 반환
 
 [mindset]
 - 한 문장
-- 위로보다 전환`;
+- 위로보다 전환
+
+---
+분석할 사용자 데이터:
+
+${context}`;
 }
 
 function buildDetailPrompt(context: string, staticInstructions?: string) {
     if (staticInstructions) {
-        return `${context}\n\n${staticInstructions}`;
+        return `${staticInstructions}\n\n${context}`;
     }
-    return `${context}
-
-출력 형식:
+    return `출력 형식:
 JSON 객체 하나만 반환
 
 반드시 아래 필드만 채워라:
@@ -276,7 +277,12 @@ JSON 객체 하나만 반환
 - 정서적 불안이 증폭된다
 - 방어적 기제가 활성화된다
 - 친밀감에 대한 양가적 반응이 나타난다
-- 관계 내 취약성이 드러난다`;
+- 관계 내 취약성이 드러난다
+
+---
+분석할 사용자 데이터:
+
+${context}`;
 }
 
 async function buildCoreResult(
