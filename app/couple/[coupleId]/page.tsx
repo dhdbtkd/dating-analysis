@@ -2,6 +2,8 @@ import { createServerClient } from '@/lib/supabase/server';
 import { CoupleResultCard } from '@/components/couple/CoupleResultCard';
 import type { SessionRow, CoupleAnalysis } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: Promise<{ coupleId: string }>;
   searchParams: Promise<{ shared?: string }>;
