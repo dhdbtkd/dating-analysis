@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { DEFAULT_SPLASH_CONFIG, SplashPreviewCanvas, PATTERN_LABELS } from '@/components/screens/SplashScreen';
 import type { SplashConfig, SplashPattern } from '@/components/screens/SplashScreen';
 import { ChatBgPreviewCanvas, DEFAULT_CHAT_BG_CONFIG, CHAT_BG_PATTERN_LABELS } from '@/components/ui/ChatGradientBackground';
@@ -97,6 +98,27 @@ function ExpandedModal({ modal, onClose }: { modal: ExpandModal; onClose: () => 
   );
 }
 
+/* ── 복사 버튼 ── */
+function CopyButton({ text, className }: { text: string; className?: string }) {
+  const [copied, setCopied] = useState(false);
+  function copy() {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      className={`text-[11px] transition-colors px-2 py-0.5 rounded hover:bg-white/5 ${className ?? ''}`}
+      style={{ color: copied ? '#6ee7b7' : undefined }}
+    >
+      {copied ? '복사됨' : '복사'}
+    </button>
+  );
+}
+
 /* ── 텍스트에어리어 필드 ── */
 function TextareaField({
   label, value, onChange, rows = 12, hint, onExpand,
@@ -108,13 +130,16 @@ function TextareaField({
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
         <label className="text-[11px] font-medium tracking-wide uppercase text-neutral-500">{label}</label>
-        <button
-          type="button"
-          onClick={onExpand}
-          className="text-[11px] text-neutral-600 hover:text-neutral-300 transition-colors px-2 py-0.5 rounded hover:bg-white/5"
-        >
-          확대
-        </button>
+        <div className="flex items-center gap-1">
+          <CopyButton text={value} className="text-neutral-600 hover:text-neutral-300" />
+          <button
+            type="button"
+            onClick={onExpand}
+            className="text-[11px] text-neutral-600 hover:text-neutral-300 transition-colors px-2 py-0.5 rounded hover:bg-white/5"
+          >
+            확대
+          </button>
+        </div>
       </div>
       <textarea
         value={value}
@@ -136,8 +161,10 @@ function TextareaField({
 }
 
 /* ── 메인 ── */
-export default function AdminDashboardPage() {
-  const [tab, setTab] = useState<NavTab>('prompts');
+function AdminDashboardInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState<NavTab>((searchParams.get('tab') as NavTab) ?? 'prompts');
   const [configs, setConfigs] = useState<LlmConfig[]>([]);
   const [selected, setSelected] = useState<LlmConfig | null>(null);
   const [saving, setSaving] = useState(false);
@@ -166,7 +193,14 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     fetch('/api/admin/config')
       .then((r) => r.json())
-      .then((data: LlmConfig[]) => { setConfigs(data); if (data.length > 0) setSelected(structuredClone(data[0])); })
+      .then((data: LlmConfig[]) => {
+        setConfigs(data);
+        if (data.length > 0) {
+          const configKey = searchParams.get('config');
+          const initial = configKey ? (data.find((c) => c.key === configKey) ?? data[0]) : data[0];
+          setSelected(structuredClone(initial));
+        }
+      })
       .catch(() => setError('설정을 불러오지 못했습니다.'));
     fetch('/api/admin/settings')
       .then((r) => r.json())
@@ -271,6 +305,13 @@ export default function AdminDashboardPage() {
     debounceTimer.current = setTimeout(() => save(config), 3000);
   }
 
+  function updateUrl(nextTab: NavTab, configKey?: string) {
+    const params = new URLSearchParams();
+    params.set('tab', nextTab);
+    if (configKey) params.set('config', configKey);
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }
+
   function selectConfig(config: LlmConfig) {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     if (countdownTimer.current) clearInterval(countdownTimer.current);
@@ -278,6 +319,7 @@ export default function AdminDashboardPage() {
     setSelected(structuredClone(config));
     setSaved(false);
     setError('');
+    updateUrl(tab, config.key);
   }
 
   function updateField<K extends keyof LlmConfig>(field: K, value: LlmConfig[K]) {
@@ -328,7 +370,7 @@ export default function AdminDashboardPage() {
             ] as { id: NavTab; label: string }[]).map(({ id, label }) => (
               <button
                 key={id}
-                onClick={() => setTab(id)}
+                onClick={() => { setTab(id); updateUrl(id, id === 'prompts' ? (selected?.key ?? undefined) : undefined); }}
                 className="shrink-0 text-left px-3 py-2 rounded-lg text-sm transition-all whitespace-nowrap"
                 style={{
                   backgroundColor: tab === id ? '#1e1e1e' : 'transparent',
@@ -656,6 +698,10 @@ export default function AdminDashboardPage() {
                     <span className="text-xs tabular-nums" style={{ color: '#555' }}>{countdown}s</span>
                   )}
                   {error && <span className="text-xs text-red-400 max-w-[120px] text-right leading-tight">{error}</span>}
+                  <CopyButton
+                    text={[selected.system_prompt, ...selected.prompt_parts.map((p) => p.content)].filter(Boolean).join('\n\n---\n\n')}
+                    className="text-neutral-500 hover:text-neutral-300 border border-neutral-700 rounded-lg px-3 py-1.5 text-xs"
+                  />
                   <button
                     onClick={() => {
                       if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -755,5 +801,13 @@ export default function AdminDashboardPage() {
         </main>
       </div>
     </>
+  );
+}
+
+export default function AdminDashboardPage() {
+  return (
+    <Suspense>
+      <AdminDashboardInner />
+    </Suspense>
   );
 }

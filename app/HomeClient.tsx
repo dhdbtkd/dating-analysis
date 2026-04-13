@@ -27,11 +27,34 @@ export function HomeClient({ initialSplashConfig, initialChatBgConfig }: { initi
   const { step, seedDevState } = useAppStore();
   const appliedDevStepRef = useRef<string | null>(null);
   const [devLoading, setDevLoading] = useState(false);
-  const [devPasswordPrompt, setDevPasswordPrompt] = useState(false);
+  const [devPasswordPrompt, setDevPasswordPrompt] = useState<false | 'dev' | 'coupledev'>(false);
   const [devPasswordInput, setDevPasswordInput] = useState('');
   const [devPasswordError, setDevPasswordError] = useState<string | false>(false);
   const router = useRouter();
   const showChatBackground = step === 'chat-intro' || step === 'chat';
+
+  function runCoupleDevShortcut() {
+    setDevLoading(true);
+    setDevPasswordPrompt(false);
+    (async () => {
+      try {
+        const res = await fetch('/api/couple/dev-create', { method: 'POST' });
+        if (!res.ok) throw new Error('커플 생성 실패');
+        const { coupleId } = await res.json() as { coupleId: string };
+
+        await fetch('/api/couple/analyze', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ coupleId, mock: true }),
+        });
+
+        router.push(`/couple/${coupleId}`);
+      } catch (e) {
+        console.error('[coupledev=1] 오류:', e);
+        setDevLoading(false);
+      }
+    })();
+  }
 
   function runDevShortcut() {
     setDevLoading(true);
@@ -116,12 +139,21 @@ export function HomeClient({ initialSplashConfig, initialChatBgConfig }: { initi
       if (process.env.NODE_ENV === 'development') {
         runDevShortcut();
       } else {
-        setDevPasswordPrompt(true);
+        setDevPasswordPrompt('dev');
+      }
+    }
+
+    // ?coupledev=1 — 랜덤 커플 결과 생성 (mock, 토큰 없음)
+    if (params.get('coupledev') === '1') {
+      if (process.env.NODE_ENV === 'development') {
+        runCoupleDevShortcut();
+      } else {
+        setDevPasswordPrompt('coupledev');
       }
     }
   }, [seedDevState, router]);
 
-  if (devPasswordPrompt) {
+  if (devPasswordPrompt !== false) {
     return (
       <main className="flex-1 flex items-center justify-center px-6">
         <div className="w-full max-w-xs rounded-2xl p-6 soft-lift" style={{ backgroundColor: '#ffffff' }}>
@@ -139,7 +171,7 @@ export function HomeClient({ initialSplashConfig, initialChatBgConfig }: { initi
                   body: JSON.stringify({ password: devPasswordInput }),
                 });
                 if (res.ok) {
-                  runDevShortcut();
+                  devPasswordPrompt === 'coupledev' ? runCoupleDevShortcut() : runDevShortcut();
                 } else {
                   const { error } = await res.json() as { error?: string };
                   setDevPasswordError(error ?? '비밀번호가 틀렸습니다.');
@@ -162,7 +194,7 @@ export function HomeClient({ initialSplashConfig, initialChatBgConfig }: { initi
                 body: JSON.stringify({ password: devPasswordInput }),
               });
               if (res.ok) {
-                runDevShortcut();
+                devPasswordPrompt === 'coupledev' ? runCoupleDevShortcut() : runDevShortcut();
               } else {
                 const { error } = await res.json() as { error?: string };
                 setDevPasswordError(error ?? '비밀번호가 틀렸습니다.');

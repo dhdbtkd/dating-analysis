@@ -119,6 +119,12 @@ export interface CoupleAnalysis {
   growthEdge?: string;
   coreFearsCollision?: string;
   redFlags?: string[];
+  // 중기 확장 필드
+  relationshipScenario?: string;
+  relationshipConditions?: { good: string[]; bad: string[] };
+  practicalPatterns?: { contact: string; date: string; conflict: string };
+  letterToA?: string;
+  letterToB?: string;
 }
 
 export type AttachmentType = 'secure' | 'anxious' | 'avoidant' | 'fearful';
