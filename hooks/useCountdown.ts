@@ -10,6 +10,8 @@ export function useCountdown(
 ) {
   const [timeLeft, setTimeLeft] = useState(duration);
   const expiredRef = useRef(false);
+  const onExpireRef = useRef(onExpire);
+  onExpireRef.current = onExpire;
 
   useEffect(() => {
     setTimeLeft(duration);
@@ -20,7 +22,7 @@ export function useCountdown(
     if (timeLeft <= 0) {
       if (canExpire && !expiredRef.current) {
         expiredRef.current = true;
-        onExpire();
+        onExpireRef.current();
       }
       return;
     }
@@ -28,7 +30,7 @@ export function useCountdown(
       setTimeLeft((t) => Math.max(0, t - 0.1));
     }, 100);
     return () => clearInterval(id);
-  }, [timeLeft, canExpire, onExpire]);
+  }, [timeLeft, canExpire]); // onExpire 제거: onExpire 참조 변경이 effect 재실행을 유발하지 않도록
 
   return timeLeft;
 }

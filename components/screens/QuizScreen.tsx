@@ -28,6 +28,8 @@ export function QuizScreen() {
     const [selected, setSelected] = useState<number | null>(null);
     const [timerKey, setTimerKey] = useState(0);
     const advancingRef = useRef(false);
+    const retryQueueRef = useRef<number[]>([]);
+    retryQueueRef.current = retryQueue;
 
     const questionIndex = isRetry ? retryQueue[retryPos] : normalQueue[normalPos];
     const question = selectedQuestions[questionIndex];
@@ -65,14 +67,14 @@ export function QuizScreen() {
             } else {
                 const next = normalPos + 1;
                 if (next >= normalQueue.length) {
-                    if (retryQueue.length === 0) finishQuiz();
+                    if (retryQueueRef.current.length === 0) finishQuiz();
                     else setIsRetry(true);
                 } else {
                     setNormalPos(next);
                 }
             }
         }, 280);
-    }, [isRetry, retryPos, retryQueue, normalPos, normalQueue, finishQuiz]);
+    }, [isRetry, retryPos, normalPos, normalQueue, finishQuiz]);
 
     const handleExpire = useCallback(() => {
         setRetryQueue((prev) => [...prev, questionIndex]);
