@@ -131,9 +131,6 @@ export function LoadingScreen() {
             className="absolute inset-0 rounded-full border-2 border-transparent animate-spin"
             style={{ borderTopColor: '#0060ac', borderRightColor: '#dbeafe' }}
           />
-          <div className="absolute inset-3 rounded-full flex items-center justify-center text-2xl">
-            🪐
-          </div>
         </div>
         <h2
           className="text-xl font-bold mb-4"
