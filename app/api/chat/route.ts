@@ -48,10 +48,23 @@ ${warmupSummary || '없음'}
 ECR 척도 응답 (${LIKERT_LEGEND}):
 ${quizSummary || '없음'}`;
 
-        const dbConfig = await getLlmConfig('chat');
+        const [dbConfig, appSettings] = await Promise.all([
+            getLlmConfig('chat'),
+            (async () => {
+                const { createServerClient } = await import('@/lib/supabase/server');
+                const supabase = createServerClient();
+                const { data } = await supabase.from('app_settings').select('key, value').eq('key', 'chat_max_turns').single();
+                return data;
+            })(),
+        ]);
         const llmOpts = dbConfig ? { provider: dbConfig.provider, model: dbConfig.model } : undefined;
 
-        const system = dbConfig
+        const chatMaxTurns = typeof appSettings?.value === 'number' ? appSettings.value : 6;
+        const userTurnCount = messages.filter((m) => m.role === 'user').length;
+        const remaining = chatMaxTurns - userTurnCount;
+        const turnHint = `\n\n## 현재 상태\n지금은 ${userTurnCount + 1}번째 턴입니다. 전체 ${chatMaxTurns}턴 중 ${remaining}턴 남았습니다.\n이전 대화를 읽고, 아직 탐색하지 않은 주제를 파악해서 우선적으로 다루세요.\n남은 턴이 적을수록 더 빠르게 전환하세요.`;
+
+        const system = (dbConfig
             ? injectUserContext(dbConfig.system_prompt, userContext)
             : `당신은 공감 능력이 뛰어난 심리 상담사입니다. 사용자의 연애 애착 패턴을 깊이 탐색하는 대화를 진행합니다.
 
@@ -70,7 +83,7 @@ ${userContext}
   - 6번째 질문: 변화와 비전 — "그럼에도 원하는 관계"를 스스로 말하게 합니다
 - 판단하지 않고 공감 → 반영 → 질문 순서로 응답합니다
 - 질문은 하나씩만 합니다
-- 200자 이내로 응답합니다`;
+- 200자 이내로 응답합니다`) + turnHint;
 
         console.log('\n========== [/api/chat] SYSTEM PROMPT ==========');
         console.log(system);
